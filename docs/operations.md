@@ -9,6 +9,17 @@
 | `apps/web` | N | needs `API_URL` (server-side only) |
 | Postgres | managed | PITR + restore drills; the ledger is the system of record |
 
+## Account-takeover controls (2026-10-19 audit follow-up)
+
+| Control | Where | Notes |
+| --- | --- | --- |
+| Team changes need the acting person's password (or fresh Web3Auth sign-in) | `POST /v1/team`, `PATCH /v1/team/:id`, `POST /v1/team/:id/remove` | A stolen session alone can no longer add an owner. Every owner/admin with a verified email is told. |
+| New team members wait the payout cooldown before money-related actions | `PAYOUT_COOLDOWN_SECONDS` (24 h in production) | Applies to payout wallets, custody withdrawals/schedules and further team changes. The account's first user is exempt. |
+| Failed sign-ins and bad credentials are throttled per client address (and per address + email for passwords) | in-memory, per API process | Put a shared limiter or gateway in front when running more than one API replica. |
+| Rate limits key anonymous routes by IP only | `apps/api/src/server.ts` | Set `TRUST_PROXY=true` when the API is behind exactly one trusted proxy; the API warns in production when it is unset. |
+| Dashboard sessions: suspended merchants are cut off, "sign out everywhere else", password change, hourly pruning | `/v1/auth/sessions/revoke-others`, `/v1/auth/password` | There is still no emailed password-reset flow. |
+| Relayer daily budget split | `relayer.ts` `KIND_SHARE` | Vault creation 15 %, forwards 20 %, policy activations 5 % of `maxOpsPerDay`; sweeps and wallet payments keep the rest. |
+
 ## Secrets & keys
 
 * Production relayer key: implement `SignerProvider` against your KMS/HSM (returns a viem `LocalAccount` whose `signTransaction` calls the KMS).

@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { and, count, eq, gt, isNull, schema } from "@plinth/db";
+import { and, asc, count, eq, gt, isNull, schema } from "@plinth/db";
 import { newId } from "@plinth/shared";
 import { audit } from "./audit";
 import type { AuthContext } from "./auth";
@@ -21,6 +21,23 @@ export async function userOf(e: Engine, ctx: AuthContext): Promise<User> {
   if (ctx.actor.type !== "USER" || !ctx.actor.id) throw new EngineError("SESSION_REQUIRED", "Sign in to the dashboard to do this", 403);
   const [u] = await e.db.select().from(schema.merchantUsers).where(eq(schema.merchantUsers.id, ctx.actor.id));
   if (!u) throw new EngineError("SESSION_REQUIRED", "Sign in to the dashboard to do this", 403);
+  return u;
+}
+
+/**
+ * Actions that decide where money goes (payout wallets, custody withdrawals, team changes) are refused to a team member who was
+ * added only recently: the account's founder is always allowed, anyone else must have been on the team for the payout cooldown.
+ * It gives the owners time to notice and remove a member who should not be there (for example one added with a stolen session).
+ */
+export async function requireSeasonedUser(e: Engine, ctx: AuthContext): Promise<User> {
+  const u = await userOf(e, ctx);
+  // The founder is the first user the account ever had (a removed member keeps its row, so this cannot be passed to a newcomer).
+  const [first] = await e.db.select({ id: schema.merchantUsers.id }).from(schema.merchantUsers).where(eq(schema.merchantUsers.merchantId, u.merchantId)).orderBy(asc(schema.merchantUsers.createdAt)).limit(1);
+  const founder = first?.id === u.id;
+  const age = e.now().getTime() - u.createdAt.getTime();
+  if (!founder && age < e.cfg.payoutCooldownSeconds * 1000) {
+    throw new EngineError("MEMBER_TOO_NEW", "This team member was added recently. Money-related changes unlock once they have been on the team for the payout waiting period.", 403);
+  }
   return u;
 }
 
@@ -49,6 +66,17 @@ export async function requireVerifiedEmail(e: Engine, ctx: AuthContext): Promise
 }
 
 // ------------------------------------------------------------------ re-authentication
+
+/** Wrong re-authentication passwords per user (this process). A stolen session must not be able to guess the password offline of the API's own limits. */
+const REAUTH_MAX_FAILURES = 8;
+const REAUTH_WINDOW_MS = 15 * 60_000;
+const reauthFailures = new Map<string, number[]>();
+const recentReauthFailures = (userId: string, now: number) => {
+  const list = (reauthFailures.get(userId) ?? []).filter((t) => now - t < REAUTH_WINDOW_MS);
+  if (list.length) reauthFailures.set(userId, list);
+  else reauthFailures.delete(userId);
+  return list;
+};
 
 export interface Reauth {
   /** Email accounts: the current password. */
@@ -80,7 +108,14 @@ export async function verifyReauth(e: Engine, ctx: AuthContext, reauth: Reauth |
     return u;
   }
   if (!reauth?.password) throw new EngineError("REAUTH_REQUIRED", "Enter your password to confirm this change.", 403);
-  if (!(await verifyPassword(reauth.password, u.passwordHash))) throw new EngineError("REAUTH_FAILED", "The password is not correct.", 403);
+  const now = e.now().getTime();
+  const recent = recentReauthFailures(u.id, now);
+  if (recent.length >= REAUTH_MAX_FAILURES) throw new EngineError("TOO_MANY_ATTEMPTS", "Too many wrong passwords. Try again in a few minutes.", 429);
+  if (!(await verifyPassword(reauth.password, u.passwordHash))) {
+    reauthFailures.set(u.id, [...recent, now]);
+    throw new EngineError("REAUTH_FAILED", "The password is not correct.", 403);
+  }
+  reauthFailures.delete(u.id);
   return u;
 }
 

@@ -18,6 +18,13 @@ export type CheckoutMethod = z.infer<typeof checkoutMethodSchema>;
 /** Platform default for how long a payment intent stays payable: 20 minutes. */
 export const DEFAULT_EXPIRY_SECONDS = 20 * 60;
 
+/** Where the customer is sent after checkout: https only (plain http only for a local machine). Never javascript:, data: or other schemes. */
+export const redirectUrlSchema = z
+  .string()
+  .url()
+  .max(2000)
+  .refine((u) => /^https:\/\//i.test(u) || /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?(\/|$)/i.test(u), "Must be an https:// URL");
+
 export const createPaymentIntentSchema = z.object({
   amount: usdcAmountSchema,
   /** The token the payment is denominated and paid in. Default USDC. */
@@ -30,8 +37,8 @@ export const createPaymentIntentSchema = z.object({
   // (which starts at DEFAULT_EXPIRY_SECONDS), so the per-merchant override actually applies.
   expires_in_seconds: z.number().int().min(300).max(60 * 60 * 24 * 30).optional().describe("Seconds the payment stays payable (300 to 2592000). Omit to use the merchant's default expiry, which is 1200 (20 minutes) unless changed in settings."),
   customer_email: z.string().email().max(320).optional(),
-  success_url: z.string().url().max(2000).optional(),
-  cancel_url: z.string().url().max(2000).optional(),
+  success_url: redirectUrlSchema.optional(),
+  cancel_url: redirectUrlSchema.optional(),
   metadata: z.record(z.string().max(40), z.string().max(500)).refine((m) => Object.keys(m).length <= 20).optional(),
 });
 export type CreatePaymentIntentInput = z.infer<typeof createPaymentIntentSchema>;
@@ -43,7 +50,7 @@ export const createPaymentLinkSchema = z.object({
   description: z.string().max(500).optional(),
   networks: z.array(networkIdSchema).min(1).optional(),
   checkout_methods: z.array(checkoutMethodSchema).min(1).default(["WALLET", "ADDRESS"]),
-  success_url: z.string().url().optional(),
+  success_url: redirectUrlSchema.optional(),
   intent_expires_in_seconds: z.number().int().min(300).max(60 * 60 * 24 * 7).default(DEFAULT_EXPIRY_SECONDS),
 });
 
@@ -124,6 +131,12 @@ export const payoutConfirmSchema = z.object({ token: z.string().min(20).max(200)
 export const merchantFeeSchema = z.object({ fee_bps: z.number().int().min(0).max(100).nullable() });
 export const emailChangeSchema = z.object({ email: z.string().trim().email().max(320), reauth: reauthSchema });
 export const emailConfirmSchema = z.object({ token: z.string().min(20).max(200) });
+const roleSchema = z.enum(["OWNER", "ADMIN", "DEVELOPER", "VIEWER"]);
+/** Team changes decide who can later move money, so each one needs the acting person's fresh sign-in. */
+export const teamAddSchema = z.object({ email: z.string().trim().email().max(320), role: roleSchema, reauth: reauthSchema });
+export const teamRoleSchema = z.object({ role: roleSchema, reauth: reauthSchema });
+export const teamRemoveSchema = z.object({ reauth: reauthSchema });
+export const passwordChangeSchema = z.object({ current_password: z.string().min(1).max(200), new_password: z.string().min(12).max(200) });
 export const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1).max(200) });
 
 export const WEBHOOK_EVENT_TYPES = [

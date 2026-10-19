@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { parseUsdc } from "@plinth/shared";
+import { eq, schema } from "@plinth/db";
 import { verifyWebhookSignature } from "@plinth/engine";
 import { startHarness, type Harness } from "../../../packages/engine/test/harness";
 import { buildOpenApi, buildServer, type RouteDef } from "../src";
@@ -11,9 +12,9 @@ let app: FastifyInstance;
 let routes: RouteDef[];
 
 interface Res { status: number; body: any; headers: Record<string, any> }
-async function call(method: string, url: string, opts: { token?: string; body?: unknown; headers?: Record<string, string>; env?: "test" | "live" } = {}): Promise<Res> {
+async function call(method: string, url: string, opts: { token?: string; body?: unknown; headers?: Record<string, string>; env?: "test" | "live"; ip?: string } = {}): Promise<Res> {
   const r = await app.inject({
-    method: method as never, url, payload: opts.body as never,
+    method: method as never, url, payload: opts.body as never, ...(opts.ip ? { remoteAddress: opts.ip } : {}),
     headers: { ...(opts.token ? { authorization: `Bearer ${opts.token}` } : {}), ...(opts.env ? { "x-plinth-environment": opts.env } : {}), ...opts.headers },
   });
   return { status: r.statusCode, body: r.body ? JSON.parse(r.body) : null, headers: r.headers };
@@ -86,7 +87,8 @@ describe("authentication & authorisation", () => {
     expect((await call("GET", "/admin/relayer", { token: apiKey })).status).toBe(401);
     const ok = await call("GET", "/admin/relayer", { headers: { "x-admin-token": "op-secret-token" } });
     expect(ok.status).toBe(200);
-    expect(ok.body.data[0].signer).toBeTruthy();
+    // The registry also lists real networks (no relayer key here), so look the test chain up by name instead of by position.
+    expect(ok.body.data.find((n: { network: string }) => n.network === h.net).signer).toBeTruthy();
   });
 
   it("login errors do not reveal whether an email exists", async () => {
@@ -535,6 +537,130 @@ describe("hosted MCP server over HTTP", () => {
     await client.close();
     await other.close();
   }, 60_000);
+});
+
+describe("audit regressions", () => {
+  const pw = "a-very-long-passphrase-123";
+
+  it("a caller cannot pick its own rate-limit bucket by inventing Authorization headers", async () => {
+    const codes: number[] = [];
+    for (let i = 0; i < 30; i++) {
+      codes.push((await call("POST", "/v1/auth/login", { ip: "203.0.113.50", headers: { authorization: "Bearer made-up-" + i }, body: { email: "nobody@acme.test", password: "wrong-wrong-wrong" } })).status);
+    }
+    expect(codes.filter((c) => c === 429).length).toBeGreaterThan(0);
+  });
+
+  it("wrong credentials are throttled per client address", async () => {
+    const codes: number[] = [];
+    for (let i = 0; i < 80; i++) codes.push((await call("GET", "/v1/payments", { ip: "203.0.113.51", token: "sk_test_invented_" + i })).status);
+    expect(codes.filter((c) => c === 429).length).toBeGreaterThan(0);
+    expect(codes[0]).toBe(401);
+  });
+
+  it("the same Idempotency-Key in the test and the live environment is never the same request", async () => {
+    const live = await call("POST", "/v1/api-keys", { token: session, body: { name: "live", environment: "live" } });
+    expect(live.status).toBe(201);
+    const body = { amount: "3.00", order_reference: "ENV-SPLIT-1" };
+    const a = await call("POST", "/v1/payment-intents", { token: apiKey, body, headers: { "idempotency-key": "env-split-key" } });
+    expect(a.status).toBe(201);
+    const b = await call("POST", "/v1/payment-intents", { token: live.body.key, body, headers: { "idempotency-key": "env-split-key" } });
+    expect(b.headers["idempotent-replayed"]).toBeUndefined();
+    expect(b.body.id).not.toBe(a.body.id);
+  });
+
+  it("team changes need the acting person's password; a stolen session alone cannot add, promote or remove anyone", async () => {
+    const noReauth = await call("POST", "/v1/team", { token: session, body: { email: "backdoor@evil.test", role: "OWNER" } });
+    expect(noReauth.status).toBe(400);
+    const wrong = await call("POST", "/v1/team", { token: session, body: { email: "backdoor@evil.test", role: "OWNER", reauth: { password: "not-the-password-at-all" } } });
+    expect(wrong.status).toBe(403);
+    expect(wrong.body.error.code).toBe("REAUTH_FAILED");
+
+    const ok = await call("POST", "/v1/team", { token: session, body: { email: "dev@acme.test", role: "DEVELOPER", reauth: { password: pw } } });
+    expect(ok.status).toBe(201);
+    const memberLogin = await call("POST", "/v1/auth/login", { body: { email: "dev@acme.test", password: ok.body.temporary_password } });
+    expect(memberLogin.status).toBe(200);
+
+    expect((await call("PATCH", "/v1/team/" + ok.body.id, { token: session, body: { role: "ADMIN" } })).status).toBe(400);
+    expect((await call("PATCH", "/v1/team/" + ok.body.id, { token: session, body: { role: "ADMIN", reauth: { password: pw } } })).status).toBe(200);
+
+    // removal needs the password too, and it ends the member's sessions at once
+    expect((await call("POST", "/v1/team/" + ok.body.id + "/remove", { token: session, body: {} })).status).toBe(400);
+    const removed = await call("POST", "/v1/team/" + ok.body.id + "/remove", { token: session, body: { reauth: { password: pw } } });
+    expect(removed.status).toBe(200);
+    expect((await call("GET", "/v1/me", { token: memberLogin.body.token })).status).toBe(401);
+    expect((await call("POST", "/v1/auth/login", { body: { email: "dev@acme.test", password: ok.body.temporary_password } })).status).toBe(401);
+    const team = await call("GET", "/v1/team", { token: session });
+    expect(JSON.stringify(team.body)).not.toContain("dev@acme.test");
+  });
+
+  it("a team member added a moment ago cannot change where money goes until the waiting period has passed", async () => {
+    const add = await call("POST", "/v1/team", { token: session, body: { email: "new-owner@acme.test", role: "OWNER", reauth: { password: pw } } });
+    expect(add.status).toBe(201);
+    const s2 = (await call("POST", "/v1/auth/login", { body: { email: "new-owner@acme.test", password: add.body.temporary_password } })).body.token;
+    const prev = h.engine.cfg.payoutCooldownSeconds;
+    h.engine.cfg.payoutCooldownSeconds = 24 * 3600;
+    try {
+      const wallet = h.chain.accounts[7]!;
+      const ch = await call("POST", "/v1/payout-methods/challenge", { token: s2, body: { network: h.net, address: wallet.address, purpose: "PAYOUT_WALLET" } });
+      const sig = await wallet.signMessage({ message: ch.body.message });
+      const req = await call("POST", "/v1/payout-methods/wallet", { token: s2, body: { network: h.net, address: wallet.address, nonce: ch.body.nonce, signature: sig, reauth: { password: add.body.temporary_password } } });
+      expect(req.status).toBe(403);
+      expect(req.body.error.code).toBe("MEMBER_TOO_NEW");
+      // ...and cannot take over the team either
+      expect((await call("POST", "/v1/team", { token: s2, body: { email: "x@acme.test", role: "VIEWER", reauth: { password: add.body.temporary_password } } })).body.error.code).toBe("MEMBER_TOO_NEW");
+    } finally {
+      h.engine.cfg.payoutCooldownSeconds = prev;
+    }
+    await call("POST", "/v1/team/" + add.body.id + "/remove", { token: session, body: { reauth: { password: pw } } });
+  });
+
+  it("a suspended merchant's existing dashboard sessions stop working", async () => {
+    const su = await call("POST", "/v1/auth/signup", { body: { business_name: "Soon Suspended", email: "susp@acme.test", password: pw } });
+    expect(su.status).toBe(201);
+    expect((await call("GET", "/v1/me", { token: su.body.token })).status).toBe(200);
+    await h.engine.db.update(schema.merchants).set({ status: "SUSPENDED" }).where(eq(schema.merchants.id, su.body.merchant.id));
+    const r = await call("GET", "/v1/me", { token: su.body.token });
+    expect(r.status).toBe(403);
+    expect(r.body.error.code).toBe("ACCOUNT_SUSPENDED");
+  });
+
+  it("changing the password and 'sign out everywhere else' end the other sessions", async () => {
+    const su = await call("POST", "/v1/auth/signup", { body: { business_name: "Sessions Inc", email: "sess@acme.test", password: pw } });
+    const first = su.body.token;
+    const second = (await call("POST", "/v1/auth/login", { body: { email: "sess@acme.test", password: pw } })).body.token;
+    const third = (await call("POST", "/v1/auth/login", { body: { email: "sess@acme.test", password: pw } })).body.token;
+    expect((await call("POST", "/v1/auth/sessions/revoke-others", { token: second })).body.revoked).toBe(2);
+    expect((await call("GET", "/v1/me", { token: first })).status).toBe(401);
+    expect((await call("GET", "/v1/me", { token: third })).status).toBe(401);
+    expect((await call("GET", "/v1/me", { token: second })).status).toBe(200);
+
+    expect((await call("POST", "/v1/auth/password", { token: second, body: { current_password: "wrong-wrong-wrong-1", new_password: "brand-new-passphrase-456" } })).status).toBe(403);
+    const fourth = (await call("POST", "/v1/auth/login", { body: { email: "sess@acme.test", password: pw } })).body.token;
+    expect((await call("POST", "/v1/auth/password", { token: second, body: { current_password: pw, new_password: "brand-new-passphrase-456" } })).status).toBe(200);
+    expect((await call("GET", "/v1/me", { token: fourth })).status).toBe(401);
+    expect((await call("GET", "/v1/me", { token: second })).status).toBe(200);
+    expect((await call("POST", "/v1/auth/login", { body: { email: "sess@acme.test", password: pw } })).status).toBe(401);
+    expect((await call("POST", "/v1/auth/login", { body: { email: "sess@acme.test", password: "brand-new-passphrase-456" } })).status).toBe(200);
+  });
+
+  it("success and cancel URLs must be https (or a local address): no javascript: or data: links", async () => {
+    for (const bad of ["javascript:alert(1)", "data:text/html,hi", "ftp://example.com/x", "http://example.com/thanks"]) {
+      const r = await call("POST", "/v1/payment-intents", { token: apiKey, body: { amount: "1.00", success_url: bad } });
+      expect(r.status, bad).toBe(400);
+    }
+    const good = await call("POST", "/v1/payment-intents", { token: apiKey, body: { amount: "1.00", success_url: "https://shop.example/thanks", cancel_url: "http://localhost:3000/cart" } });
+    expect(good.status).toBe(201);
+  });
+
+  it("the public payment page does not expose the customer's email or the merchant's metadata", async () => {
+    const pi = await call("POST", "/v1/payment-intents", { token: apiKey, body: { amount: "2.00", customer_email: "buyer@example.com", metadata: { internal_user: "u_42" } } });
+    expect(pi.status).toBe(201);
+    expect(pi.body.customer_email).toBe("buyer@example.com");
+    const pub = await call("GET", "/public/checkout/" + pi.body.id);
+    expect(pub.status).toBe(200);
+    expect(JSON.stringify(pub.body)).not.toContain("buyer@example.com");
+    expect(JSON.stringify(pub.body)).not.toContain("u_42");
+  });
 });
 
 describe("rate limiting", () => {

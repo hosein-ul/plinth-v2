@@ -21,6 +21,9 @@ export async function publicCheckout(e: Engine, id: string) {
   const now = e.now();
   return {
     ...view,
+    // The payment page is a capability URL that is shared with the customer. Merchant-internal fields do not belong on it.
+    customer_email: null,
+    metadata: {},
     merchant_name: merchant?.name ?? "",
     seconds_remaining: Math.max(0, Math.floor((row!.expiresAt.getTime() - now.getTime()) / 1000)),
     remaining_units: (remaining > 0n ? remaining : 0n).toString(),

@@ -9,6 +9,10 @@ if (databaseUrl.startsWith("pglite://")) {
   console.warn("DATABASE_URL points at embedded PGlite: the worker must run in the same process (use `pnpm dev:stack`).");
 }
 
+if (process.env.NODE_ENV === "production" && process.env.TRUST_PROXY === undefined) {
+  console.warn("TRUST_PROXY is not set. Behind a proxy or the web app every client then looks like one address and shares its rate limits; set TRUST_PROXY=true (and make sure only your proxy can reach this port) or TRUST_PROXY=false to silence this.");
+}
+
 const handle = connect(databaseUrl);
 if (process.env.RUN_MIGRATIONS === "true") await handle.migrate();
 

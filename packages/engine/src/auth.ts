@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { and, count, eq, isNull, schema } from "@plinth/db";
+import { and, eq, isNull, lt, ne, schema } from "@plinth/db";
 import { newId, randomToken } from "@plinth/shared";
 import { audit, type Actor } from "./audit";
 import { EngineError, type Engine } from "./context";
@@ -92,6 +92,9 @@ export async function authenticate(e: Engine, bearer: string, requestedEnv?: Env
     if (!s || s.expiresAt < e.now()) throw new EngineError("INVALID_SESSION", "Session expired; please sign in again", 401);
     const [u] = await e.db.select().from(schema.merchantUsers).where(eq(schema.merchantUsers.id, s.userId));
     if (!u) throw new EngineError("INVALID_SESSION", "Session is no longer valid", 401);
+    // A suspended merchant keeps no working sessions (login and API keys already refuse it).
+    const [m] = await e.db.select({ status: schema.merchants.status }).from(schema.merchants).where(eq(schema.merchants.id, s.merchantId));
+    if (m?.status !== "ACTIVE") throw new EngineError("ACCOUNT_SUSPENDED", "This account is suspended", 403);
     return { merchantId: s.merchantId, environment: requestedEnv ?? "test", actor: { type: "USER", id: u.id, ip }, role: u.role as Role, via: "session" };
   }
   throw new EngineError("INVALID_CREDENTIALS", "Missing or malformed credentials", 401);
@@ -136,37 +139,42 @@ export async function listApiKeys(e: Engine, ctx: AuthContext) {
 
 // ------------------------------------------------------------------ team
 
-export async function addTeamMember(e: Engine, ctx: AuthContext, input: { email: string; role: Role }) {
-  requirePermission(ctx, "team");
-  if (input.role === "OWNER" && ctx.role !== "OWNER") throw new EngineError("FORBIDDEN", "Only an owner can add another owner", 403);
-  const email = input.email.trim().toLowerCase();
-  const [dup] = await e.db.select({ id: schema.merchantUsers.id }).from(schema.merchantUsers).where(eq(schema.merchantUsers.email, email));
-  if (dup) throw new EngineError("EMAIL_TAKEN", "A user with this email already exists", 409);
-  const temp = randomToken("tmp", 12);
-  const id = newId("usr");
-  await e.db.transaction(async (tx) => {
-    await tx.insert(schema.merchantUsers).values({ id, merchantId: ctx.merchantId, email, passwordHash: await hashPassword(temp), role: input.role });
-    await audit(tx, { merchantId: ctx.merchantId, actor: ctx.actor, action: "team.member_added", targetType: "user", targetId: id, data: { email, role: input.role } });
-  });
-  return { id, email, role: input.role, temporary_password: temp };
-}
-
 export async function listTeam(e: Engine, ctx: AuthContext) {
-  const rows = await e.db.select().from(schema.merchantUsers).where(eq(schema.merchantUsers.merchantId, ctx.merchantId));
+  const all = await e.db.select().from(schema.merchantUsers).where(eq(schema.merchantUsers.merchantId, ctx.merchantId));
+  const rows = all.filter((u) => !u.email.endsWith(REMOVED_EMAIL_SUFFIX));
   return rows.map((u) => ({ id: u.id, email: u.email, role: u.role, last_login_at: u.lastLoginAt?.toISOString() ?? null, created_at: u.createdAt.toISOString() }));
 }
 
-export async function setMemberRole(e: Engine, ctx: AuthContext, userId: string, role: Role) {
-  requirePermission(ctx, "team");
-  const [u] = await e.db.select().from(schema.merchantUsers).where(and(eq(schema.merchantUsers.id, userId), eq(schema.merchantUsers.merchantId, ctx.merchantId)));
-  if (!u) throw new EngineError("NOT_FOUND", "User not found", 404);
-  if ((u.role === "OWNER" || role === "OWNER") && ctx.role !== "OWNER") throw new EngineError("FORBIDDEN", "Only an owner can change owner roles", 403);
-  if (u.role === "OWNER" && role !== "OWNER") {
-    const [{ n } = { n: 0 }] = await e.db.select({ n: count() }).from(schema.merchantUsers).where(and(eq(schema.merchantUsers.merchantId, ctx.merchantId), eq(schema.merchantUsers.role, "OWNER")));
-    if (n <= 1) throw new EngineError("LAST_OWNER", "A merchant must keep at least one owner", 409);
-  }
+/** Members who were removed keep their row (other tables point at it) but can no longer sign in. */
+export const REMOVED_EMAIL_SUFFIX = "@removed.plinth.invalid";
+
+// ------------------------------------------------------------------ session hygiene
+
+/** End every session of one user, optionally keeping the one in use. */
+export async function revokeSessions(e: Engine, scope: { userId: string; keepToken?: string }): Promise<number> {
+  const conds = [eq(schema.sessions.userId, scope.userId)];
+  if (scope.keepToken) conds.push(ne(schema.sessions.id, sha256Hex(scope.keepToken)));
+  const gone = await e.db.delete(schema.sessions).where(and(...conds)).returning({ id: schema.sessions.id });
+  return gone.length;
+}
+
+/** Change the signed-in user's password (current password required) and end all their other sessions. */
+export async function changePassword(e: Engine, ctx: AuthContext, input: { current_password: string; new_password: string }, currentToken: string) {
+  if (ctx.via !== "session" || !ctx.actor.id) throw new EngineError("SESSION_REQUIRED", "Sign in to the dashboard to do this", 403);
+  const [u] = await e.db.select().from(schema.merchantUsers).where(eq(schema.merchantUsers.id, ctx.actor.id));
+  if (!u || !(await verifyPassword(input.current_password, u.passwordHash))) throw new EngineError("REAUTH_FAILED", "The current password is not correct.", 403);
+  const passwordHash = await hashPassword(input.new_password);
   await e.db.transaction(async (tx) => {
-    await tx.update(schema.merchantUsers).set({ role }).where(eq(schema.merchantUsers.id, userId));
-    await audit(tx, { merchantId: ctx.merchantId, actor: ctx.actor, action: "team.role_changed", targetType: "user", targetId: userId, data: { from: u.role, to: role } });
+    await tx.update(schema.merchantUsers).set({ passwordHash }).where(eq(schema.merchantUsers.id, u.id));
+    await tx.delete(schema.sessions).where(and(eq(schema.sessions.userId, u.id), ne(schema.sessions.id, sha256Hex(currentToken))));
+    await audit(tx, { merchantId: u.merchantId, actor: ctx.actor, action: "user.password_changed", targetType: "user", targetId: u.id });
   });
+  return { ok: true };
+}
+
+/** Worker housekeeping: expired sessions are useless and the table would otherwise grow without bound. */
+export async function pruneSessions(e: Engine): Promise<number> {
+  const cutoff = new Date(e.now().getTime() - 86_400_000);
+  const gone = await e.db.delete(schema.sessions).where(lt(schema.sessions.expiresAt, cutoff)).returning({ id: schema.sessions.id });
+  return gone.length;
 }

@@ -9,6 +9,7 @@ import { authenticate, EngineError, type AuthContext, type Engine } from "@plint
 import { handleMcpHttp } from "@plinth/mcp/http";
 import type { RouteDef } from "./define";
 import { buildRoutes } from "./routes";
+import { FailureLimiter } from "./limits";
 
 export interface ServerOptions {
   /** Operator token for /admin/* (disabled when unset). */
@@ -22,6 +23,10 @@ export interface ServerOptions {
 declare module "fastify" {
   interface FastifyRequest {
     auth: AuthContext | null;
+  }
+  interface FastifyContextConfig {
+    /** How the route authenticates; the rate limiter keys anonymous routes by IP only. */
+    authKind?: string;
   }
 }
 
@@ -51,8 +56,13 @@ export async function buildServer(engine: Engine, opts: ServerOptions = {}): Pro
   if (!opts.rateLimitDisabled) {
     await app.register(rateLimit, {
       global: true, max: 600, timeWindow: "1 minute",
-      // Authenticated traffic is budgeted per credential, anonymous traffic per IP.
-      keyGenerator: (req) => (req.headers.authorization ? `k:${sha(String(req.headers.authorization)).slice(0, 24)}` : `ip:${req.ip}`),
+      // Anonymous routes are budgeted per IP no matter what headers the caller sends (a client must not be able to pick its own bucket).
+      // Authenticated routes are budgeted per credential; credentials that fail are additionally counted per IP below.
+      keyGenerator: (req) => {
+        const kind = (req.routeOptions?.config as { authKind?: string } | undefined)?.authKind;
+        const cred = req.headers.authorization;
+        return kind === "none" || !cred ? `ip:${req.ip}` : `k:${sha(String(cred)).slice(0, 24)}`;
+      },
       errorResponseBuilder: (_req, ctx) => new EngineError("RATE_LIMITED", `Too many requests. Retry in ${Math.ceil(ctx.ttl / 1000)}s.`, 429),
     });
   }
@@ -77,8 +87,20 @@ export async function buildServer(engine: Engine, opts: ServerOptions = {}): Pro
     return reply.status(500).send(errorBody("api_error", "INTERNAL", "Something went wrong on our side", rid));
   });
 
+  // Wrong credentials are counted per client IP: a caller cannot dodge the per-credential budget by inventing credentials.
+  const badCredentials = new FailureLimiter(60, 60_000);
   const authenticateReq = async (req: FastifyRequest, def: RouteDef): Promise<AuthContext | null> => {
     if (def.auth === "none") return null;
+    const wait = badCredentials.retryAfter(req.ip);
+    if (wait > 0) throw new EngineError("RATE_LIMITED", `Too many failed authentication attempts. Retry in ${wait}s.`, 429);
+    try {
+      return await authenticateReqInner(req, def);
+    } catch (err) {
+      if (err instanceof EngineError && err.status === 401) badCredentials.fail(req.ip);
+      throw err;
+    }
+  };
+  const authenticateReqInner = async (req: FastifyRequest, def: RouteDef): Promise<AuthContext | null> => {
     if (def.auth === "admin") {
       const tok = String(req.headers["x-admin-token"] ?? "");
       if (!opts.adminToken || !tok || !safeEqual(tok, opts.adminToken)) throw new EngineError("UNAUTHENTICATED", "Operator authentication required", 401);
@@ -96,7 +118,7 @@ export async function buildServer(engine: Engine, opts: ServerOptions = {}): Pro
   for (const def of routes) {
     app.route({
       method: def.method, url: def.path,
-      config: { rateLimit: def.rateLimit ? { max: def.rateLimit, timeWindow: "1 minute" } : undefined },
+      config: { authKind: def.auth, rateLimit: def.rateLimit ? { max: def.rateLimit, timeWindow: "1 minute" } : undefined },
       handler: async (req: FastifyRequest, reply: FastifyReply) => {
         const auth = await authenticateReq(req, def);
         req.auth = auth;
@@ -110,7 +132,8 @@ export async function buildServer(engine: Engine, opts: ServerOptions = {}): Pro
           return reply.status(status).send(await run());
         }
         if (idemKey.length > 200) throw new EngineError("INVALID_IDEMPOTENCY_KEY", "Idempotency-Key is too long", 400);
-        const scope = `${auth.merchantId}`;
+        // Test and live traffic never share a key: the same Idempotency-Key in the other environment is a different request.
+        const scope = `${auth.merchantId}:${auth.environment}`;
         const requestHash = sha(`${def.method} ${req.url} ${JSON.stringify(req.body ?? {})}`);
         const claimed = await engine.db.insert(schema.idempotencyKeys).values({ id: newId("evt").replace("evt_", "idm_"), merchantId: scope, key: idemKey, requestHash }).onConflictDoNothing().returning({ id: schema.idempotencyKeys.id });
         if (claimed.length === 0) {

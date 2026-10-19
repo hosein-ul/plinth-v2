@@ -10,6 +10,12 @@ import { emitEvent } from "./webhooks";
 
 type Op = typeof schema.relayerOperations.$inferSelect;
 
+/**
+ * Work that anyone with a free account can create (vaults, forwards, policy activations) may use only this share of the daily
+ * operation budget. Sweeps of funded invoices and customers' wallet payments always keep the rest, so spam cannot stop settlements.
+ */
+const KIND_SHARE: Record<string, number> = { CREATE_VAULT: 0.15, FORWARD: 0.2, APPLY_SETTLEMENT: 0.05 };
+
 const locks = new Map<string, Promise<unknown>>();
 /** Serialise relayer work per network inside this process (one signer => one nonce sequence). */
 function withNetworkLock<T>(networkId: string, fn: () => Promise<T>): Promise<T> {
@@ -144,6 +150,19 @@ async function submitQueued(e: Engine, chain: ChainRuntime): Promise<number> {
     if ((usage?.count ?? 0) >= chain.policy.maxOpsPerDay) {
       await e.alerts.raise({ key: `ops-cap:${net.id}`, severity: "critical", title: "Relayer daily operation cap reached", detail: { network: net.id, cap: chain.policy.maxOpsPerDay } });
       break;
+    }
+
+    const share = KIND_SHARE[op.kind];
+    if (share !== undefined) {
+      const [mine] = await e.db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(schema.relayerOperations)
+        .where(and(eq(schema.relayerOperations.networkId, net.id), eq(schema.relayerOperations.kind, op.kind), inArray(schema.relayerOperations.status, ["SUBMITTED", "CONFIRMED", "REVERTED"]), gt(schema.relayerOperations.submittedAt, since)));
+      if ((mine?.count ?? 0) >= Math.max(1, Math.floor(chain.policy.maxOpsPerDay * share))) {
+        await e.alerts.raise({ key: `kind-cap:${net.id}:${op.kind}`, severity: "warning", title: `Relayer share for ${op.kind} operations is used up; they wait so sweeps and wallet payments keep their budget`, detail: { network: net.id, kind: op.kind } });
+        await e.db.update(schema.relayerOperations).set({ nextAttemptAt: new Date(e.now().getTime() + 600_000) }).where(eq(schema.relayerOperations.id, op.id));
+        continue;
+      }
     }
 
     // Simulate first: a call that would revert must not cost gas.

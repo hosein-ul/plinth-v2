@@ -4,6 +4,7 @@ import { custodyTick } from "./custody";
 import { forwardTick } from "./forwarding";
 import { expireDueIntents, replanSettlements } from "./recompute";
 import { relayerTick } from "./relayer";
+import { pruneSessions } from "./auth";
 import { processWebhookJobs } from "./webhooks";
 import { watcherTick } from "./watcher";
 
@@ -26,6 +27,15 @@ async function guarded<T>(e: Engine, network: string, what: string, fn: () => Pr
   }
 }
 
+let lastPrune = 0;
+/** Expired sessions are removed at most once an hour. */
+async function pruneSessionsOften(e: Engine): Promise<number> {
+  const t = e.now().getTime();
+  if (t - lastPrune < 3_600_000) return 0;
+  lastPrune = t;
+  return pruneSessions(e);
+}
+
 /** One full pass of all background duties. Stateless between calls; safe to run on several workers. */
 export async function workerTick(e: Engine): Promise<void> {
   await Promise.all(
@@ -43,6 +53,7 @@ export async function workerTick(e: Engine): Promise<void> {
   await guarded(e, "-", "expiry", () => expireDueIntents(e));
   await guarded(e, "-", "replan", () => replanSettlements(e));
   await guarded(e, "-", "webhooks", () => processWebhookJobs(e));
+  await guarded(e, "-", "sessions", () => pruneSessionsOften(e));
 }
 
 export function startWorkerLoop(e: Engine, intervalMs = 2000): { stop(): Promise<void> } {

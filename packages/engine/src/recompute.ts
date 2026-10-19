@@ -160,7 +160,9 @@ export async function replanSettlements(e: Engine, limit = 100): Promise<number>
   const rows = await e.db
     .select({ id: schema.paymentIntents.id })
     .from(schema.paymentIntents)
-    .where(and(sql`${schema.paymentIntents.amountFinal} > ${schema.paymentIntents.amountSettled}`, ne(schema.paymentIntents.status, "REFUNDED"), eq(schema.paymentIntents.environment, schema.paymentIntents.environment)))
+    .where(and(sql`${schema.paymentIntents.amountFinal} > ${schema.paymentIntents.amountSettled}`, ne(schema.paymentIntents.status, "REFUNDED")))
+    // Random order: rows with permanently unswept dust must not occupy the same fixed window on every pass.
+    .orderBy(sql`random()`)
     .limit(limit);
   for (const { id } of rows) await e.db.transaction((tx) => recomputeIntent(e, tx, id));
   return rows.length;

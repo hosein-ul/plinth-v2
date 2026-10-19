@@ -6,7 +6,7 @@ import { audit } from "./audit";
 import { requirePermission, type AuthContext } from "./auth";
 import { chainOf, EngineError, norm, tokenRuntime, type ChainRuntime, type Engine } from "./context";
 import { custodyWithdrawalNotice } from "./email-templates";
-import { verifyReauth, type Reauth } from "./email-verification";
+import { requireSeasonedUser, verifyReauth, type Reauth } from "./email-verification";
 import { notify } from "./payout-config";
 import { payoutProofHolds, withdrawalConfig } from "./payout-route";
 
@@ -174,6 +174,7 @@ async function createWithdrawal(e: Engine, merchantId: string, input: { network:
 /** A merchant asks to withdraw. Needs a fresh sign-in; goes only to the proven withdrawal wallet; idempotent per key. */
 export async function requestWithdrawal(e: Engine, ctx: AuthContext, input: RequestInput) {
   requirePermission(ctx, "wallets");
+  await requireSeasonedUser(e, ctx);
   await verifyReauth(e, ctx, input.reauth);
   const chain = chainOf(e, input.network);
   requireCustody(e, chain);
@@ -184,6 +185,7 @@ export async function requestWithdrawal(e: Engine, ctx: AuthContext, input: Requ
 /** How a balance is paid out automatically. Changing it needs a fresh sign-in, like withdrawing does. */
 export async function setCustodySchedule(e: Engine, ctx: AuthContext, input: { network: string; token?: string; schedule: "MANUAL" | "DAILY" | "WEEKLY"; min_amount?: string; reauth?: Reauth }) {
   requirePermission(ctx, "wallets");
+  await requireSeasonedUser(e, ctx);
   await verifyReauth(e, ctx, input.reauth);
   const chain = chainOf(e, input.network);
   requireCustody(e, chain);

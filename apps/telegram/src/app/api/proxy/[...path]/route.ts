@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { API_URL, ENV_COOKIE, SESSION_COOKIE } from "@/lib/server-api";
+import { cleanTarget, isSameOrigin } from "@/lib/request-guard";
 
 /**
  * Same-origin gateway for the dashboard. It attaches the session token from the httpOnly cookie, so
@@ -8,14 +9,11 @@ import { API_URL, ENV_COOKIE, SESSION_COOKIE } from "@/lib/server-api";
  */
 async function handle(req: NextRequest, ctx: { params: Promise<{ path: string[] }> }) {
   const { path } = await ctx.params;
-  const target = path.join("/");
-  if (!target.startsWith("v1/")) return NextResponse.json({ error: { code: "NOT_FOUND", message: "Not found" } }, { status: 404 });
+  const target = cleanTarget(path);
+  if (!target || !target.startsWith("v1/")) return NextResponse.json({ error: { code: "NOT_FOUND", message: "Not found" } }, { status: 404 });
 
   if (req.method !== "GET") {
-    const origin = req.headers.get("origin");
-    const host = req.headers.get("host");
-    const sameOrigin = origin ? new URL(origin).host === host : false;
-    if (!sameOrigin || req.headers.get("x-plinth-csrf") !== "1") {
+    if (!isSameOrigin(req) || req.headers.get("x-plinth-csrf") !== "1") {
       return NextResponse.json({ error: { code: "CSRF", message: "Cross-site request rejected" } }, { status: 403 });
     }
   }

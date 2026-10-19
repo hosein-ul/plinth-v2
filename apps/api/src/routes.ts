@@ -3,11 +3,12 @@ import { getAddress, type Hex } from "viem";
 import { and, eq, schema, sql } from "@plinth/db";
 import {
   createApiKeySchema, createInvoiceSchema, createPaymentIntentSchema, createPaymentLinkSchema, createRefundRequestSchema, createWebhookEndpointSchema,
-  custodyScheduleSchema, custodyWithdrawalSchema, emailChangeSchema, emailConfirmSchema, enableNetworkSchema, loginSchema, merchantFeeSchema, payoutChallengeSchema, payoutConfirmSchema, payoutVaultSchema, payoutWalletSchema, reauthSchema, web3authSchema, TOKEN_SYMBOLS, type TokenSymbol, selectAddressNetworkSchema, signupSchema, submitRefundProofSchema, txHashSchema, walletPrepareSchema, walletSubmitSchema, WEBHOOK_EVENT_TYPES,
+  custodyScheduleSchema, custodyWithdrawalSchema, passwordChangeSchema, teamAddSchema, teamRemoveSchema, teamRoleSchema, emailChangeSchema, emailConfirmSchema, enableNetworkSchema, loginSchema, merchantFeeSchema, payoutChallengeSchema, payoutConfirmSchema, payoutVaultSchema, payoutWalletSchema, reauthSchema, web3authSchema, TOKEN_SYMBOLS, type TokenSymbol, selectAddressNetworkSchema, signupSchema, submitRefundProofSchema, txHashSchema, walletPrepareSchema, walletSubmitSchema, WEBHOOK_EVENT_TYPES,
 } from "@plinth/shared";
 import * as E from "@plinth/engine";
 import type { Engine } from "@plinth/engine";
 import { route, type RouteDef } from "./define";
+import { FailureLimiter } from "./limits";
 
 const id = z.string().min(3).max(80);
 const limitQ = z.coerce.number().int().min(1).max(100).optional();
@@ -18,6 +19,9 @@ export function buildRoutes(e: Engine): RouteDef[] {
     return a;
   };
   const list = <T,>(data: T[], extra: object = {}) => ({ object: "list", data, ...extra });
+  // Wrong passwords are counted per client address AND account, so guessing one account is slowed down.
+  const loginFails = new FailureLimiter(8, 15 * 60_000);
+  const bearerOf = (req: { headers: { authorization?: string } }) => String(req.headers.authorization ?? "").replace(/^Bearer\s+/i, "");
 
   return [
     // ------------------------------------------------------------------ health & status
@@ -54,7 +58,19 @@ export function buildRoutes(e: Engine): RouteDef[] {
     route({
       method: "POST", path: "/v1/auth/login", tag: "Auth", summary: "Sign in to the dashboard", auth: "none", body: loginSchema, rateLimit: 10,
       response: "A session token. Treat as a password.",
-      handler: async ({ req, body }) => E.login(e, body.email, body.password, { type: "USER", ip: req.ip }),
+      handler: async ({ req, body }) => {
+        const key = `${req.ip}|${body.email.trim().toLowerCase()}`;
+        const wait = loginFails.retryAfter(key);
+        if (wait > 0) throw new E.EngineError("RATE_LIMITED", `Too many sign-in attempts. Retry in ${wait}s.`, 429);
+        try {
+          const out = await E.login(e, body.email, body.password, { type: "USER", ip: req.ip });
+          loginFails.clear(key);
+          return out;
+        } catch (err) {
+          if (err instanceof E.EngineError && err.code === "INVALID_CREDENTIALS") loginFails.fail(key);
+          throw err;
+        }
+      },
     }),
     route({
       method: "POST", path: "/v1/auth/web3auth", tag: "Auth", summary: "Sign in or sign up with a Web3Auth identity token", auth: "none", body: web3authSchema, rateLimit: 10,
@@ -67,6 +83,16 @@ export function buildRoutes(e: Engine): RouteDef[] {
     route({
       method: "POST", path: "/v1/auth/logout", tag: "Auth", summary: "End the current session", auth: "session",
       handler: async ({ req }) => { await E.logout(e, String(req.headers.authorization).replace(/^Bearer\s+/i, "")); return { ok: true }; },
+    }),
+    route({
+      method: "POST", path: "/v1/auth/sessions/revoke-others", tag: "Auth", summary: "Sign out everywhere else", auth: "session", rateLimit: 10,
+      description: "Ends every other dashboard session of the signed-in user and keeps the current one.",
+      handler: async ({ req, auth }) => ({ revoked: await E.revokeSessions(e, { userId: A(auth).actor.id!, keepToken: bearerOf(req) }) }),
+    }),
+    route({
+      method: "POST", path: "/v1/auth/password", tag: "Auth", summary: "Change the password", auth: "session", body: passwordChangeSchema, rateLimit: 6,
+      description: "Needs the current password. Every other session of the user is ended.",
+      handler: async ({ req, auth, body }) => E.changePassword(e, A(auth), body, bearerOf(req)),
     }),
     route({
       method: "GET", path: "/v1/auth/email", tag: "Auth", summary: "Email address status for the signed-in user", auth: "session",
@@ -306,8 +332,9 @@ export function buildRoutes(e: Engine): RouteDef[] {
 
     // ------------------------------------------------------------------ team
     route({ method: "GET", path: "/v1/team", tag: "Team", summary: "List team members", auth: "session", handler: async ({ auth }) => list(await E.listTeam(e, A(auth))) }),
-    route({ method: "POST", path: "/v1/team", tag: "Team", summary: "Add a team member", auth: "session", body: z.object({ email: z.string().email(), role: z.enum(["OWNER", "ADMIN", "DEVELOPER", "VIEWER"]) }), successStatus: 201, handler: async ({ body, auth }) => E.addTeamMember(e, A(auth), body) }),
-    route({ method: "PATCH", path: "/v1/team/:id", tag: "Team", summary: "Change a member's role", auth: "session", body: z.object({ role: z.enum(["OWNER", "ADMIN", "DEVELOPER", "VIEWER"]) }), handler: async ({ params, body, auth }) => { await E.setMemberRole(e, A(auth), params.id!, body.role); return { id: params.id, role: body.role }; } }),
+    route({ method: "POST", path: "/v1/team", tag: "Team", summary: "Add a team member", auth: "session", body: teamAddSchema, rateLimit: 10, successStatus: 201, description: "Needs a fresh sign-in (`reauth`). Every owner and admin with a verified email is told. The returned temporary password is shown once.", handler: async ({ body, auth }) => E.addTeamMember(e, A(auth), body) }),
+    route({ method: "PATCH", path: "/v1/team/:id", tag: "Team", summary: "Change a member's role", auth: "session", body: teamRoleSchema, rateLimit: 10, description: "Needs a fresh sign-in (`reauth`).", handler: async ({ params, body, auth }) => { await E.setMemberRole(e, A(auth), params.id!, body.role, body.reauth); return { id: params.id, role: body.role }; } }),
+    route({ method: "POST", path: "/v1/team/:id/remove", tag: "Team", summary: "Remove a team member", auth: "session", body: teamRemoveSchema, rateLimit: 10, description: "Needs a fresh sign-in (`reauth`). The member's sessions end at once.", handler: async ({ params, body, auth }) => E.removeTeamMember(e, A(auth), params.id!, body.reauth) }),
 
     // ------------------------------------------------------------------ public checkout (capability URL)
     route({ method: "GET", path: "/public/checkout/:id", tag: "Checkout", summary: "Hosted-checkout data for a payment", auth: "none", rateLimit: 240, handler: async ({ params }) => E.publicCheckout(e, params.id!) }),

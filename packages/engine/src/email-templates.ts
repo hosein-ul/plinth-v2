@@ -84,3 +84,14 @@ export function custodyWithdrawalNotice(to: string, d: CustodyWithdrawalDetails)
         : [`The withdrawal of ${d.amount} ${d.token} to ${d.address} on ${d.network} could not be completed. The amount is back in your custody balance.`];
   return mk(to, titles[d.event], layout({ title: titles[d.event], lines }), "custody_withdrawal");
 }
+
+export function teamChangeNotice(to: string, d: { event: "added" | "role_changed" | "removed"; member: string; role: string }): EmailMessage {
+  const titles = { added: "A team member was added", role_changed: "A team member's role was changed", removed: "A team member was removed" } as const;
+  const lines =
+    d.event === "added"
+      ? [`${d.member} was added to your Plinth team as ${d.role}.`, "If this was not you, sign in now, remove that member and change your password."]
+      : d.event === "role_changed"
+        ? [`The role of ${d.member} was changed to ${d.role}.`, "If this was not you, sign in now and review your team."]
+        : [`${d.member} was removed from your Plinth team.`];
+  return mk(to, titles[d.event], layout({ title: titles[d.event], lines }), `team_${d.event}`);
+}

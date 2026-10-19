@@ -41,6 +41,10 @@ export async function requestRefund(e: Engine, ctx: AuthContext, input: { paymen
   if (route?.custodial) throw new EngineError("REFUND_UNSUPPORTED_CUSTODIAL", "This payment was settled to your custody balance. Refunds of custodial payments are not supported yet; contact support.", 422);
   const id = newId("ref");
   await e.db.transaction(async (tx) => {
+    // Lock the payment and check again under the lock: two requests at the same moment must not both fit into what is left.
+    const [locked] = await tx.select({ netAmount: schema.paymentIntents.netAmount }).from(schema.paymentIntents).where(eq(schema.paymentIntents.id, intent.id)).for("update");
+    const nowCommitted = (await tx.select().from(schema.refunds).where(eq(schema.refunds.paymentIntentId, intent.id))).filter((r) => r.status === "REQUESTED" || r.status === "COMPLETED").reduce((a, r) => a + r.amount, 0n);
+    if (amount + nowCommitted > (locked?.netAmount ?? 0n)) throw new EngineError("REFUND_EXCEEDS_PAYMENT", "Only a smaller amount remains refundable. The platform fee is not refunded.", 422);
     await tx.insert(schema.refunds).values({ id, merchantId: ctx.merchantId, paymentIntentId: intent.id, networkId: firstTx.networkId, amount, recipient: norm(getAddress(input.recipient)), reason: input.reason ?? null });
     await tx.insert(schema.paymentEvents).values({ id: newId("pev"), paymentIntentId: intent.id, type: "refund.requested", data: { refund_id: id, amount_units: amount.toString() } });
     await emitEvent(e, tx, { merchantId: ctx.merchantId, environment: intent.environment, type: "refund.requested", paymentIntentId: intent.id, dedupeKey: `refund.requested:${id}`, extra: { refund: { id, amount: formatUsdc(amount), recipient: input.recipient } } });
@@ -88,6 +92,9 @@ export async function submitRefundProof(e: Engine, ctx: AuthContext, refundId: s
   if (!match) throw new EngineError("PROOF_INVALID", `No matching ${intent!.currency} transfer from ${route?.destinationKind === "DIRECT" ? "your payout wallet" : "your vault"} to the recipient for this amount was found in that transaction`, 422);
 
   await e.db.transaction(async (tx) => {
+    // A transfer can prove only one refund: the unique index on (tx_hash, log_index) is the backstop, reported as a clean error.
+    const [reused] = await tx.select({ id: schema.refunds.id }).from(schema.refunds).where(and(eq(schema.refunds.txHash, txHash), eq(schema.refunds.logIndex, match.logIndex)));
+    if (reused && reused.id !== r.id) throw new EngineError("PROOF_INVALID", "That transfer already completed another refund", 422);
     const updated = await tx.update(schema.refunds).set({ status: "COMPLETED", txHash, logIndex: match.logIndex, completedAt: e.now() }).where(and(eq(schema.refunds.id, r.id), eq(schema.refunds.status, "REQUESTED"))).returning();
     if (updated.length === 0) return;
     await tx.insert(schema.ledgerEntries).values({ id: newId("led"), merchantId: ctx.merchantId, paymentIntentId: r.paymentIntentId, networkId: r.networkId, account: "REFUNDED", direction: "CREDIT", amount: r.amount, refType: "refund", refId: r.id, idempotencyKey: `REFUNDED:${r.id}:CREDIT` }).onConflictDoNothing();

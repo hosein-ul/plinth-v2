@@ -7,7 +7,7 @@ import { audit } from "./audit";
 import { requirePermission, type AuthContext } from "./auth";
 import { chainOf, EngineError, norm, type ChainRuntime, type Engine } from "./context";
 import { sha256Hex } from "./crypto";
-import { requireVerifiedEmail, verifyReauth, userOf, type Reauth } from "./email-verification";
+import { requireSeasonedUser, requireVerifiedEmail, verifyReauth, userOf, type Reauth } from "./email-verification";
 import { payoutChangedNotice, payoutConfirmMessage, type PayoutChangeDetails } from "./email-templates";
 import { activePayoutConfig, feeBpsFor, PROOF_STATEMENT } from "./payout-route";
 import { emitEvent } from "./webhooks";
@@ -141,6 +141,7 @@ const cooldownHours = (e: Engine) => Math.round((e.cfg.payoutCooldownSeconds / 3
 
 export async function requestPayoutWallet(e: Engine, ctx: AuthContext, input: { network: string; mode?: "DIRECT" | "CUSTODIAL"; address: string; nonce: string; signature: string; reauth?: Reauth }) {
   requirePermission(ctx, "wallets");
+  await requireSeasonedUser(e, ctx);
   const emailRequired = e.cfg.requireEmailConfirmation;
   const user = emailRequired ? await requireVerifiedEmail(e, ctx) : await userOf(e, ctx); // with email confirmation on, a second factor by email must exist
   await verifyReauth(e, ctx, input.reauth);

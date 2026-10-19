@@ -43,7 +43,7 @@ A first fee into a treasury that holds none of the token costs about 17 k more (
 
 1. **No live testnet run yet.** The throwaway testnet wallets are unfunded (Circle's faucet needs a human). Everything that would run there was dry-run on a local chain
    and the live USDC bytecode was exercised through read-only forks. The live acceptance (`pnpm e2e:testnet arc-testnet`) is one command once funded.
-2. **No mainnet deployment of any kind**, by design. Mainnet configurations exist, are probed read-only, and are disabled.
+2. **Arc mainnet is deployed and switched on** (`deployments/arc-mainnet.json`, approved with `audit: none: owner accepted risk`); every other mainnet configuration is probed read-only and disabled. Treat this item as superseded by the README's "Live on Arc mainnet" section.
 3. **No independent audit.** Do not hold meaningful value until one is complete.
 4. **Real Postgres (`pg` driver) path and Docker Compose DB were not run** (Docker unavailable). Schema/migrations were generated for Postgres and exercised on PGlite
    (real Postgres engine compiled to WASM, single connection). Queue claim uses `FOR UPDATE SKIP LOCKED` which should be re-tested under true multi-connection concurrency.

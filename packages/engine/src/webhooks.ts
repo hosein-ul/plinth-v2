@@ -5,6 +5,7 @@ import { newId, randomToken, WEBHOOK_EVENT_TYPES, type WebhookEventType } from "
 import type { Engine } from "./context";
 import { EngineError } from "./context";
 import { decryptSecret, encryptSecret, signWebhook } from "./crypto";
+import { isBlockedAddress, pinnedPost } from "./safe-http";
 import { loadIntentView } from "./view";
 
 export const WEBHOOK_QUEUE = "webhook.deliver";
@@ -14,14 +15,6 @@ const MAX_ATTEMPTS = RETRY_SCHEDULE.length + 1;
 
 // ------------------------------------------------------------------ SSRF guard
 
-function isPrivateIp(ip: string): boolean {
-  if (ip.includes(":")) {
-    const l = ip.toLowerCase();
-    return l === "::1" || l.startsWith("fc") || l.startsWith("fd") || l.startsWith("fe80") || l.startsWith("::ffff:127.") || l === "::";
-  }
-  const [a = 0, b = 0] = ip.split(".").map(Number);
-  return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
-}
 
 /** Reject URLs that would make our servers call internal services. Resolved at delivery time too (DNS rebinding). */
 export async function assertSafeWebhookUrl(url: string, allowPrivate: boolean): Promise<void> {
@@ -39,7 +32,7 @@ export async function assertSafeWebhookUrl(url: string, allowPrivate: boolean): 
   const host = u.hostname.replace(/^\[|\]$/g, "");
   const ips = isIP(host) ? [host] : (await lookup(host, { all: true }).catch(() => [])).map((r) => r.address);
   if (ips.length === 0) throw new EngineError("INVALID_URL", "Webhook host does not resolve", 400);
-  if (ips.some(isPrivateIp)) throw new EngineError("INVALID_URL", "Webhook URL resolves to a private address", 400);
+  if (ips.some(isBlockedAddress)) throw new EngineError("INVALID_URL", "Webhook URL resolves to a private address", 400);
 }
 
 // ------------------------------------------------------------------ endpoints
@@ -124,23 +117,28 @@ export async function deliverOnce(e: Engine, deliveryId: string, opts: { fetchIm
   try {
     await assertSafeWebhookUrl(ep.url, e.cfg.allowPrivateWebhookTargets);
     const secret = decryptSecret(e.cfg.secretKey, ep.secretEnc);
-    const res = await (opts.fetchImpl ?? fetch)(ep.url, {
-      method: "POST",
-      redirect: "manual", // never follow redirects into internal addresses
-      headers: {
-        "content-type": "application/json",
-        "user-agent": "Plinth-Webhooks/1",
-        "plinth-signature": signWebhook(secret, body, ts),
-        "plinth-event-id": ev.id,
-        "plinth-delivery-id": d.id,
-        "plinth-delivery-attempt": String(attemptNumber),
-      },
-      body,
-      signal: AbortSignal.timeout(10_000),
-    });
-    statusCode = res.status;
-    snippet = (await res.text().catch(() => "")).slice(0, 300);
-    if (res.status < 200 || res.status >= 300) error = `HTTP ${res.status}`;
+    const headers = {
+      "content-type": "application/json",
+      "user-agent": "Plinth-Webhooks/1",
+      "plinth-signature": signWebhook(secret, body, ts),
+      "plinth-event-id": ev.id,
+      "plinth-delivery-id": d.id,
+      "plinth-delivery-attempt": String(attemptNumber),
+    };
+    let status: number;
+    if (opts.fetchImpl) {
+      // A caller-supplied transport (tests) replaces the network layer.
+      const res = await opts.fetchImpl(ep.url, { method: "POST", redirect: "manual", headers, body, signal: AbortSignal.timeout(10_000) });
+      status = res.status;
+      snippet = (await res.text().catch(() => "")).slice(0, 300);
+    } else {
+      // Connects only to the addresses that passed the private-range check, and never follows a redirect.
+      const res = await pinnedPost(ep.url, { headers, body, timeoutMs: 10_000, allowPrivate: e.cfg.allowPrivateWebhookTargets });
+      status = res.status;
+      snippet = res.text.slice(0, 300);
+    }
+    statusCode = status;
+    if (status < 200 || status >= 300) error = `HTTP ${status}`;
   } catch (err) {
     error = err instanceof Error ? err.message.slice(0, 300) : "delivery error";
   }

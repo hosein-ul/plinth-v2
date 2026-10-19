@@ -23,6 +23,7 @@ import { useAction, useApi } from "@/lib/hooks";
 import { formatDateTime, relativeTime } from "@/lib/format";
 import { cap, FormGroup, Ledger, SecretReveal } from "./parts-account";
 import { EmailPanel } from "./email-panel";
+import { useAccountEmail, useReauth } from "./reauth";
 import { PayoutSection } from "./payout-views";
 import { VaultCreateForm } from "./vault-create-form";
 
@@ -356,8 +357,17 @@ export function TeamView() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("DEVELOPER");
   const [fresh, setFresh] = useState<any>(null);
-  const add = useAction(() => apiFetch<any>("/v1/team", { method: "POST", body: { email, role } }), { invalidate: ["/v1/team"], onSuccess: setFresh });
-  const change = useAction(({ id, role }: { id: string; role: string }) => apiFetch(`/v1/team/${id}`, { method: "PATCH", body: { role } }), { invalidate: ["/v1/team"], success: "Role updated" });
+  // Team changes decide who can later move money: each one asks the person making it to sign in again.
+  const acct = useAccountEmail().data;
+  const reauth = useReauth(acct?.auth_method);
+  const [pend, setPend] = useState<{ kind: "role" | "remove"; id: string; who: string; role?: string } | null>(null);
+  const add = useAction(() => apiFetch<any>("/v1/team", { method: "POST", body: { email, role, reauth: reauth.value() } }), { invalidate: ["/v1/team"], onSuccess: (d) => { setFresh(d); reauth.reset(); } });
+  const confirmPend = useAction(
+    () => (pend!.kind === "role"
+      ? apiFetch(`/v1/team/${pend!.id}`, { method: "PATCH", body: { role: pend!.role, reauth: reauth.value() } })
+      : apiFetch(`/v1/team/${pend!.id}/remove`, { method: "POST", body: { reauth: reauth.value() } })),
+    { invalidate: ["/v1/team"], success: "Team updated", onSuccess: () => { setPend(null); reauth.reset(); } },
+  );
   return (
     <>
       <PageHeader
@@ -369,16 +379,25 @@ export function TeamView() {
               {fresh ? (
                 <SecretReveal title={`Temporary password for ${fresh.email ?? email}`} value={fresh.temporary_password} note="The member should change it after signing in." doneLabel="Done" />
               ) : (
-                <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); add.mutate(undefined); }}>
+                <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); if (reauth.ready) add.mutate(undefined); }}>
                   <Field label="Email" htmlFor="tm-email"><Input id="tm-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoFocus /></Field>
                   <Field label="Role" htmlFor="tm-role"><Select id="tm-role" value={role} onValueChange={setRole} options={ROLES} /></Field>
-                  <div className="flex justify-end"><Button type="submit" variant="primary" disabled={!/^\S+@\S+\.\S+$/.test(email)} loading={add.isPending}>Add member</Button></div>
+                  {acct && reauth.field}
+                  <div className="flex justify-end"><Button type="submit" variant="primary" disabled={!/^\S+@\S+\.\S+$/.test(email) || !reauth.ready} loading={add.isPending}>Add member</Button></div>
                 </form>
               )}
             </DialogContent>
           </Dialog>
         }
       />
+      <Dialog open={!!pend} onOpenChange={(v) => { if (!v) { setPend(null); reauth.reset(); } }}>
+        <DialogContent title={pend?.kind === "remove" ? "Remove this member?" : "Change this role?"} description={pend ? (pend.kind === "remove" ? `${pend.who} loses access at once.` : `${pend.who} becomes ${pend.role}.`) : undefined}>
+          <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); if (reauth.ready) confirmPend.mutate(undefined); }}>
+            {acct && reauth.field}
+            <div className="flex justify-end"><Button type="submit" variant="primary" disabled={!reauth.ready} loading={confirmPend.isPending}>{pend?.kind === "remove" ? "Remove member" : "Change role"}</Button></div>
+          </form>
+        </DialogContent>
+      </Dialog>
       <Ledger<any>
         caption="Team members" rows={q.data?.data} loading={q.isLoading} error={q.error} retry={() => q.refetch()} rowKey={(u) => u.id}
         empty={{ title: "No team members", body: "Add the people who run payments, keys and wallets, each with the narrowest role that fits.", action: <Button variant="primary" onClick={() => setOpen(true)}>Add member</Button> }}
@@ -394,7 +413,7 @@ export function TeamView() {
           },
           { key: "j", header: "Joined", hideBelow: "lg", cell: (u) => <span className="text-ink-3" title={u.created_at ? formatDateTime(u.created_at) : undefined}>{u.created_at ? relativeTime(u.created_at) : "—"}</span> },
           { key: "l", header: "Last sign-in", hideBelow: "md", cell: (u) => <span className="text-ink-3">{u.last_login_at ? formatDateTime(u.last_login_at) : "Never"}</span> },
-          { key: "r", header: "Role", align: "right", cell: (u) => <div className="ml-auto w-40 sm:w-44"><Select aria-label={`Role for ${u.email}`} value={u.role} disabled={change.isPending && change.variables?.id === u.id} onValueChange={(r) => change.mutate({ id: u.id, role: r })} options={ROLES} /></div> },
+          { key: "r", header: "Role", align: "right", cell: (u) => <div className="ml-auto flex w-56 items-center justify-end gap-2 sm:w-64"><Select aria-label={`Role for ${u.email}`} value={u.role} onValueChange={(r) => { if (r !== u.role) setPend({ kind: "role", id: u.id, who: u.email, role: r }); }} options={ROLES} /><Button variant="secondary" size="sm" onClick={() => setPend({ kind: "remove", id: u.id, who: u.email })}>Remove</Button></div> },
         ]}
       />
       <Section title="What each role can do" className="mt-6">
