@@ -12,8 +12,8 @@ def create_payment(order_id: str, total: str) -> dict:
         data=json.dumps({
             "amount": total,  # a string such as "25.00", computed on your server
             "order_reference": order_id,
-            "success_url": "https://shop.example/thanks",
-            "cancel_url": "https://shop.example/cart",
+            "success_url": "https://YOUR_DOMAIN/thanks",
+            "cancel_url": "https://YOUR_DOMAIN/cart",
         }).encode(),
         headers={
             "Authorization": f"Bearer {KEY}",

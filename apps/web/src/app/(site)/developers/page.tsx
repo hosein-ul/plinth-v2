@@ -16,14 +16,14 @@ import { STATUS_META } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 import { PUBLIC_API_URL } from "@/lib/config";
-export const metadata = pageMeta({ title: "Developers", description: "The Plinth REST API, signed webhooks, payment states and a testnet sandbox. Quickstart in cURL.", path: "/developers" });
+export const metadata = pageMeta({ title: "Developers", description: "The Plinth REST API, signed webhooks and payment states. Quickstart in cURL.", path: "/developers" });
 
 const NAV = [
   { id: "quickstart", label: "Quickstart" },
   { id: "api", label: "API" },
   { id: "webhooks", label: "Webhooks" },
   { id: "states", label: "Payment states" },
-  { id: "sandbox", label: "Sandbox" },
+  { id: "sandbox", label: "Go live" },
 ];
 
 const EVENT_NOTES: Record<string, string> = {
@@ -87,10 +87,10 @@ export default function DevelopersPage() {
               <li className="min-w-0 space-y-4">
                 <Step n={1} title="Get your keys" />
                 <p className="max-w-2xl text-[0.9375rem] text-ink-2">
-                  Create a test account, then open <b className="font-medium text-ink">API keys</b> in the dashboard for a secret key (<C>sk_test_…</C>) and <b className="font-medium text-ink">Webhooks</b> for an endpoint secret. Keep both on your server, as environment variables.
+                  Create an account, then open <b className="font-medium text-ink">API keys</b> in the dashboard for a secret key (<C>sk_…</C>) and <b className="font-medium text-ink">Webhooks</b> for an endpoint secret. Keep both on your server, as environment variables.
                 </p>
                 <Code label=".env">{`PLINTH_API_URL=${API_BASE}
-PLINTH_SECRET_KEY=sk_test_...
+PLINTH_SECRET_KEY=sk_...
 PLINTH_WEBHOOK_SECRET=whsec_...`}</Code>
               </li>
 
@@ -112,13 +112,13 @@ PLINTH_WEBHOOK_SECRET=whsec_...`}</Code>
   "success_url": "https://YOUR_DOMAIN/thanks",
   "expires_at": "2026-10-14T14:48:00.720Z",
   "networks": [{
-    "network": "arc-testnet",
+    "network": "arc-mainnet",
     "usdc_address": "0x3600000000000000000000000000000000000000",
     "deposit_address": "0x08D7…7188",
     "wallet_checkout_supported": true
   }]
 }`}</Code>
-                <p className="text-xs text-ink-3">Taken from a real response on a local test chain; the network entry is shown for Arc Testnet. The deposit address is unique to this payment and no contract is deployed for it yet.</p>
+                <p className="text-xs text-ink-3">Shape of a response; the values are examples. The deposit address is unique to each payment.</p>
               </li>
 
               <li className="min-w-0 space-y-4">
@@ -132,7 +132,7 @@ PLINTH_WEBHOOK_SECRET=whsec_...`}</Code>
               <li className="min-w-0 space-y-4">
                 <Step n={4} title="Test it end to end" />
                 <p className="max-w-2xl text-[0.9375rem] text-ink-2">
-                  Pay the test checkout from a wallet with test USDC, or send test USDC to the deposit address. Your order should turn paid from the webhook alone. Then check the two failure cases: a webhook with a bad signature must be rejected (401), and a replayed event must change nothing.
+                  Pay the checkout with a small amount from your wallet, or send it to the deposit address. Your order should turn paid from the webhook alone. Then check the two failure cases: a webhook with a bad signature must be rejected (401), and a replayed event must change nothing.
                 </p>
                 <p className="text-sm text-ink-3">Prefer an AI assistant? <Link href="/build-with-ai" className="font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink">It can do these four steps for you</Link>.</p>
               </li>
@@ -142,7 +142,7 @@ PLINTH_WEBHOOK_SECRET=whsec_...`}</Code>
           <section id="api" aria-labelledby="api-h" className={SECTION}>
             <H2 id="api-h">API</H2>
             <p className="mt-3 max-w-2xl text-[0.9375rem] text-ink-2">
-              Versioned under <C>/v1</C>. Test keys (<C>sk_test_</C>) operate on testnets, live keys on mainnets. Keys are stored hashed. The full OpenAPI 3.1 document is served by the API at <C>/v1/openapi.json</C> and committed to the repository as <C>docs/openapi.json</C>.
+              Versioned under <C>/v1</C>. Keys are scoped to your merchant account. Keys are stored hashed. The full OpenAPI 3.1 document is served by the API at <C>/v1/openapi.json</C> and committed to the repository as <C>docs/openapi.json</C>.
             </p>
             <p className="mt-4 text-sm text-ink-3">
               {API_BASE
@@ -221,15 +221,15 @@ PLINTH_WEBHOOK_SECRET=whsec_...`}</Code>
           </section>
 
           <section id="sandbox" aria-labelledby="sandbox-h" className={SECTION}>
-            <H2 id="sandbox-h">Test in the sandbox</H2>
-            <p className="mt-3 max-w-2xl text-[0.9375rem] text-ink-2">Everything runs on testnets with test keys. No real funds are involved at any step.</p>
+            <H2 id="sandbox-h">Take your first payment</H2>
+            <p className="mt-3 max-w-2xl text-[0.9375rem] text-ink-2">Live on Arc with USDC and EURC. Start with a small amount.</p>
             <div className="card mt-8 overflow-hidden">
               <ol className="grid divide-y divide-line md:grid-cols-4 md:divide-x md:divide-y-0">
                 {[
-                  ["Create an account", "Sign up and enable a testnet. No card, no KYC."],
+                  ["Create an account", "Sign up and pick a network. No card, no KYC."],
                   ["Create a vault", "Name a wallet you control as the owner. The relayer pays for the deployment."],
-                  ["Make a test key and a payment", <>Create an <C>sk_test_</C> key and call <C>POST /v1/payment-intents</C>.</>],
-                  ["Pay it and watch the webhook", "Fund a wallet from Circle's faucet, pay your own checkout and receive signed events."],
+                  ["Make a key and a payment", <>Create a secret key and call <C>POST /v1/payment-intents</C>.</>],
+                  ["Pay it and watch the webhook", "Pay your own checkout with a small amount and receive signed events."],
                 ].map(([t, d], i) => (
                   <li key={i} className="p-5 sm:p-6">
                     <span className="tnum grid size-6 place-items-center rounded-full bg-sunk text-xs font-medium text-ink-2">{i + 1}</span>
@@ -244,7 +244,7 @@ PLINTH_WEBHOOK_SECRET=whsec_...`}</Code>
                   <ArrowRight className="size-4" aria-hidden />
                 </Link>
                 <Link href={DEMO_HREF} className={buttonStyles({ variant: "secondary", size: "lg" })}>Watch a payment in the demo</Link>
-                <p className="w-full text-sm text-ink-3 lg:ml-auto lg:w-auto">Locally, <C>pnpm dev:stack</C> starts a full stack with a seeded merchant, a local chain and test USDC.</p>
+                <p className="w-full text-sm text-ink-3 lg:ml-auto lg:w-auto">To run the whole stack yourself, see the repository README.</p>
               </div>
             </div>
           </section>

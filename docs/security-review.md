@@ -74,4 +74,4 @@ No critical or high finding was identified. Observations to keep in view:
 ## What an independent audit must still cover
 
 The contracts (especially `InvoiceDeposit`, `PaymentRouter`, `FeeSplit`, `InvoiceFactory`), the CREATE2 derivation shared by the contracts and the backend, the custody ledger and key handling, and an infrastructure review of the API and worker. Until
-then: **testnets only**, and do not hold meaningful value.
+then: use small amounts only and do not hold meaningful value.

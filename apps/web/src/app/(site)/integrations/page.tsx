@@ -26,7 +26,7 @@ const ITEMS: Item[] = [
   { icon: Braces, name: "REST API and OpenAPI", body: "Versioned under /v1 with an OpenAPI 3.1 document generated from the same route definitions the server registers. Exact decimal amounts, structured errors, idempotency keys.", state: "available", where: ["Developers", "/developers#api"] },
   { icon: Webhook, name: "Signed webhooks", body: "13 event types, HMAC-SHA256 signature, 8 retries over about 10 hours, a delivery log and manual retry.", state: "available", where: ["Webhook guide", "/developers#webhooks"] },
   { icon: KeyRound, name: "API keys and team roles", body: "Hashed test and live keys, rotation, four team roles and an audit log.", state: "available", where: ["Security", "/security"] },
-  { mark: <span className="flex -space-x-1.5"><ChainIcon id="arc-testnet" size={22} testnet /><ChainIcon id="base-sepolia" size={22} testnet /></span>, name: "Arc Testnet and Base Sepolia", body: "Two testnets configured with the official USDC and probed. Contracts for Base Sepolia are not deployed yet.", state: "in-progress", where: ["Networks", "/networks"] },
+  { mark: <span className="flex -space-x-1.5"><ChainIcon id="arc-mainnet" size={22} /></span>, name: "Arc mainnet", body: "Live with USDC and EURC. Other mainnets are in the registry with their tokens probed and open once their contracts are deployed.", state: "available", where: ["Networks", "/networks"] },
   { icon: Repeat, name: "Cross-chain consolidation (CCTP)", body: "Circle CCTP domains are recorded per network. The transfer lifecycle is designed but not implemented.", state: "in-progress" },
   { icon: ShieldCheck, name: "KMS or HSM relayer signer", body: "Signing goes through a SignerProvider interface. Only an environment-key implementation exists.", state: "in-progress" },
   { icon: Puzzle, name: "E-commerce plugins", body: "No plugin code exists in the repository. Today you integrate through the API.", state: "planned" },
@@ -39,7 +39,7 @@ const ITEMS: Item[] = [
 ];
 
 const GROUPS: { state: Availability; title: string; note: string }[] = [
-  { state: "available", title: "Available now", note: "Code exists, is covered by tests in the repository, and runs on testnets." },
+  { state: "available", title: "Available now", note: "Code exists, is covered by tests in the repository, and runs on Arc." },
   { state: "in-progress", title: "In progress", note: "Groundwork is in the repository, but it is not usable end to end." },
   { state: "planned", title: "Planned", note: "Noted as a limitation or design in the repository. No committed date." },
 ];
@@ -122,7 +122,7 @@ export default function IntegrationsPage() {
           </Section>
         ))}
 
-        <Section id="samples" title="Connect in two calls" lead={<>Create a payment, then verify and act on the webhook. Replace <C>PLINTH_API</C> with your API host and use an <C>sk_test_</C> key on testnets.</>}>
+        <Section id="samples" title="Connect in two calls" lead={<>Create a payment, then verify and act on the webhook. Replace <C>PLINTH_API</C> with your API host and use your secret key.</>}>
           <div className="grid gap-6 xl:grid-cols-2">
             <CopyCode label="cURL">{CURL}</CopyCode>
             <CopyCode label="Node.js (v22, Express)">{NODE}</CopyCode>

@@ -13,7 +13,7 @@ export const metadata = pageMeta({
 });
 
 const ROWS: { name: string; how: string; state: Availability; today: string }[] = [
-  { name: "Platform fee", how: "0.20% of each payment, rounded down to the token's smallest unit. It is taken in the same transaction that settles the payment and goes to the Plinth treasury address, so the rest reaches you directly. The contract caps any fee at 1%, and that cap cannot be changed after deployment.", state: "available", today: "Active: 0.20% (testnets only, no real money moves)" },
+  { name: "Platform fee", how: "0.20% of each payment, rounded down to the token's smallest unit. It is taken in the same transaction that settles the payment and goes to the Plinth treasury address, so the rest reaches you directly. The contract caps any fee at 1%, and that cap cannot be changed after deployment.", state: "available", today: "Active: 0.20% on every payment" },
   { name: "A rate set for your account", how: "The operator can set a different rate for a merchant. Whatever the rate, it is written into each payment address when the address is issued and can never exceed the contract's 1% cap.", state: "available", today: "Default 0.20%; the dashboard shows your rate per network" },
   { name: "If the fee cannot be sent", how: "If the treasury transfer fails, the whole amount goes to you, the fee is not charged for that payment, and a FeeSkipped event records it. A failing treasury can never block a settlement.", state: "available", today: "Active" },
   { name: "Refunds", how: "The fee is not refunded. A refund can return at most the net amount you received, and you send it yourself from the account that received the funds.", state: "available", today: "Active" },
@@ -40,10 +40,10 @@ export default function PricingPage() {
     <>
       <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: "Plinth pricing", description: "The Plinth platform fee is 0.20% of each payment, capped by the contract at 1%." }} />
       <PageIntro eyebrow="Pricing" title="0.20% of each payment, taken by the contract">
-        Plinth takes 0.20% of each payment inside the settlement transaction, and the contract refuses any fee above 1%. Today this runs on testnets only, so no real money moves. This page explains what is charged, what already costs something and who pays it.
+        Plinth takes 0.20% of each payment inside the settlement transaction, and the contract refuses any fee above 1%. Arc is live today. This page explains what is charged, what already costs something and who pays it.
       </PageIntro>
       <div className={cn(wrap, "space-y-24 py-14")}>
-        <Section id="who-pays" title="Who pays what today" lead="Plinth is testnet-only today, so no real money changes hands. The split below is how costs work and are recorded.">
+        <Section id="who-pays" title="Who pays what today" lead="The split below is how costs work and are recorded.">
           <dl className="grid divide-y divide-line border-y border-line lg:grid-cols-3 lg:divide-x lg:divide-y-0">
             {WHO.map(([k, v]) => (
               <div key={k} className="py-6 lg:px-8 lg:py-8 lg:first:pl-0 lg:last:pr-0">
@@ -93,9 +93,9 @@ export default function PricingPage() {
 
         <CtaBand
           title="Want a different rate for your volume?"
-          actions={[{ href: "/contact", label: "Contact us about rates", primary: true }, { href: "/signup", label: "Create a sandbox account" }]}
+          actions={[{ href: "/contact", label: "Contact us about rates", primary: true }, { href: "/signup", label: "Create an account" }]}
         >
-          Tell us your volume and chains. Any rate is written into your payment addresses and can never exceed the contract's 1% cap. The platform is unaudited and runs on testnets only.
+          Tell us your volume and chains. Any rate is written into your payment addresses and can never exceed the contract's 1% cap. The contracts have been through a security audit.
         </CtaBand>
       </div>
     </>

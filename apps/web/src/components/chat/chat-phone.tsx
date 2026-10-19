@@ -77,7 +77,7 @@ export function ChatPhone({ className }: { className?: string }) {
           </div>
         </div>
       </div>
-      <p className="mt-5 text-center text-xs text-ink-3">An illustration. Names and amounts are placeholders.</p>
+      <p className="mt-5 text-center text-xs text-ink-3">An illustration with sample names and amounts.</p>
     </div>
   );
 }

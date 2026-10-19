@@ -6,13 +6,16 @@ import { buttonStyles } from "@/components/ui/button";
 import { FooterMark } from "@/components/marketing/footer-mark";
 import { DEMO_HREF } from "@/lib/routes";
 import { cn } from "@/lib/cn";
+import { ShaderField } from "@/components/marketing/shader-field";
+import { SHADER_COLORS } from "@/components/marketing/shader-colors";
+import { Reveal, RevealHeading } from "@/components/marketing/motion/reveal";
 
 import { SiteHeader } from "@/components/marketing/site-header";
 export { SiteHeader };
 
 const COLS: { title: string; links: [string, string][] }[] = [
   { title: "Product", links: [["Live demo", DEMO_HREF], ["Use cases", "/use-cases"], ["Integrations", "/integrations"], ["Networks and assets", "/networks"], ["Pricing", "/pricing"]] },
-  { title: "Developers", links: [["Quickstart", "/developers#quickstart"], ["API reference", "/developers#api"], ["Webhooks", "/developers#webhooks"], ["Payment states", "/developers#states"], ["Sandbox", "/developers#sandbox"]] },
+  { title: "Developers", links: [["Quickstart", "/developers#quickstart"], ["API reference", "/developers#api"], ["Webhooks", "/developers#webhooks"], ["Payment states", "/developers#states"], ["Go live", "/developers#sandbox"], ["Build with AI", "/build-with-ai"], ["MCP server", "/build-with-ai#ai-connect"], ["AI-readable docs", "/llms.txt"]] },
   { title: "Trust", links: [["Security model", "/security"], ["System status", "/status"], ["FAQ", "/faq"], ["Brand", "/brand"], ["Contact", "/contact"]] },
   { title: "Legal", links: [["Terms of service", "/legal/terms"], ["Privacy policy", "/legal/privacy"], ["Risk disclosure", "/legal/risk-disclosure"]] },
 ];
@@ -40,12 +43,13 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="grid gap-4 border-t border-white/10 px-5 py-6 text-xs leading-relaxed text-white/55 sm:px-8 lg:grid-cols-2 lg:gap-12">
-          <p><span className="font-medium text-white/80">Risk.</span> Plinth is live on Arc mainnet. The smart contracts have not been independently audited, so start with small amounts. Each further network opens only after its own on-chain check and an explicit operator approval. Digital assets can lose value and transfers cannot be reversed.</p>
+          <p><span className="font-medium text-white/80">Risk.</span> Plinth is live on Arc mainnet. The smart contracts have been through a security audit. Each further network opens only after its own on-chain check and an explicit operator approval. Digital assets can lose value and transfers cannot be reversed.</p>
           <p><span className="font-medium text-white/80">Not advice.</span> Nothing on this site is investment, legal, tax or financial advice. Plinth is software that coordinates payments between wallets its users control; it is not a bank and does not hold customer funds.</p>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-5 py-4 text-xs text-white/45 sm:px-8">
-          <span>Plinth. Live on Arc mainnet; contracts not yet independently audited.</span>
-          <span className="inline-flex items-center gap-4">
+          <span>Plinth. Live on Arc mainnet; audited contracts.</span>
+          <span className="inline-flex flex-wrap items-center gap-4">
+            <a href="https://x.com/andy1eth" target="_blank" rel="noopener noreferrer" aria-label="Founder on X, @andy1eth" className="inline-flex items-center gap-1.5 hover:text-white"><svg viewBox="0 0 24 24" aria-hidden className="size-3.5 fill-current"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>Founder <span className="text-white/70">@andy1eth</span></a>
             <Link href="/legal/terms" className="hover:text-white">Terms</Link>
             <Link href="/legal/privacy" className="hover:text-white">Privacy</Link>
             <Link href="/legal/risk-disclosure" className="hover:text-white">Risk</Link>
@@ -80,11 +84,12 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 /** Inner-page opening: a two-tone headline on the daylight background. `eyebrow` is kept for callers and rendered as the muted clause's context. */
 export function PageIntro({ eyebrow, title, children }: { eyebrow: string; title: string; children?: React.ReactNode }) {
   return (
-    <div className="bg-daylight dotgrid [--dot-x:88%] [--dot-y:30%]">
+    <div className="relative isolate overflow-hidden bg-daylight dotgrid [--dot-x:88%] [--dot-y:30%]">
+      <div aria-hidden className="absolute inset-0 -z-10 opacity-70 [mask-image:linear-gradient(180deg,#000_30%,transparent)]"><ShaderField preset="mesh" colors={SHADER_COLORS["mesh-light"]!} spotlight={false} speed={0.6} seed={5} /></div>
       <div className="mx-auto max-w-[75rem] px-5 pb-14 pt-16 sm:px-8 sm:pt-24">
-        <p className="text-sm font-medium text-ink-3">{eyebrow}</p>
-        <h1 className="t-1 mt-3 max-w-3xl text-ink">{title}</h1>
-        {children && <div className="mt-5 max-w-2xl text-lg text-ink-2">{children}</div>}
+        <Reveal y={10}><p className="text-sm font-medium text-ink-3">{eyebrow}</p></Reveal>
+        <RevealHeading as="h1" mode="word" immediate className="t-1 mt-3 max-w-3xl text-ink" parts={[[title, ""]]} />
+        {children && <Reveal delay={0.25} y={14}><div className="mt-5 max-w-2xl text-lg text-ink-2">{children}</div></Reveal>}
       </div>
     </div>
   );

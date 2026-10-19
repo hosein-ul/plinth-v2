@@ -12,8 +12,8 @@ export async function createPayment({ orderId, total }) {
     body: JSON.stringify({
       amount: total, // a string such as "25.00", computed on your server
       order_reference: orderId,
-      success_url: "https://shop.example/thanks",
-      cancel_url: "https://shop.example/cart",
+      success_url: "https://YOUR_DOMAIN/thanks",
+      cancel_url: "https://YOUR_DOMAIN/cart",
     }),
   });
   if (!res.ok) throw new Error(`Plinth ${res.status}: ${await res.text()}`);

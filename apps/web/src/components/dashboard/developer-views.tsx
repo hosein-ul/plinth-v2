@@ -15,7 +15,8 @@ import { useAction, useApi } from "@/lib/hooks";
 import Link from "next/link";
 import { useHref } from "@/lib/data-source";
 import { cap, CheckRow, ConfirmDialog, Ledger, SecretReveal } from "./parts-account";
-
+
+
 import { PUBLIC_API_URL } from "@/lib/config";
 export function ApiKeysView() {
   const q = useApi<any>("/v1/api-keys");
@@ -37,7 +38,7 @@ export function ApiKeysView() {
   return (
     <>
       <PageHeader
-        title="API keys" description={`Secret keys authenticate your server. ${env === "test" ? "Test keys work on testnets only." : "Live keys move real funds on mainnets."} Keys are stored hashed and shown once.`}
+        title="API keys" description={`Secret keys authenticate your server. ${env === "test" ? "Test keys never move real funds." : "Live keys move real funds."} Keys are stored hashed and shown once.`}
         actions={
           <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setFresh(null); setName(""); } }}>
             <DialogTrigger asChild><Button variant="primary"><Plus className="size-4" aria-hidden />New {env} key</Button></DialogTrigger>

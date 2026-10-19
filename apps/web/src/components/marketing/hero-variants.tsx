@@ -6,7 +6,7 @@ import { HeroVideo } from "@/components/marketing/hero-video";
 import { DEMO_HREF } from "@/lib/routes";
 import { wrap } from "@/components/marketing/parts";
 
-const TRUST = [[Lock, "Non-custodial by construction"], [FlaskConical, "Testnet only, today"], [ShieldAlert, "Contracts not yet audited"]] as const;
+const TRUST = [[Lock, "Non-custodial by construction"], [FlaskConical, "Live on Arc"], [ShieldAlert, "Audited contracts"]] as const;
 
 /**
  * The landing hero. The copy is plain server-rendered text, visible from the first paint; the only motion on it is a CSS reveal on

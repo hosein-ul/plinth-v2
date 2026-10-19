@@ -6,6 +6,8 @@ import { ChatPaths } from "@/components/chat/chat-paths";
 import { AiNative } from "@/components/marketing/ai-native";
 import { AssetsNetworks } from "@/components/marketing/assets-networks";
 import { BuiltOn } from "@/components/marketing/built-on";
+import { IrisReveal } from "@/components/marketing/motion/iris-reveal";
+import { Statement } from "@/components/marketing/statement";
 import { NonCustodial } from "@/components/marketing/non-custodial";
 import { TwoFlows } from "@/components/marketing/two-flows";
 import { DashboardPreview } from "@/components/marketing/dashboard-preview";
@@ -24,6 +26,7 @@ export default function Home() {
       <ChatHero />
       <ChatAudience />
       <ChatGap />
+      <IrisReveal><Statement /></IrisReveal>
       <ChatWho />
       <ChatHow />
       <ChatPaths />

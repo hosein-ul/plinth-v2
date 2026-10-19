@@ -15,4 +15,4 @@
 | [deploy-testnet.md](deploy-testnet.md) | operators | Deploying to a testnet |
 | [circle-integrations.md](circle-integrations.md) | engineers | CCTP, Gateway, Gas Station: verified facts and status |
 
-Status in one line: **pre-audit, testnet only.** Mainnet is disabled by default and nothing has been deployed to one.
+Status in one line: **live on Arc mainnet (USDC and EURC), pre-audit.** Other networks open one by one after deployment and byte verification; start with small amounts.

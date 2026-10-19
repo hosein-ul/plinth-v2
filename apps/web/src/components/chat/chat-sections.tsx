@@ -3,6 +3,10 @@ import { Check, LayoutGrid, Megaphone, Package, Store } from "lucide-react";
 import { ChainIcon, TokenIcon } from "@/components/brand";
 import { Band } from "@/components/marketing/band";
 import { Reveal, RevealHeading } from "@/components/marketing/motion/reveal";
+import { ClipReveal } from "@/components/marketing/motion/clip-reveal";
+import { ShaderField } from "@/components/marketing/shader-field";
+import { SHADER_COLORS } from "@/components/marketing/shader-colors";
+import { StackCards } from "@/components/marketing/motion/stack-cards";
 import { wrap } from "@/components/marketing/parts";
 import { buttonStyles } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
@@ -24,16 +28,16 @@ export function ChatWho() {
             <RevealHeading id="who-h" as="h2" mode="line" className="t-1 text-ink" parts={[["Made for people who sell in chats, apps and shops.", ""], ["Every kind of seller, one gateway.", "text-ink-4"]]} />
             <Reveal delay={0.1}><p className="mt-6 max-w-md text-lg text-ink-2">Telegram is where we start, and it is full of very different sellers. They share one problem: getting paid, automatically, without handing over control of the money. The same gateway works anywhere you can show a button or send a link.</p></Reveal>
           </div>
-          <ul className="border-b border-line">
-            {WHO.map((w, i) => (
-              <Reveal as="li" key={w.title} delay={i * 0.06}>
-                <div className="flex gap-5 border-t border-line py-7">
-                  <span className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-sunk text-ink"><w.icon className="size-5" aria-hidden /></span>
-                  <div><h3 className="text-[1.25rem] font-medium tracking-[-0.025em] text-ink">{w.title}</h3><p className="mt-1.5 max-w-lg text-[0.9375rem] text-ink-2">{w.text}</p></div>
-                </div>
-              </Reveal>
+          <StackCards
+            height="lg:h-[24dvh]"
+            dimTo={0.08}
+            items={WHO.map((w) => (
+              <div key={w.title} className="flex h-full items-start gap-5 rounded-[1.75rem] border border-line bg-raised p-7 shadow-float">
+                <span className="grid size-12 shrink-0 place-items-center rounded-[14px] bg-sunk text-ink"><w.icon className="size-5" aria-hidden /></span>
+                <div><h3 className="text-[1.25rem] font-medium tracking-[-0.025em] text-ink">{w.title}</h3><p className="mt-1.5 max-w-lg text-[0.9375rem] text-ink-2">{w.text}</p></div>
+              </div>
             ))}
-          </ul>
+          />
         </div>
       </div>
     </Band>
@@ -87,22 +91,21 @@ const STEPS = [
 
 export function ChatHow() {
   return (
-    <Band tone="dark" labelledBy="how-h">
+    <Band tone="dark" labelledBy="how-h" backdrop={<><ShaderField preset="silk" colors={SHADER_COLORS["silk-dark"]!} seed={4} speed={0.8} spotlight={false} /><div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_16_25/0.55),rgb(10_16_25/0.2)_45%,rgb(10_16_25/0.6))]" /></>}>
       <div className={wrap}>
         <RevealHeading id="how-h" as="h2" mode="line" className="t-1 max-w-3xl text-on-ink" parts={[["Four steps, none of them yours to babysit.", ""], ["From tap to delivered.", "text-white/45"]]} />
-        <ol className="mt-14 space-y-14 lg:space-y-20">
-          {STEPS.map((s, i) => (
-            <li key={s.n} className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
-              <Reveal className={cn(i % 2 === 1 && "lg:order-2")}>
-                <div className="flex gap-5">
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-sm font-semibold tabular-nums text-ink">{s.n}</span>
-                  <div><h3 className="text-[1.625rem] font-medium leading-tight tracking-[-0.03em] text-on-ink">{s.title}</h3><p className="mt-2 max-w-md text-[0.9375rem] text-white/65">{s.text}</p></div>
-                </div>
-              </Reveal>
-              <Reveal delay={0.1}><div className="rounded-[1.75rem] bg-white/[0.06] p-5 sm:p-8"><div className="grid place-items-center rounded-2xl bg-ground p-5 sm:p-7 text-ink">{s.visual}</div></div></Reveal>
-            </li>
+        <StackCards
+          className="mt-14"
+          items={STEPS.map((s, i) => (
+            <div key={s.n} className="stack-card grid h-full items-center gap-8 p-6 sm:p-10 lg:grid-cols-2 lg:gap-16">
+              <div className={cn("flex gap-5", i % 2 === 1 && "lg:order-2")}>
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-sm font-semibold tabular-nums text-ink">{s.n}</span>
+                <div><h3 className="text-[1.625rem] font-medium leading-tight tracking-[-0.03em] text-on-ink">{s.title}</h3><p className="mt-2 max-w-md text-[0.9375rem] text-white/65">{s.text}</p></div>
+              </div>
+              <ClipReveal variant="circle" origin="50% 50%" duration={1.2}><div className="rounded-[1.75rem] bg-white/[0.06] p-5 sm:p-8"><div className="grid place-items-center rounded-2xl bg-ground p-5 text-ink sm:p-7">{s.visual}</div></div></ClipReveal>
+            </div>
           ))}
-        </ol>
+        />
       </div>
     </Band>
   );

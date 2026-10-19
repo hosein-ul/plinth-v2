@@ -203,7 +203,6 @@ export function ShaderField({ preset, colors, className, pixel = 4, spotlight = 
     const lite = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
     let lastScroll = 0, lastDraw = 0;
     const onScroll = () => { lastScroll = performance.now(); };
-    if (lite) window.addEventListener("scroll", onScroll, { passive: true });
     let dpr = 1;
     const resize = () => {
       dpr = lite ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
@@ -214,10 +213,18 @@ export function ShaderField({ preset, colors, className, pixel = 4, spotlight = 
       gl.uniform2f(uRes, canvas.width, canvas.height);
       gl.uniform1f(uPixel, Math.max(1, pixel * dpr));
     };
+    // The field runs faster while the page is being scrolled fast and settles back when it stops.
+    let clock = 14, lastT = 14, lastY = window.scrollY, vel = 0;
     const draw = (t: number) => {
       mouse.x += (mouse.tx - mouse.x) * 0.06;
       mouse.y += (mouse.ty - mouse.y) * 0.06;
-      gl.uniform1f(uTime, t * speed + seed);
+      const dt = Math.max(0, Math.min(0.1, t - lastT));
+      lastT = t;
+      const dy = Math.abs(window.scrollY - lastY);
+      lastY = window.scrollY;
+      vel += ((dt > 0 ? dy / dt : 0) - vel) * 0.12;
+      clock += dt * (1 + Math.min(6, vel / 350));
+      gl.uniform1f(uTime, clock * speed + seed);
       gl.uniform2f(uMouse, mouse.x, mouse.y);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
@@ -228,7 +235,7 @@ export function ShaderField({ preset, colors, className, pixel = 4, spotlight = 
       if (!lite || (now - lastScroll > 140 && now - lastDraw > 32)) { lastDraw = now; draw((now - start) / 1000); }
       raf = requestAnimationFrame(loop);
     };
-    const run = () => { if (!raf && visible && !document.hidden && !reduce) raf = requestAnimationFrame(loop); };
+    const run = () => { if (!raf && visible && !document.hidden && !reduce && !lite) raf = requestAnimationFrame(loop); };
     const stop = () => { if (raf) { cancelAnimationFrame(raf); raf = 0; } };
 
     resize();

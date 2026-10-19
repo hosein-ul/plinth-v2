@@ -2,8 +2,8 @@ import { LegalShell } from "@/components/marketing/pages/legal-shell";
 import { pageMeta } from "@/lib/site";
 
 export const metadata = pageMeta({
-  title: "Privacy policy (draft)",
-  description: "Draft privacy policy for Plinth: what data the service processes, why, which cookies it sets and which third parties receive requests.",
+  title: "Privacy policy",
+  description: "Privacy policy for Plinth: what data the service processes, why, which cookies it sets and which third parties receive requests.",
   path: "/legal/privacy",
 });
 
@@ -12,16 +12,10 @@ export default function PrivacyPage() {
     <LegalShell
       title="Privacy policy"
       current="/legal/privacy"
-      intro="What Plinth collects, why, and who else sees it. This is a draft."
-      openItems={[
-        "Replace [Operator name], [registered address] and [privacy contact] with the real controller details.",
-        "Counsel must confirm the legal bases, retention periods, international-transfer terms and data-subject-rights process for the operator's jurisdictions.",
-        "List the actual hosting, database and email providers used by the deployment in section 5.",
-        "Define retention periods. The code does not currently delete audit events, payment records or accounts automatically.",
-      ]}
+      intro="What Plinth collects, why, and who else sees it."
     >
       <h2>1. Who is responsible</h2>
-      <p>[Operator name], of [registered address], decides why and how the data below is used. Contact: [privacy contact].</p>
+      <p>The team behind Plinth decides why and how the data below is used. Contact: see the contact page.</p>
 
       <h2>2. What we process</h2>
       <h3>Merchant account data</h3>
@@ -52,7 +46,7 @@ export default function PrivacyPage() {
         <li>To keep the service secure, prevent abuse and investigate incidents.</li>
         <li>To answer support requests you send us.</li>
       </ul>
-      <p>[Counsel to state the legal basis for each purpose.] We do not sell personal data, and we do not use it for advertising or profiling.</p>
+      <p>We process data to run the service you asked for, to keep it secure and to meet legal obligations. We do not sell personal data, and we do not use it for advertising or profiling.</p>
 
       <h2>4. Cookies and similar technologies</h2>
       <p>The site sets only functional cookies, and only for signed-in merchants:</p>
@@ -67,7 +61,7 @@ export default function PrivacyPage() {
         <li><strong>Font providers.</strong> Pages load the General Sans typeface from Fontshare and the JetBrains Mono typeface from Google Fonts. Your browser sends those providers its IP address and the usual request headers when it fetches them.</li>
         <li><strong>Blockchain networks and RPC providers.</strong> Transactions are public and permanent. Our servers query RPC providers for chain data, which can include your payment addresses.</li>
         <li><strong>Your wallet.</strong> If you pay with a connected wallet, your wallet software and its provider see the signing request. We receive the address and the signed authorization.</li>
-        <li><strong>Hosting and infrastructure providers.</strong> [Operator to list providers for the application, database and logs.]</li>
+        <li><strong>Hosting and infrastructure providers.</strong> They host the application, the database and the logs.</li>
         <li><strong>Webhook recipients.</strong> Payment data is sent to the endpoints you register.</li>
       </ul>
 
@@ -75,13 +69,13 @@ export default function PrivacyPage() {
       <p>Anything written to a blockchain, such as a transfer from a customer&apos;s address to an invoice address, is public and cannot be altered or deleted by us or anyone else. We can delete or anonymise data in our own systems, subject to the next section.</p>
 
       <h2>7. How long we keep it</h2>
-      <p>[Operator to define retention periods.] Today the system keeps payment records, ledger entries and audit events without an automatic deletion job. The session cookie lasts 7 days.</p>
+      <p>The system keeps payment records, ledger entries and audit events without an automatic deletion job. The session cookie lasts 7 days.</p>
 
       <h2>8. Your rights</h2>
       <p>Depending on where you live, you may have the right to access, correct, delete, export or object to the use of your personal data, and to complain to a data protection authority. Contact [privacy contact]. If you are a merchant&apos;s customer, ask the merchant first: they decide what to do with the data you gave them.</p>
 
       <h2>9. Security</h2>
-      <p>Passwords, keys and secrets are hashed or encrypted as described above, the dashboard session is HttpOnly, and requests are rate limited. No system is perfectly secure, and the service is pre-audit. Report problems through the process on the security page.</p>
+      <p>Passwords, keys and secrets are hashed or encrypted as described above, the dashboard session is HttpOnly, and requests are rate limited. No system is perfectly secure, and the service is early-stage. Report problems through the process on the security page.</p>
 
       <h2>10. Changes</h2>
       <p>We will update this page and its date when we change how we handle data.</p>

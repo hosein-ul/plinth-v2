@@ -59,11 +59,11 @@ export function SweepIllustration({ progress }: { progress: MotionValue<number> 
         </div>
       ))}
 
-      <motion.div className="absolute grid size-[84px] place-items-center rounded-[22px] bg-white text-center shadow-[0_18px_40px_rgb(0_0_0/0.35)]" style={{ left: NODE.x - 26, top: NODE.y - 42, scale: reduce ? 1 : gate }}>
+      <motion.div data-coin-target="node" className="absolute grid size-[84px] place-items-center rounded-[22px] bg-white text-center shadow-[0_18px_40px_rgb(0_0_0/0.35)]" style={{ left: NODE.x - 26, top: NODE.y - 42, scale: reduce ? 1 : gate }}>
         <span><span className="block font-mono text-[13px] font-medium text-ink">sweep()</span><span className="block text-[10px] text-ink-3">no arguments</span></span>
       </motion.div>
 
-      <div className="absolute overflow-hidden rounded-[26px] border border-white/15 bg-ink-lift" style={{ left: VAULT.x, top: VAULT.y, width: VAULT.w, height: VAULT.h }}>
+      <div data-coin-target="vault" className="absolute overflow-hidden rounded-[26px] border border-white/15 bg-ink-lift" style={{ left: VAULT.x, top: VAULT.y, width: VAULT.w, height: VAULT.h }}>
         <motion.div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgb(14_166_107/0.55),rgb(14_166_107/0.18))]" style={{ height: reduce ? "86%" : level }} />
         <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
         <div className="relative flex h-full flex-col items-center justify-between p-4 text-center">

@@ -117,7 +117,7 @@ export async function AssetsNetworks() {
 
         <div className="mt-20 sm:mt-24">
           <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-            <p className="max-w-md text-lg font-medium tracking-[-0.02em] text-ink">Wallets the checkout can connect to <span className="text-ink-4">for one-signature payments.</span></p>
+            <p className="max-w-md text-lg font-medium tracking-[-0.02em] text-ink">Pay from the wallet you already have. <span className="text-ink-4">One signature, and Plinth covers the network fee.</span></p>
             <p className="text-xs text-ink-3">Marks belong to their owners and show compatibility, not partnership.</p>
           </div>
           <Marquee seconds={38}>

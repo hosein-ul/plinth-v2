@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Chip } from "@/components/badge";
 import { buttonStyles } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { Reveal, RevealHeading } from "@/components/marketing/motion/reveal";
 
 /** Truthful availability labels. Only use "available" when the code path exists and was tested in this repository. */
 export type Availability = "available" | "in-progress" | "planned";
@@ -25,9 +26,9 @@ export function JsonLd({ data }: { data: unknown }) {
 export function Section({ id, title, lead, children, className }: { id: string; title: string; lead?: React.ReactNode; children?: React.ReactNode; className?: string }) {
   return (
     <section id={id} aria-labelledby={`${id}-h`} className={cn("scroll-mt-28", className)}>
-      <h2 id={`${id}-h`} className="t-2 max-w-2xl text-ink">{title}</h2>
-      {lead && <p className="mt-3 max-w-2xl text-[0.9375rem] text-ink-2">{lead}</p>}
-      {children && <div className="mt-8">{children}</div>}
+      <RevealHeading id={`${id}-h`} as="h2" mode="line" className="t-2 max-w-2xl text-ink" parts={[[title, ""]]} />
+      {lead && <Reveal delay={0.08} y={12}><p className="mt-3 max-w-2xl text-[0.9375rem] text-ink-2">{lead}</p></Reveal>}
+      {children && <Reveal delay={0.12} y={22}><div className="mt-8">{children}</div></Reveal>}
     </section>
   );
 }

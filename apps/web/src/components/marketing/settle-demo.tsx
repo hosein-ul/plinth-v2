@@ -109,7 +109,7 @@ export function HeroStage({ className }: { className?: string }) {
       <motion.div className="relative z-20 w-full max-w-[22rem] sm:absolute sm:bottom-6 sm:right-0 sm:w-[17rem]" style={reduce ? undefined : { y: yB }}>
         <Tilt max={5} lift={4}><VaultCard n={n} /></Tilt>
       </motion.div>
-      <figcaption className="mt-3 inline-block rounded-full bg-raised/90 px-2.5 py-1 text-2xs text-ink-3 shadow-low sm:absolute sm:bottom-0 sm:left-0 sm:mt-0">Illustration. Amounts and addresses are placeholders.</figcaption>
+      <figcaption className="mt-3 inline-block rounded-full bg-raised/90 px-2.5 py-1 text-2xs text-ink-3 shadow-low sm:absolute sm:bottom-0 sm:left-0 sm:mt-0">Illustration with sample amounts and addresses.</figcaption>
     </figure>
   );
 }
@@ -121,7 +121,7 @@ export function SettleDemo({ className, compact }: { className?: string; compact
     return (
       <div className={cn("relative w-[20.5rem] max-w-full", className)} aria-hidden>
         <CheckoutCard n={n} />
-        <p className="mt-3 text-2xs text-ink-4">Illustration. Amounts and addresses are placeholders.</p>
+        <p className="mt-3 text-2xs text-ink-4">Illustration with sample amounts and addresses.</p>
       </div>
     );
   }

@@ -53,7 +53,7 @@ function Session() {
       <div className="space-y-4 p-4 sm:p-6">
         <div className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-ink px-4 py-2.5 text-sm font-medium text-on-ink">Add Plinth checkout to my store.</div>
         <div className="max-w-[94%] space-y-2.5">
-          <p className="text-sm text-ink-2">I will read the playbook, create a test payment and check the result.</p>
+          <p className="text-sm text-ink-2">I will read the playbook, create a payment and check the result.</p>
           <div className="space-y-1.5 rounded-2xl border border-line bg-raised p-3 font-mono text-[0.8125rem] text-ink shadow-low">
             <p className="flex items-center gap-2"><Check className="size-3.5 shrink-0 text-signal" strokeWidth={3} aria-hidden />get_integration_playbook<span className="text-ink-3">()</span></p>
             <p className="flex items-center gap-2"><Check className="size-3.5 shrink-0 text-signal" strokeWidth={3} aria-hidden />list_networks<span className="text-ink-3">()</span></p>
@@ -99,7 +99,7 @@ export function AiNative() {
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link href="/build-with-ai" className={`${buttonStyles({ variant: "primary", size: "lg" })} h-12 px-5`}>Add it with your AI assistant<ArrowRight className="size-4" aria-hidden /></Link>
             </div>
-            <p className="mt-5 max-w-md overflow-x-auto whitespace-nowrap rounded-xl border border-line bg-sunk px-3.5 py-2.5 font-mono text-xs text-ink-2">claude mcp add --transport http plinth {MCP_URL} --header &quot;Authorization: Bearer sk_test_…&quot;</p>
+            <p className="mt-5 max-w-md overflow-x-auto whitespace-nowrap rounded-xl border border-line bg-sunk px-3.5 py-2.5 font-mono text-xs text-ink-2">claude mcp add --transport http plinth {MCP_URL} --header &quot;Authorization: Bearer sk_…&quot;</p>
           </div>
           <Reveal delay={0.1}><Session /></Reveal>
         </div>

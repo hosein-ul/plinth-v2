@@ -145,14 +145,14 @@ export default function BrandPage() {
         <Block id="guests" title="Chain and token marks" lead="Network, token and wallet logos belong to their owners. They sit on the plinth as guests: unedited, small, identifying only.">
           <div className="flex flex-wrap items-center gap-x-8 gap-y-5 rounded-card border border-line bg-raised p-6">
             <AssetOnChain symbol="USDC" id="base-mainnet" size={36} />
-            <AssetOnChain symbol="USDC" id="arc-testnet" size={36} />
+            <AssetOnChain symbol="USDC" id="arc-mainnet" size={36} />
             <AssetOnChain symbol="EURC" id="ethereum-mainnet" size={36} />
-            <ChainBadge id="arc-testnet" />
+            <ChainBadge id="arc-mainnet" />
             <ChainBadge id="polygon-mainnet" />
             <span className="inline-flex items-center gap-2"><TokenIcon symbol="USDC" size={20} /><span className="font-medium">USDC</span></span>
           </div>
           <p className="mt-3 text-sm text-ink-3">
-            Testnets share the mainnet mark and carry a plain Testnet chip. Plinth never invents a mark, recolours one, or implies endorsement by Circle, Arc or any network or wallet.
+            Plinth never invents a mark, recolours one, or implies endorsement by Circle, Arc or any network or wallet.
           </p>
         </Block>
 

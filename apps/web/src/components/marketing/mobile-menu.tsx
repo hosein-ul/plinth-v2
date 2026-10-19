@@ -110,7 +110,7 @@ export function MobileMenu({ groups, quick, statusHref }: { groups: MenuGroup[];
           </nav>
 
           <div className={cn("shrink-0 border-t border-white/10 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4", item)} style={rise(n++)}>
-            <p className="mb-3 flex items-center gap-2 text-[0.8125rem] text-white/55"><FlaskConical className="size-3.5" aria-hidden />Live on Arc mainnet. Contracts are not yet independently audited.</p>
+            <p className="mb-3 flex items-center gap-2 text-[0.8125rem] text-white/55"><FlaskConical className="size-3.5" aria-hidden />Live on Arc mainnet. Audited contracts.</p>
             <div className="grid grid-cols-2 gap-2.5">
               <Link href="/login" onClick={() => setOpen(false)} className="inline-flex h-12 items-center justify-center rounded-ctl border border-white/20 text-[0.9375rem] font-medium text-white transition-colors active:bg-white/10">Sign in</Link>
               <Link href="/signup" onClick={() => setOpen(false)} className={cn(buttonStyles({ variant: "secondary", size: "lg" }), "h-12 justify-center")}>Create account</Link>

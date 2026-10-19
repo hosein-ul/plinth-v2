@@ -35,7 +35,7 @@ export function NetworksView() {
   return (
     <>
       <PageHeader title="Networks & assets" description="Official tokens only: USDC, and EURC where the network lists it. Each network and token is enabled only after its behaviour was probed and its contracts deployed and verified." />
-      {welcome && <Notice tone="info" className="mb-6">Welcome. Pick a testnet below and create your vault. You choose the owner address that alone can withdraw.</Notice>}
+      {welcome && <Notice tone="info" className="mb-6">Welcome. Pick a network below and create your vault. You choose the owner address that alone can withdraw.</Notice>}
       {q.error && <ErrorState error={q.error} retry={() => q.refetch()} />}
       <div className="space-y-5">
         {q.isLoading && [0, 1].map((i) => (

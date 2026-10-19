@@ -34,7 +34,7 @@ const MEGAS: Mega[] = [
       { icon: Terminal, title: "Quickstart", text: "One request creates a payment.", href: "/developers#quickstart" },
       { icon: BookOpen, title: "API reference", text: "Versioned REST with OpenAPI.", href: "/developers#api" },
       { icon: Webhook, title: "Webhooks", text: "Signed, retried, replayable.", href: "/developers#webhooks" },
-      { icon: FlaskConical, title: "Sandbox", text: "Test on testnet for free.", href: "/developers#sandbox" },
+      { icon: FlaskConical, title: "Go live", text: "Create a key and take a payment.", href: "/developers#sandbox" },
     ],
     feature: { eyebrow: "Live", title: "System status", text: "Operational state and latest block, read from the running stack.", cta: "Open the status page", href: "/status" },
   },
@@ -49,6 +49,46 @@ const MENU: MenuGroup[] = [
 ];
 const QUICK: [string, string][] = [["Security", "/security"], ["FAQ", "/faq"], ["Contact", "/contact"]];
 
+/** Builds the displacement map and filter that let the pill refract the page behind it (Chromium only; other engines use the blur fallback in CSS). */
+function GlassFilter({ target }: { target: React.RefObject<HTMLElement | null> }) {
+  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const el = target.current;
+    if (!el || !/Chrome\//.test(navigator.userAgent) || !window.matchMedia("(pointer: fine) and (min-width: 768px)").matches) return;
+    const measure = () => { const r = el.getBoundingClientRect(); if (r.width > 0) setBox({ w: Math.round(r.width), h: Math.round(r.height) }); };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [target]);
+  useEffect(() => {
+    document.documentElement.classList.toggle("glass-refract", box !== null);
+    return () => document.documentElement.classList.remove("glass-refract");
+  }, [box]);
+  if (!box) return null;
+  const { w, h } = box;
+  const inset = Math.round(h * 0.26);
+  const map = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><defs><linearGradient id="x" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#f00"/><stop offset="1" stop-color="#000"/></linearGradient><linearGradient id="y" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#00f"/><stop offset="1" stop-color="#000"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="${Math.round(h * 0.13)}"/></filter></defs><rect width="${w}" height="${h}" fill="#000"/><rect width="${w}" height="${h}" fill="url(#x)"/><rect width="${w}" height="${h}" fill="url(#y)" style="mix-blend-mode:screen"/><rect x="${inset}" y="${inset}" width="${w - inset * 2}" height="${h - inset * 2}" rx="${(h - inset * 2) / 2}" fill="rgb(128,0,128)" filter="url(#b)"/></svg>`;
+  const uri = `data:image/svg+xml;utf8,${encodeURIComponent(map)}`;
+  const S = 44;
+  return (
+    <svg aria-hidden width="0" height="0" className="pointer-events-none absolute">
+      <filter id="plinth-glass" filterUnits="userSpaceOnUse" x="0" y="0" width={w} height={h} colorInterpolationFilters="sRGB">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="9" edgeMode="duplicate" result="soft" />
+        <feImage href={uri} x="0" y="0" width={w} height={h} preserveAspectRatio="none" result="map" />
+        <feDisplacementMap in="soft" in2="map" scale={S} xChannelSelector="R" yChannelSelector="B" result="dr" />
+        <feColorMatrix in="dr" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="cr" />
+        <feDisplacementMap in="soft" in2="map" scale={S * 0.8} xChannelSelector="R" yChannelSelector="B" result="dg" />
+        <feColorMatrix in="dg" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="cg" />
+        <feDisplacementMap in="soft" in2="map" scale={S * 0.6} xChannelSelector="R" yChannelSelector="B" result="db" />
+        <feColorMatrix in="db" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="cb" />
+        <feBlend in="cr" in2="cg" mode="screen" result="rg" />
+        <feBlend in="rg" in2="cb" mode="screen" />
+      </filter>
+    </svg>
+  );
+}
+
 /**
  * A floating pill. The hover indicator is one shared element that glides between items; Product and Developers open a
  * panel with real links and one featured entry. Opens on hover or focus, closes on Escape, leaving the pill, or a click.
@@ -60,12 +100,39 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const pill = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 12);
     on();
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
+  }, []);
+  // Tone: read what the pill is floating over and switch between dark-on-light and light-on-dark text.
+  useEffect(() => {
+    const el = pill.current;
+    if (!el) return;
+    let raf = 0;
+    const lum = (c: string) => {
+      const m = c.match(/[\d.]+/g);
+      if (!m) return null;
+      const [r = 0, g = 0, b = 0, a = 1] = m.map(Number);
+      return a < 0.5 ? null : (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+    };
+    const probe = () => {
+      raf = 0;
+      const r = el.getBoundingClientRect();
+      const stack = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2).filter((n) => !el.contains(n) && !n.contains(el));
+      let l: number | null = null;
+      for (const n of stack) { l = lum(getComputedStyle(n).backgroundColor); if (l !== null) break; }
+      el.dataset.tone = l !== null && l < 0.42 ? "dark" : "light";
+    };
+    let lastProbe = 0;
+    const on = () => { const now = performance.now(); if (!raf && now - lastProbe > 120) { lastProbe = now; raf = requestAnimationFrame(probe); } };
+    probe();
+    window.addEventListener("scroll", on, { passive: true });
+    window.addEventListener("resize", on);
+    return () => { window.removeEventListener("scroll", on); window.removeEventListener("resize", on); cancelAnimationFrame(raf); };
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(null); };
@@ -83,7 +150,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-3 z-30 px-3 sm:px-5">
       <div ref={wrap} onMouseLeave={leave} onMouseEnter={() => clearTimeout(timer.current)} className="relative mx-auto max-w-[70rem]">
-        <div className={cn("flex h-14 items-center gap-2 rounded-full border bg-raised pl-5 pr-2 md:bg-raised/90 md:backdrop-blur-md transition-[box-shadow,border-color,background-color] duration-[var(--duration-slow)]", scrolled ? "border-line-strong shadow-float" : "border-line shadow-low")}>
+        <GlassFilter target={pill} />
+        <div ref={pill} onPointerMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`); }} className="flex h-14 items-center gap-2 rounded-full pl-5 pr-2 nav-glass">
           <Logo className="mr-2" />
           <LayoutGroup id="nav">
             <nav aria-label="Primary" className="hidden items-center md:flex">

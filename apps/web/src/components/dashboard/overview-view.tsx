@@ -140,7 +140,7 @@ export function OverviewView() {
           <DataTable
             caption="Recent payments" loading={recent.isLoading} rows={recent.data?.data} rowKey={(r: any) => r.id}
             onRowClick={(r: any) => router.push(href(`/dashboard/payments/${r.id}`))}
-            empty={<EmptyState title="No payments yet" body="Create a test payment and pay it from a testnet wallet to see the full lifecycle here." action={<StartPaymentAction />} />}
+            empty={<EmptyState title="No payments yet" body="Create a payment and pay it from your wallet to see the full lifecycle here." action={<StartPaymentAction />} />}
             columns={[
               { key: "ref", header: "Payment", cell: (r: any) => <PaymentCell title={r.order_reference ?? r.description ?? "—"} id={r.id} /> },
               { key: "status", header: "Status", cell: (r: any) => <StatusBadge status={r.status} /> },

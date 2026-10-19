@@ -82,7 +82,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         <div className="flex justify-center" style={rise(0)}><Logo /></div>
         <div className="mt-7 rounded-[1.75rem] border border-line bg-raised p-7 shadow-float sm:p-9" style={rise(1)}>
           <h1 className="t-2 text-center text-ink" style={rise(2)}>{signup ? "Create your account" : "Welcome back"}</h1>
-          <p className="mt-2 text-center text-[0.9375rem] text-ink-3" style={rise(3)}>{signup ? "Start on testnet. Nothing here moves real funds until you enable a mainnet." : "Sign in to your dashboard."}</p>
+          <p className="mt-2 text-center text-[0.9375rem] text-ink-3" style={rise(3)}>{signup ? "Create your account and take your first payment on Arc." : "Sign in to your dashboard."}</p>
 
           {hasW3A && (
             <div className="mt-8" style={rise(4)}>

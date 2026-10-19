@@ -12,7 +12,7 @@ import { WipeStack, useWipe } from "@/components/marketing/motion/wipe-stack";
 import { cn } from "@/lib/cn";
 
 const CURL = `curl -X POST $PLINTH_API/v1/payment-intents \\
-  -H "Authorization: Bearer sk_test_…" \\
+  -H "Authorization: Bearer sk_…" \\
   -H "Idempotency-Key: ORDER_ID" \\
   -H "Content-Type: application/json" \\
   -d '{ "amount": "25.00", "order_reference": "ORDER_ID" }'

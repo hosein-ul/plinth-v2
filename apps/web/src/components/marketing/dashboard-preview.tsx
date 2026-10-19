@@ -3,6 +3,8 @@ import { useReduced } from "@/components/marketing/motion/use-reduced";
 import { useRef } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
+import { morphPolygon } from "@/components/marketing/motion/morph-shape";
+import { useCompact } from "@/components/marketing/motion/use-compact";
 import { ArrowRight, Code2, FileText, LayoutGrid, Link2, ReceiptText, Users, Wallet } from "lucide-react";
 import { ChainIcon, Logo } from "@/components/brand";
 import { Chip, Progress5, StatusBadge } from "@/components/badge";
@@ -20,10 +22,10 @@ const NAV = [
 
 const ROWS: { ref: string; net: string; status: string; amount: string }[] = [
   { ref: "order-1046", net: "arc-mainnet", status: "SETTLED", amount: "25.00" },
-  { ref: "order-1045", net: "base-sepolia", status: "CONFIRMING", amount: "120.00" },
+  { ref: "order-1045", net: "base-mainnet", status: "CONFIRMING", amount: "120.00" },
   { ref: "order-1044", net: "arc-mainnet", status: "AWAITING_PAYMENT", amount: "8.50" },
   { ref: "order-1043", net: "arc-mainnet", status: "SETTLED", amount: "300.00" },
-  { ref: "order-1042", net: "base-sepolia", status: "UNDERPAID", amount: "42.00" },
+  { ref: "order-1042", net: "base-mainnet", status: "UNDERPAID", amount: "42.00" },
 ];
 
 function Money({ v }: { v: string }) {
@@ -37,6 +39,9 @@ export function DashboardPreview() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "center center"] });
   const scale = useTransform(scrollYProgress, [0, 1], [0.93, 1]);
   const rotate = useTransform(scrollYProgress, [0, 1], [7, 0]);
+  const compact = useCompact();
+  // The frame opens from a circle into the full window as it arrives.
+  const clip = useTransform(scrollYProgress, (v) => morphPolygon(["circle", "squircle", "plinth"], Math.min(1, v / 0.85)));
   return (
     <Band tone="light" labelledBy="dash-h">
       <div className={wrap}>
@@ -48,7 +53,7 @@ export function DashboardPreview() {
       </div>
 
       <div ref={ref} className="relative mt-14 [perspective:1600px] sm:mt-20">
-        <motion.div style={reduce ? undefined : { scale, rotateX: rotate, transformOrigin: "50% 100%" }} className="mask-fade-b relative z-10">
+        <motion.div style={reduce ? undefined : compact ? undefined : { scale, rotateX: rotate, transformOrigin: "50% 100%", clipPath: clip }} className="mask-fade-b relative z-10">
           <div className="overflow-hidden rounded-panel border border-line-strong bg-ground shadow-float">
             <div className="flex items-center gap-3 border-b border-line bg-wash px-4 py-3">
               <span aria-hidden className="flex gap-1.5"><i className="size-2.5 rounded-full bg-line-strong" /><i className="size-2.5 rounded-full bg-line-strong" /><i className="size-2.5 rounded-full bg-line-strong" /></span>

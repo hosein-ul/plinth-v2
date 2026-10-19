@@ -34,7 +34,7 @@ export function StoreFragment() {
         </div>
       </div>
       <dl className="divide-y divide-line border-t border-line text-sm">
-        <div className="flex items-center justify-between gap-4 px-5 py-3 sm:px-6"><dt className="text-ink-3">Paid on</dt><dd className="text-ink">Arc Testnet</dd></div>
+        <div className="flex items-center justify-between gap-4 px-5 py-3 sm:px-6"><dt className="text-ink-3">Paid on</dt><dd className="text-ink">Arc</dd></div>
         <div className="flex items-center justify-between gap-4 px-5 py-3 sm:px-6"><dt className="text-ink-3">Deposit address</dt><dd><Hash value="0x7Ac3d51B0e2F9b64A81c0D3f5E27b9A4c6D81e02" /></dd></div>
         <div className="flex items-center justify-between gap-4 px-5 py-3 sm:px-6"><dt className="text-ink-3">Webhook sent</dt><dd className="font-mono text-xs text-ink">payment.confirmed</dd></div>
       </dl>
@@ -78,7 +78,7 @@ export function InvoiceFragment() {
         <div>
           <p className="text-sm text-ink-3">Billed to</p>
           <p className="font-medium text-ink">Customer name</p>
-          <p className="text-sm text-ink-3">customer@example.com</p>
+          <p className="text-sm text-ink-3">name@email.com</p>
         </div>
         <Chip tone="info">Awaiting payment</Chip>
       </div>

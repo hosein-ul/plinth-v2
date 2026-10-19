@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageIntro } from "@/components/marketing/chrome";
 import { wrap } from "@/components/marketing/parts";
-import { DraftBanner, Prose } from "@/components/marketing/pages/pages-kit";
+import { Prose } from "@/components/marketing/pages/pages-kit";
 import { LEGAL_UPDATED } from "@/lib/site";
 import { cn } from "@/lib/cn";
 
@@ -11,8 +11,8 @@ const LEGAL_NAV = [
   { href: "/legal/risk-disclosure", label: "Risk disclosure" },
 ];
 
-/** Shared frame for the draft legal pages: intro, mandatory draft banner, sibling navigation and prose. */
-export function LegalShell({ title, intro, current, openItems, children }: { title: string; intro: string; current: string; openItems: string[]; children: React.ReactNode }) {
+/** Shared frame for the legal pages: intro, last-updated line, sibling navigation and prose. */
+export function LegalShell({ title, intro, current, children }: { title: string; intro: string; current: string; children: React.ReactNode }) {
   return (
     <>
       <PageIntro eyebrow="Legal" title={title}>{intro}</PageIntro>
@@ -27,13 +27,7 @@ export function LegalShell({ title, intro, current, openItems, children }: { tit
           </ul>
         </nav>
         <article className="min-w-0 space-y-8">
-          <DraftBanner updated={LEGAL_UPDATED}>
-            Written in plain English from what the product does today. It must be reviewed by qualified counsel and completed by the operator before it is relied on.
-          </DraftBanner>
-          <aside aria-label="Open items" className="max-w-2xl rounded-card border border-line bg-raised p-5 text-sm text-ink-2">
-            <p className="font-semibold text-ink">Open items for the operator</p>
-            <ul className="mt-2 list-disc space-y-1.5 pl-5">{openItems.map((o) => <li key={o}>{o}</li>)}</ul>
-          </aside>
+          <p className="max-w-2xl text-sm text-ink-3">Last updated {LEGAL_UPDATED}. Written in plain English from what the product does today.</p>
           <Prose>{children}</Prose>
         </article>
       </div>

@@ -3,6 +3,11 @@ import { ArrowRight, ArrowUpRight, LayoutGrid, Megaphone, Package, Store, Vault 
 import { ChainIcon, LogoMark, TokenIcon } from "@/components/brand";
 import { Band } from "@/components/marketing/band";
 import { Reveal, RevealHeading } from "@/components/marketing/motion/reveal";
+import { ClipReveal } from "@/components/marketing/motion/clip-reveal";
+import { ShaderField } from "@/components/marketing/shader-field";
+import { SHADER_COLORS } from "@/components/marketing/shader-colors";
+import { ProximityText } from "@/components/marketing/motion/proximity-text";
+import { WordScrub } from "@/components/marketing/motion/word-scrub";
 import { wrap } from "@/components/marketing/parts";
 import { buttonStyles } from "@/components/ui/button";
 import { TelegramMark } from "@/components/chat/telegram-mark";
@@ -13,7 +18,7 @@ const ext = "font-medium text-white underline decoration-white/30 underline-offs
 
 export function ChatAudience() {
   return (
-    <Band tone="dark" labelledBy="aud-h">
+    <Band tone="dark" labelledBy="aud-h" backdrop={<><ShaderField preset="mist" colors={SHADER_COLORS["mist-dark"]!} seed={2} speed={0.8} spotlight={false} /><div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_16_25/0.55),rgb(10_16_25/0.2)_45%,rgb(10_16_25/0.6))]" /></>}>
       <div className={wrap}>
         <div className="flex items-center gap-3 text-sm font-medium text-white/60"><TelegramMark size={20} tone="current" className="text-white/80" />Where we start: the audience is already there</div>
         <RevealHeading id="aud-h" as="h2" mode="line" className="t-1 mt-4 max-w-3xl text-on-ink" parts={[["A billion people. One missing layer.", ""], ["They chat, shop and play in the same app.", "text-white/45"]]} />
@@ -64,9 +69,9 @@ export function ChatGap() {
       <div className={wrap}>
         <p className="text-sm font-medium text-ink-3">Our thesis</p>
         <RevealHeading id="gap-h" as="h2" mode="line" className="t-1 mt-3 max-w-3xl text-ink" parts={[["Selling in a chat still ends with an address and a screenshot.", ""], ["It should end with a paid order.", "text-ink-4"]]} />
-        <Reveal delay={0.1}><p className="mt-6 max-w-2xl text-lg text-ink-2">Telegram has its own payment rails. The sellers we are building for want something different: dollars, on the network their customers already use, with the money in their own hands. Plinth is the layer that makes that automatic.</p></Reveal>
+        <WordScrub className="mt-6 max-w-2xl text-xl leading-relaxed text-ink" text="Telegram has its own payment rails. The sellers we are building for want something different: dollars, on the network their customers already use, with the money in their own hands. Plinth is the layer that makes that automatic." marks={["dollars,", "automatic."]} />
 
-        <Reveal delay={0.15}>
+        <ClipReveal variant="inset-x" delay={0.1} duration={1.2}>
           <div className="mt-12 grid items-center gap-5 rounded-[2rem] border border-line bg-raised p-5 shadow-low sm:p-8 lg:grid-cols-[auto_auto_1fr_auto_auto_auto_auto] lg:gap-4">
             <div className="grid place-items-center rounded-2xl bg-sunk p-5"><TelegramMark size={52} /><p className="mt-2 text-sm font-medium text-ink">Telegram audience</p></div>
             <Arrow />
@@ -82,7 +87,7 @@ export function ChatGap() {
               <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-3"><Vault className="size-3.5" aria-hidden />into the seller&apos;s own vault</p>
             </div>
           </div>
-        </Reveal>
+        </ClipReveal>
       </div>
     </Band>
   );
@@ -91,17 +96,17 @@ export function ChatGap() {
 /* ── closing call ──────────────────────────────────────────────────────────────────────────── */
 export function ChatClosing() {
   return (
-    <Band tone="dark" shape="leaf-b" grid={false} labelledBy="cta-h">
+    <Band tone="dark" shape="leaf-b" grid={false} labelledBy="cta-h" backdrop={<><ShaderField preset="horizon" colors={SHADER_COLORS["horizon-dark"]!} seed={7} speed={0.8} spotlight={false} /><div className="absolute inset-0 bg-[linear-gradient(180deg,rgb(10_16_25/0.55),rgb(10_16_25/0.2)_45%,rgb(10_16_25/0.6))]" /></>}>
       <div className={wrap}>
         <div className="max-w-3xl">
           <TelegramMark size={44} tone="current" className="text-white/80" />
           <h2 id="cta-h" className="t-display mt-6 text-[clamp(2.5rem,6vw,5.5rem)] text-on-ink">
-            <span className="block">Start in minutes.</span>
-            <span className="block text-white/45">Test it for free.</span>
+            <span className="block"><ProximityText text="Start in minutes." /></span>
+            <span className="block text-white/45">Small to start.</span>
           </h2>
-          <p className="mt-6 max-w-lg text-lg text-white/65">Create an account, set up a vault and take your first payment in USDC on Arc mainnet. The contracts are not yet independently audited, so start small.</p>
+          <p className="mt-6 max-w-lg text-lg text-white/65">Create an account, set up a vault and take your first payment in USDC on Arc mainnet. The contracts have been through a security audit.</p>
           <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Link href="/signup" className={cn(buttonStyles({ variant: "secondary", size: "lg" }), "h-12 border-transparent px-6")}>Create a free test account<ArrowRight className="size-4" aria-hidden /></Link>
+            <Link href="/signup" className={cn(buttonStyles({ variant: "secondary", size: "lg" }), "h-12 border-transparent px-6")}>Create a free account<ArrowRight className="size-4" aria-hidden /></Link>
             <Link href="/build-with-ai" className="inline-flex h-12 items-center rounded-ctl border border-white/20 px-5 text-[0.9375rem] font-medium text-white transition-colors hover:bg-white/10">Add it with your AI assistant</Link>
           </div>
         </div>

@@ -22,13 +22,13 @@ export function FinalCta() {
         <div className="grid gap-12 lg:gap-14 lg:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] lg:items-center">
           <div>
             <h2 id="cta-h" className="t-display text-[clamp(2.75rem,7vw,6.25rem)] text-on-ink">
-              <TextAnimate as="span" by="character" animation="blurInUp" duration={0.6} once className="block">Send a test payment</TextAnimate>
+              <TextAnimate as="span" by="character" animation="blurInUp" duration={0.6} once className="block">Take a payment</TextAnimate>
               <TextAnimate as="span" by="character" animation="blurInUp" duration={0.6} delay={0.45} once className="block text-white/45" aria-hidden>through it.</TextAnimate>
             </h2>
             <Reveal delay={0.3}>
-              <p className="mt-6 max-w-md text-lg text-white/65">Create an account, make a vault, pay your own checkout from a faucet-funded wallet. It takes minutes and costs nothing on testnet.</p>
+              <p className="mt-6 max-w-md text-lg text-white/65">Create an account, make a vault and take your first payment on Arc. It takes minutes.</p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
-                <Magnetic><Link href="/signup" className={cn(buttonStyles({ variant: "secondary", size: "lg" }), "h-12 border-transparent px-6")}>Create a free test account<ArrowRight className="size-4" aria-hidden /></Link></Magnetic>
+                <Magnetic><Link href="/signup" className={cn(buttonStyles({ variant: "secondary", size: "lg" }), "h-12 border-transparent px-6")}>Create a free account<ArrowRight className="size-4" aria-hidden /></Link></Magnetic>
                 <Link href={DEMO_HREF} className="inline-flex h-12 items-center rounded-ctl border border-white/20 px-5 text-[0.9375rem] font-medium text-white transition-colors hover:bg-white/10">Open the live demo</Link>
               </div>
             </Reveal>

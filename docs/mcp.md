@@ -16,7 +16,7 @@ Transport: **Streamable HTTP**, stateless (every request is independent; nothing
 
 ## Connect
 
-You need a Plinth **secret key**: dashboard, Developers, API keys. Use an `sk_test_...` key to try everything on test networks. Send it as a Bearer token.
+You need a Plinth **secret key**: dashboard, Developers, API keys. Send it as a Bearer token.
 
 **Claude Code**
 
@@ -42,7 +42,7 @@ Keep the key in the client's settings or your secret store. Never paste it into 
 ## What the key allows
 
 The server calls the Plinth API **as you**, with the key you sent. It has exactly that key's rights, the same rate limits, the same idempotency and the same
-environment: a `sk_test_` key only ever sees test data, a `sk_live_` key only live data (live exists only where an operator enabled a mainnet; none is).
+environment: a `sk_test_` key only ever sees test data, a `sk_live_` key only live data.
 Nothing is cached or logged by the MCP layer.
 
 **There is deliberately no tool that changes where money goes, creates keys or changes the team.** No payout wallets, no vault or custody settings,
@@ -114,7 +114,7 @@ Read-only tools are marked **R**.
 
 * The customer pays the amount on the invoice in the payment's token. The platform fee (0.20% by default, never above 1%) is taken inside the settlement transaction: `amount` is what the customer pays, `fee_amount` the fee, `net_amount` what you receive.
 * The net amount reaches your **vault**, your own **payout wallet**, or, where an operator enabled it, your **custody balance**. See [architecture.md](architecture.md).
-* Today everything runs on **test networks**. No real money moves and the contracts are not independently audited.
+* Plinth is live on **Arc mainnet** and real funds move. The contracts are not independently audited, so start with small amounts.
 
 ## Errors
 

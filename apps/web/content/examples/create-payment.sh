@@ -7,6 +7,6 @@ curl -sS -X POST "$PLINTH_API_URL/v1/payment-intents" \
   -d '{
     "amount": "25.00",
     "order_reference": "order-1042",
-    "success_url": "https://shop.example/thanks",
-    "cancel_url": "https://shop.example/cart"
+    "success_url": "https://YOUR_DOMAIN/thanks",
+    "cancel_url": "https://YOUR_DOMAIN/cart"
   }'

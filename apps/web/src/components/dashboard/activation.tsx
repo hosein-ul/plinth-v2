@@ -53,8 +53,8 @@ export function ActivationChecklist() {
 
   const steps: Step[] = [
     {
-      key: "network", title: "Choose a test network", done: hasVaultRequest,
-      body: "Pick a testnet and the address that will own your vault. Only that address can ever withdraw.",
+      key: "network", title: "Choose a network", done: hasVaultRequest,
+      body: "Pick a network and the address that will own your vault. Only that address can ever withdraw.",
       action: <Button variant="primary" asChild><Link href={href("/dashboard/networks")}>Choose a network <ArrowRight className="size-4" aria-hidden /></Link></Button>,
     },
     {
@@ -63,12 +63,12 @@ export function ActivationChecklist() {
     },
     {
       key: "payment", title: "Create a test payment", done: paymentMade,
-      body: "You get a checkout page link and a deposit address per network. No real money moves on a testnet; the 0.20% platform fee applies to test tokens too.",
+      body: "You get a checkout page link and a deposit address per network. The 0.20% platform fee is taken in the settlement transaction.",
       action: vaultActive ? <CreatePaymentDialog /> : undefined,
     },
     {
       key: "settled", title: "Watch it settle", done: paymentSettled, confirmed: true,
-      body: "Open the checkout, pay with testnet USDC, and follow the payment from detected to in your vault.",
+      body: "Open the checkout, pay a small amount, and follow the payment from detected to in your vault.",
       action: paymentMade ? <Button asChild><Link href={href("/dashboard/payments")}>Open payments</Link></Button> : undefined,
     },
     {
@@ -105,7 +105,7 @@ export function ActivationChecklist() {
         <div>
           <p className="label">Setup · {doneCount} of {steps.length} done</p>
           <h2 className="t-2 mt-2 text-ink">{doneCount === 0 ? "Accept your first test payment." : "Keep going. You are close."}</h2>
-          <p className="mt-2 max-w-sm text-[0.9375rem] text-ink-3">Everything here runs on testnets with no real funds. Each step turns on by itself when the backend sees it happen.</p>
+          <p className="mt-2 max-w-sm text-[0.9375rem] text-ink-3">Each step turns on by itself when the backend sees it happen.</p>
           <div className="mt-5 h-1.5 max-w-xs overflow-hidden rounded-full bg-sunk" role="progressbar" aria-valuemin={0} aria-valuemax={steps.length} aria-valuenow={doneCount} aria-label="Setup progress">
             <div className="h-full rounded-full bg-ink transition-[width] duration-[var(--duration-slow)] ease-[var(--ease-out)]" style={{ width: `${(doneCount / steps.length) * 100}%` }} />
           </div>

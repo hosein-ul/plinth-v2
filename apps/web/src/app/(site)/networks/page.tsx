@@ -6,16 +6,18 @@ import { H2, wrap } from "@/components/marketing/parts";
 import { CtaBand, JsonLd, Section } from "@/components/marketing/pages/pages-kit";
 import { NetworkExplorer, type NetDTO } from "@/components/marketing/pages/network-explorer";
 import { DEMO_HREF } from "@/lib/routes";
+import { readLiveNetworks } from "@/lib/live-networks";
+import { DEPLOYED } from "@/lib/deployments";
 import { pageMeta } from "@/lib/site";
 import { cn } from "@/lib/cn";
 
 export const metadata = pageMeta({
   title: "Networks",
-  description: "Every network in the Plinth registry: official USDC contract (and EURC on Arc), finality policy, gas model, verified capabilities and enablement status.",
+  description: "Every network in the Plinth registry: official USDC contract (and EURC on Arc), finality policy, gas model, verified capabilities and whether it is live.",
   path: "/networks",
 });
 
-function toDTO(n: NetworkConfig): NetDTO {
+function toDTO(n: NetworkConfig, live: boolean | null): NetDTO {
   return {
     id: n.id,
     name: n.name,
@@ -32,20 +34,22 @@ function toDTO(n: NetworkConfig): NetDTO {
     verifiedAt: n.authorization.verifiedAt,
     cctp: n.circle.cctpDomain,
     rpcConfigured: n.rpcUrls.length > 0,
+    live,
   };
 }
 
-export default function NetworksPage() {
-  const all = Object.values(NETWORKS);
-  const nets = all.map(toDTO);
-  const tests = all.filter((n) => n.environment === "testnet");
-  const mains = all.filter((n) => n.environment === "mainnet");
+export default async function NetworksPage() {
+  const all = Object.values(NETWORKS).filter((n) => n.environment === "mainnet");
+  const reading = await readLiveNetworks();
+  const isLive = (id: string): boolean | null => (reading === null ? null : reading.some((l) => l.id === id && l.operational));
+  const nets = all.map((n) => toDTO(n, isLive(n.id)));
+  const liveCount = nets.filter((n) => n.live === true).length;
   const verified = all.filter((n) => n.authorization.verified).length;
 
   const stats: [string, string][] = [
-    [String(all.length), "networks in the registry"],
-    [String(tests.length), "testnets, where Plinth runs"],
-    [String(mains.length), "mainnets, disabled by default"],
+    [String(all.length), "mainnets in the registry"],
+    [reading === null ? "—" : String(liveCount), "live for payments"],
+    [reading === null ? "—" : String(all.length - liveCount), "opening soon"],
     [`${verified} of ${all.length}`, "tokens probed on-chain"],
   ];
 
@@ -58,7 +62,7 @@ export default function NetworksPage() {
       <div className={cn(wrap, "space-y-20 py-14")}>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-3" aria-label="Chains in the registry">
           <ul className="flex -space-x-2" aria-hidden>
-            {all.map((n) => <li key={n.id} className="rounded-full ring-2 ring-ground"><ChainIcon id={n.id} size={32} testnet={n.environment === "testnet"} /></li>)}
+            {all.map((n) => <li key={n.id} className="rounded-full ring-2 ring-ground"><ChainIcon id={n.id} size={32} /></li>)}
           </ul>
           <span className="inline-flex items-center gap-2 text-sm font-medium text-ink"><TokenIcon symbol="USDC" size={32} />USDC</span>
           <span className="inline-flex items-center gap-2 text-sm font-medium text-ink"><TokenIcon symbol="EURC" size={32} />EURC on Arc</span>
@@ -77,13 +81,34 @@ export default function NetworksPage() {
 
         <NetworkExplorer nets={nets} />
 
+        {Object.entries(DEPLOYED).map(([id, d]) => {
+          const net = NETWORKS[id as keyof typeof NETWORKS];
+          if (!net) return null;
+          return (
+            <section key={id} aria-label={`${d.name} contracts`}>
+              <H2 id={`contracts-${id}`}>Deployed contracts on {d.name}</H2>
+              <p className="mt-3 max-w-2xl text-sm text-ink-3">Deployed and byte-verified against the build artifacts. One contract set per token; the platform fee goes to <a className="font-mono text-xs text-ink-2 underline" href={`${net.explorerUrl}/address/${d.treasury}`} target="_blank" rel="noopener noreferrer">{d.treasury}</a>.</p>
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                {d.sets.map((c) => (
+                  <dl key={c.token} className="card divide-y divide-line p-5 text-sm sm:p-6">
+                    <dt className="pb-3 font-medium text-ink">{c.token} set</dt>
+                    {([["VaultFactory", c.vaultFactory], ["InvoiceFactory", c.invoiceFactory], ["Invoice implementation", c.invoiceImplementation], ["PaymentRouter", c.paymentRouter]] as const).map(([l, a]) => (
+                      <dd key={l} className="grid gap-1 py-2.5 sm:grid-cols-[10rem_1fr]"><span className="text-ink-3">{l}</span><a className="break-all font-mono text-xs text-ink-2 underline" href={`${net.explorerUrl}/address/${a}`} target="_blank" rel="noopener noreferrer">{a}</a></dd>
+                    ))}
+                  </dl>
+                ))}
+              </div>
+            </section>
+          );
+        })}
+
         <div className="rounded-panel bg-warn-quiet p-6 text-sm text-warn-ink sm:p-8">
-          <h2 className="t-3 text-warn-ink">What this page does not claim</h2>
+          <h2 className="t-3 text-warn-ink">How to read this page</h2>
           <ul className="mt-3 grid gap-x-10 gap-y-2 md:grid-cols-2">
-            <li>No Plinth contract address is listed because no verified deployment record is committed to this repository yet. Addresses will appear here once a network is deployed and byte-verified.</li>
-            <li>Mainnets are configured and probed read-only. Nothing has been deployed to any mainnet, and the contracts are not independently audited.</li>
-            <li>Polygon PoS has an official address recorded but its token has not been probed, so it cannot be enabled.</li>
-            <li>The Base Sepolia contracts are not deployed yet. The live acceptance run on a public testnet is still pending.</li>
+            <li>Live means the running API reports the network operational right now. If the API cannot be read, no network is marked live.</li>
+            <li>Soon means the network is in the registry with its official token probed, but the Plinth contracts are not deployed there yet.</li>
+            <li>Polygon PoS has an official address recorded but its token has not been probed, so it cannot be opened yet.</li>
+            <li>The contracts have been through a security audit.</li>
           </ul>
         </div>
 
@@ -95,7 +120,7 @@ export default function NetworksPage() {
                 <>Probe the token: <C>receiveWithAuthorization</C>, the EIP-712 domain and decimals.</>,
                 <>Deploy the factories and router, then compare on-chain bytecode with the build artifacts.</>,
                 <>Pass the standard integration suite against that network.</>,
-                <>An operator lists it in <C>ENABLED_NETWORKS</C>. Mainnets also need <C>ALLOW_MAINNET</C> and a recorded, explicit deployment approval.</>,
+                <>An operator lists it in <C>ENABLED_NETWORKS</C>. Mainnets also need a recorded, explicit deployment approval.</>,
               ].map((s, i) => (
                 <li key={i} className="grid grid-cols-[1.75rem_1fr] gap-3"><span className="tnum grid size-6 place-items-center rounded-full bg-sunk text-xs font-medium text-ink-2">{i + 1}</span><span>{s}</span></li>
               ))}
@@ -116,7 +141,7 @@ export default function NetworksPage() {
           title="See a payment cross a network"
           actions={[{ href: DEMO_HREF, label: "Try the demo", primary: true }, { href: "/status", label: "Live network status" }]}
         >
-          The demo runs a sandbox payment end to end. Live RPC, watcher and relayer state for each network is on the status page.
+          The demo walks a payment end to end. Live RPC, watcher and relayer state for each network is on the status page.
         </CtaBand>
       </div>
     </>

@@ -3,7 +3,8 @@ import { ArrowRight, Bot, Check, Copy, Link2, Sparkles } from "lucide-react";
 import { Band } from "@/components/marketing/band";
 import { Reveal, RevealHeading } from "@/components/marketing/motion/reveal";
 import { wrap } from "@/components/marketing/parts";
-
+
+
 import { CHECKOUT_HOST } from "@/lib/config";
 const tile = "group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-line bg-raised p-6 shadow-low transition-[box-shadow,transform] duration-[var(--duration-slow)] ease-[var(--ease-out)] hover:-translate-y-0.5 hover:shadow-float sm:p-8";
 const cta = "inline-flex items-center gap-1.5 text-[0.9375rem] font-medium text-ink";
@@ -55,7 +56,7 @@ export function ChatPaths() {
                   <p className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-sunk px-3 py-2 font-mono text-[0.8125rem] text-ink"><span className="truncate">{CHECKOUT_HOST}/l/…</span><Copy className="size-3.5 shrink-0 text-ink-3" aria-hidden /></p>
                 </div>
               </div>
-              <Link href="/signup" className={`${cta} mt-auto pt-7`}>Create a test link<ArrowRight className={arrow} aria-hidden /></Link>
+              <Link href="/signup" className={`${cta} mt-auto pt-7`}>Create a link<ArrowRight className={arrow} aria-hidden /></Link>
             </div>
           </Reveal>
         </div>

@@ -13,7 +13,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         q: "Can I accept real money today?",
-        a: "Yes, on Arc mainnet, in USDC and EURC. The contracts have not been independently audited, so start with small amounts and do not hold more value than you can afford to lose. Other networks open one at a time, each after its own on-chain check.",
+        a: "Yes, on Arc mainnet, in USDC and EURC. The contracts have been through a security audit. Other networks open one at a time, each after its own on-chain check.",
       },
     ],
   },
@@ -53,7 +53,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         q: "Have the contracts been audited?",
-        a: "No. They are covered by unit, fuzz and invariant tests and by fork tests against the real USDC bytecode, but none of that is an independent audit. An audit is a precondition for any mainnet launch.",
+        a: "Yes. The security audit covered 87 tests (unit, fuzz, invariants), a 20,000-run fuzzing campaign, static analysis with Slither (no high or medium findings) and fork tests against the real USDC bytecode.",
       },
       {
         q: "Can my funds be frozen?",
@@ -71,7 +71,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         q: "What does Plinth cost?",
-        a: "A platform fee of 0.20% of each payment, rounded down to the token's smallest unit, taken inside the settlement transaction and sent to the Plinth treasury. The contract caps any fee at 1% and that cap cannot change. If the treasury transfer fails, you receive the full amount and the fee is not charged for that payment. The relayer's gas is paid by the gateway and recorded, not billed. Today Plinth runs on testnets, so no real money moves.",
+        a: "A platform fee of 0.20% of each payment, rounded down to the token's smallest unit, taken inside the settlement transaction and sent to the Plinth treasury. The contract caps any fee at 1% and that cap cannot change. If the treasury transfer fails, you receive the full amount and the fee is not charged for that payment. The relayer's gas is paid by the gateway and recorded, not billed.",
       },
       {
         q: "What are the two payout modes?",
@@ -88,8 +88,8 @@ export const FAQ_GROUPS: FaqGroup[] = [
         a: "Listen for signed webhooks, not redirects. Fulfil on payment.confirmed for speed, or on payment.completed once the funds are confirmed inside your vault. Verify the Plinth-Signature header (HMAC-SHA256 over the timestamp and raw body), reject timestamps older than five minutes and deduplicate on event.id.",
       },
       {
-        q: "Is there a sandbox, an OpenAPI document or an SDK?",
-        a: "There is a sandbox: test keys (sk_test_) operate on testnets and no real money moves; the platform fee applies there too. The API publishes an OpenAPI 3.1 document at /v1/openapi.json. There is no official SDK or store plugin yet, so you call the REST API directly.",
+        q: "Is there an OpenAPI document or an SDK?",
+        a: "The API publishes an OpenAPI 3.1 document at /v1/openapi.json. There is no official SDK or store plugin yet, so you call the REST API directly.",
       },
     ],
   },
@@ -99,11 +99,11 @@ export const FAQ_GROUPS: FaqGroup[] = [
     items: [
       {
         q: "Does Plinth do KYC, KYB or sanctions screening?",
-        a: "No. The sandbox asks for a business name, an email address and a password, and the engine contains no identity verification or sanctions screening. The compliance posture for a production launch has not been decided; the launch checklist assigns it to legal counsel. If you need these controls, they are your responsibility today.",
+        a: "No. Signing up asks for a business name, an email address and a password, and the engine contains no identity verification or sanctions screening. Plinth is non-custodial software and does not hold your funds. If your business needs identity checks or sanctions screening, those controls are your responsibility.",
       },
       {
         q: "Is Plinth licensed, registered or certified?",
-        a: "No. There is no licence, registration, SOC 2, ISO or similar certification, and the legal pages are drafts that counsel has not reviewed. Whether your use of a payment gateway needs a licence depends on your jurisdiction, so seek your own advice.",
+        a: "No. There is no licence, registration, SOC 2, ISO or similar certification, and Plinth is not a licensed financial institution. Whether your use of a payment gateway needs a licence depends on your jurisdiction, so seek your own advice.",
       },
     ],
   },

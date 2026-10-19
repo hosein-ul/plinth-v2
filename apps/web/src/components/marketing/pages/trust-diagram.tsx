@@ -58,7 +58,7 @@ export function TrustDiagram() {
       </div>
       <figcaption className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ink-3">
         <span className="inline-flex items-center gap-2"><TokenIcon symbol="USDC" size={20} />Funds only ever move customer, invoice address, then your vault or payout wallet (and the fee to the treasury).</span>
-        <span className="inline-flex items-center gap-2"><ChainIcon id="arc-testnet" size={20} /><ChainIcon id="base-sepolia" size={20} />Contract tests also run against the real USDC bytecode on these two testnets (read-only forks).</span>
+        <span className="inline-flex items-center gap-2"><ChainIcon id="arc-mainnet" size={20} />Contract tests also run against the real USDC bytecode (read-only forks).</span>
       </figcaption>
     </figure>
   );

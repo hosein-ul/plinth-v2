@@ -26,6 +26,8 @@ export interface NetDTO {
   verifiedAt: string | null;
   cctp: number | null;
   rpcConfigured: boolean;
+  /** True when the running API reports the network open for payments; null when the API could not be read. */
+  live: boolean | null;
 }
 
 const short = (a: string) => `${a.slice(0, 8)}…${a.slice(-6)}`;
@@ -40,16 +42,15 @@ function Cap({ on, children }: { on: boolean; children: React.ReactNode }) {
 }
 
 function NetCard({ n }: { n: NetDTO }) {
-  const test = n.environment === "testnet";
   return (
     <article className="card flex flex-col p-5 sm:p-6" aria-labelledby={`net-${n.id}`}>
       <header className="flex items-start gap-3">
-        <ChainIcon id={n.id} size={36} testnet={test} />
+        <ChainIcon id={n.id} size={36} />
         <div className="min-w-0 flex-1">
           <h3 id={`net-${n.id}`} className="t-3">{n.name}</h3>
           <p className="tnum text-xs text-ink-3">Chain ID {n.chainId}</p>
         </div>
-        {test ? <Chip tone="info">Sandbox</Chip> : <Chip>Disabled by default</Chip>}
+        {n.live === true ? <Chip tone="ok">Live</Chip> : <Chip>Soon</Chip>}
       </header>
 
       <div className="mt-5 flex items-center justify-between gap-3 rounded-ctl bg-wash px-3 py-2.5">
@@ -88,17 +89,14 @@ function NetCard({ n }: { n: NetDTO }) {
       </ul>
 
       <p className="mt-auto pt-5 text-xs text-ink-3">
-        {test
-          ? "An operator enables it with a verified deployment record."
-          : n.verified && n.rpcConfigured
-            ? "Needs ALLOW_MAINNET, a verified deployment and a recorded human approval."
-            : "Cannot be enabled until its token is probed and an RPC is configured."}
+        {n.live === true ? "Open for payments now." : "Opens once its Plinth contracts are deployed and byte-verified."}
       </p>
     </article>
   );
 }
 
 function Group({ title, note, nets }: { title: string; note: string; nets: NetDTO[] }) {
+  if (nets.length === 0) return null;
   return (
     <section aria-label={title}>
       <div className="flex flex-wrap items-baseline gap-x-3">
@@ -131,8 +129,8 @@ export function NetworkExplorer({ nets }: { nets: NetDTO[] }) {
 
       {view === "cards" ? (
         <div className="mt-10 space-y-16">
-          <Group title="Testnets" note="Where Plinth runs today" nets={nets.filter((n) => n.environment === "testnet")} />
-          <Group title="Mainnets" note="Configured and probed, disabled, never deployed to from this repository" nets={nets.filter((n) => n.environment === "mainnet")} />
+                    <Group title="Live" note="Open for payments now" nets={nets.filter((n) => n.live === true)} />
+          <Group title="Soon" note="Tokens probed on-chain; opens after deployment" nets={nets.filter((n) => n.live !== true)} />
         </div>
       ) : (
         <div className="mt-10">
@@ -140,8 +138,8 @@ export function NetworkExplorer({ nets }: { nets: NetDTO[] }) {
             {nets.map((n) => (
               <tr key={n.id} className="transition-colors hover:bg-wash">
                 <th scope="row" className={cn(td, "text-left font-medium text-ink")}>
-                  <span className="flex items-center gap-2.5 whitespace-nowrap"><ChainIcon id={n.id} size={24} testnet={n.environment === "testnet"} />{n.name}</span>
-                  <span className="mt-0.5 block pl-[34px] text-xs font-normal text-ink-3">{n.environment}</span>
+                  <span className="flex items-center gap-2.5 whitespace-nowrap"><ChainIcon id={n.id} size={24} />{n.name}</span>
+                  
                 </th>
                 <td className={cn(td, "tnum font-mono text-xs text-ink-2")}>{n.chainId}</td>
                 <td className={cn(td, "break-all font-mono text-xs text-ink-2")}><span className="block">USDC {n.usdc}</span>{n.extra.map((t) => <span key={t.symbol} className="mt-1 block">{t.symbol} {t.address}</span>)}</td>
@@ -149,7 +147,7 @@ export function NetworkExplorer({ nets }: { nets: NetDTO[] }) {
                 <td className={cn(td, "whitespace-nowrap text-ink-2")}>{n.finality}</td>
                 <td className={cn(td, "whitespace-nowrap text-ink-2")}>{n.gas}</td>
                 <td className={cn(td, "font-mono text-xs text-ink-2")}>{n.cctp ?? "—"}</td>
-                <td className={td}>{n.environment === "testnet" ? <Chip tone="info">sandbox</Chip> : <Chip>disabled</Chip>}</td>
+                <td className={td}>{n.live === true ? <Chip tone="ok">Live</Chip> : <Chip>Soon</Chip>}</td>
               </tr>
             ))}
           </TableCard>

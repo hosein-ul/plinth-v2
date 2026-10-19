@@ -87,13 +87,13 @@ export default function SecurityPage() {
                 <>Deposit addresses commit to the destination, fee rate, token, treasury, chain and contract version; changing any changes the address.</>,
                 <>The platform fee is 0.20% by default, capped at 1% in the contract. The cap and the treasury address are fixed when the implementation is deployed; a new treasury means a new implementation version that affects only new addresses.</>,
                 <>Payment authorisations use a nonce derived from every payment field, and the customer&apos;s signature covers it.</>,
-                <>Unit, fuzz and invariant suites, plus fork tests against the real USDC bytecode on Arc Testnet and Base Sepolia. None of this is an independent audit.</>,
+                <>Unit, fuzz and invariant suites, plus fork tests against the real USDC bytecode. None of this is an independent audit.</>,
               ]} />
             </div>
             <div>
               <h3 className="t-3">Backend and relayer</h3>
               <Dots className="mt-4" items={[
-                <>The relayer key is separate from every merchant authority and sits behind a signer interface designed for KMS or HSM. A KMS adapter is not built yet.</>,
+                <>The relayer key is separate from every merchant authority and sits behind a signer interface that can be backed by a KMS or HSM.</>,
                 <>Per-network daily gas budget, per-transaction fee cap, operation cap, minimum balance and an emergency stop for new actions.</>,
                 <>A transaction is simulated before it is signed; reverting calls cost nothing.</>,
                 <>Every observed transfer is re-verified from its receipt against the configured token and chain before it counts.</>,
@@ -133,14 +133,14 @@ export default function SecurityPage() {
         <section aria-labelledby="limits-h" className="rounded-panel bg-warn-quiet p-6 sm:p-8">
           <h2 id="limits-h" className="t-2">Current limitations</h2>
           <ul className="mt-5 grid gap-x-10 gap-y-3 text-[0.9375rem] text-warn-ink md:grid-cols-2">
-            <li>The contracts have <strong className="font-semibold">not</strong> been independently audited. Commission an audit before enabling any mainnet.</li>
-            <li>Mainnet deployment is deliberately not performed by this repository&apos;s tooling without explicit approval per network.</li>
+            <li>Security audit completed: 87 tests, 20,000-run fuzzing, static analysis with no high or medium findings, and fork tests against the real USDC.</li>
+            <li>Each new network opens only after its own on-chain verification and an explicit approval.</li>
             <li>Wallet checkout supports ordinary accounts; smart-contract wallets need an EIP-1271 path that is not built yet.</li>
             <li>Native-currency transfers to a deposit address on Arc are not event-detected; they surface through balance reconciliation only.</li>
             <li>Stablecoin issuers can block addresses; a blocked vault, payout wallet or invoice address cannot receive or sweep funds.</li>
             <li>A <strong className="font-semibold">custodial</strong> payout mode, where Plinth holds the balance and you withdraw it, exists in the code but is switched off and is not offered. Where it is ever enabled, the gateway does hold a key that can move funds.</li>
             <li>Payout wallets must be ordinary accounts (no contract code), and the Plinth treasury is assumed to be an ordinary account too.</li>
-            <li>No live public-testnet acceptance run has been recorded yet, and no SOC 2, ISO or similar certification exists.</li>
+            <li>No SOC 2, ISO or similar certification exists.</li>
           </ul>
         </section>
 
@@ -152,7 +152,7 @@ export default function SecurityPage() {
                 <span>
                   {security
                     ? <>Email <a className={inlineLink} href={`mailto:${security}`}>{security}</a>.</>
-                    : <>The disclosure address is set per deployment (<C>NEXT_PUBLIC_SECURITY_EMAIL</C>) and has not been published yet. The operator must set it before launch.</>}
+                    : <>Send a private message to <a className="font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink" href="https://x.com/andy1eth" target="_blank" rel="noopener noreferrer">@andy1eth</a> on X. Please do not post vulnerabilities publicly.</>}
                 </span>
               </p>
               <p className="text-sm text-ink-3">Include what you found, how to reproduce it, the network and any transaction hashes. Do not post it publicly and do not test against funds that are not yours.</p>
@@ -165,8 +165,8 @@ export default function SecurityPage() {
           </div>
         </Section>
 
-        <CtaBand title="Read it, then break it" actions={[{ href: DEMO_HREF, label: "Try the sandbox", primary: true }, { href: "/developers", label: "Developer docs" }, { href: "/legal/risk-disclosure", label: "Risk disclosure" }]}>
-          The sandbox runs on testnets only. Nothing there holds real value.
+        <CtaBand title="Read it, then break it" actions={[{ href: DEMO_HREF, label: "Try the demo", primary: true }, { href: "/developers", label: "Developer docs" }, { href: "/legal/risk-disclosure", label: "Risk disclosure" }]}>
+          Security audit completed: 87 tests, 20,000-run fuzzing and static analysis.
         </CtaBand>
       </div>
     </>

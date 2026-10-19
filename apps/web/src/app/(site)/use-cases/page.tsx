@@ -96,7 +96,7 @@ const CASES: UseCase[] = [
     ],
     objects: [
       ["team member", <>email, role (OWNER, ADMIN, DEVELOPER, VIEWER)</>],
-      ["api key", <>a test key for testnets, a live key for mainnets; shown once, rotatable</>],
+      ["api key", <>a secret key, shown once and rotatable</>],
       ["webhook endpoint", <>https only; signed with <C>Plinth-Signature</C>; manual retry from the log</>],
     ],
     limit: "Each account is isolated. There is no multi-account console for agencies yet.",
@@ -159,7 +159,7 @@ export default function UseCasesPage() {
         ))}
 
         <CtaBand title="Try the flow that matches yours" actions={[{ href: DEMO_HREF, label: "Open the demo", primary: true }, { href: "/developers", label: "Read the API docs" }, { href: "/integrations", label: "See integrations" }]}>
-          Everything here runs on testnets today. Create a free sandbox account and make your first test payment.
+          Create an account, make a vault and take your first payment on Arc.
         </CtaBand>
       </div>
     </>

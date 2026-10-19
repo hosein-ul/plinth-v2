@@ -4,7 +4,7 @@
  */
 
 export const API_FACTS = [
-  "Base path /v1. Authenticate with `Authorization: Bearer sk_test_...` (test networks only today). Keys are shown once.",
+  "Base path /v1. Authenticate with `Authorization: Bearer sk_...` (your secret key). Keys are shown once.",
   "Amounts are decimal strings in the payment's token (\"25.00\", at most 6 decimals). The token is USDC unless `currency` says otherwise (EURC is available on Arc). Never use floating point.",
   "The platform fee (0.20% by default, never above 1%) is taken from each settled payment in the same transaction. A payment shows `fee_amount` and `net_amount`; `amount` is what the customer pays.",
   "Send an `Idempotency-Key` header on every create. The same key and body returns the original response.",
@@ -23,7 +23,7 @@ product, and do not build a new shop. Work inside the project that already exist
 ## Steps
 1. Inspect the project. Find the framework, where an order, cart, booking or subscription is created, and where prices come from.
    Say what you found before changing anything.
-2. Add server-side environment variables: PLINTH_API_URL, PLINTH_SECRET_KEY (an sk_test_ key) and PLINTH_WEBHOOK_SECRET.
+2. Add server-side environment variables: PLINTH_API_URL, PLINTH_SECRET_KEY (your secret key) and PLINTH_WEBHOOK_SECRET.
    Document them in the project's .env.example. Never print them and never send them to the browser.
 3. Where the customer commits to pay, add SERVER code that calls POST /v1/payment-intents:
    - amount: the total computed ON THE SERVER from your own prices (never trust a price sent by the browser), as a string like "25.00"
@@ -34,15 +34,15 @@ product, and do not build a new shop. Work inside the project that already exist
 4. Add a webhook route. Read the RAW body, verify the Plinth-Signature header, reject stale timestamps, ignore event ids you have seen,
    and on "payment.confirmed" mark the order paid and fulfil it. Return 2xx only after your own work succeeded, so Plinth retries otherwise.
 5. Make the thank-you page show the order status from YOUR database. The success_url redirect is not proof of payment.
-6. Test on a test network: create an order, pay it, watch the order flip to paid from the webhook only. Then send a webhook with a bad
+6. Test with a small real order: create an order, pay it, watch the order flip to paid from the webhook only. Then send a webhook with a bad
    signature (must be rejected) and replay a real one (must be ignored).
 7. Report: the files you changed, the environment variables to set, and how to run the test.
 
 ## Rules
-- Test credentials only (sk_test_...). Mainnet is not available and contracts are not yet audited.
+- Plinth is live on Arc mainnet, so use a small amount while testing. Keep the secret key on the server.
 - Amounts are strings, never floats. Prices are decided on the server.
 - Fulfil only from the verified webhook. Never from a redirect, a client call or a screenshot.
-- If a Plinth MCP server is connected, use its tools (create_payment, get_payment, list_payments) to create and check test payments yourself.
+- If a Plinth MCP server is connected, use its tools (create_payment, get_payment, list_payments) to create and check payments yourself.
 `;
 
 export const WEBHOOK_VERIFY_NODE = `import { createHmac, timingSafeEqual } from "node:crypto";

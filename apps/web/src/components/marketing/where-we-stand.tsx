@@ -11,7 +11,7 @@ import { wrap } from "@/components/marketing/parts";
 const FACTS: { chip: [tone: "info" | "warn" | "neutral" | "ok", label: string]; title: string; text: string }[] = [
   { chip: ["ok", "Built end to end"], title: "The whole payment flow is in place", text: "Create a payment, pay by wallet or by address, settle to a vault, receive a signed webhook. Tested end to end on a local chain." },
   { chip: ["ok", "Non-custodial"], title: "We never hold your money", text: "Funds go from the customer's invoice address straight to a vault that only your wallet can withdraw from." },
-  { chip: ["info", "Testnet first"], title: "Try everything with test USDC", text: "Every network that runs today is a test network, so you can build and break things at no cost." },
+  { chip: ["info", "Arc first"], title: "Live on Arc mainnet", text: "USDC and EURC settle on Arc today. Other mainnets open one by one as their contracts are deployed and byte-verified." },
   { chip: ["neutral", "Audit gate"], title: "Mainnet waits for an independent audit", text: "An outside review of the contracts is a launch requirement, not an afterthought." },
   { chip: ["ok", "Documented"], title: "A versioned API you can read", text: "REST under /v1 with an OpenAPI 3.1 document, idempotent requests, and signed webhooks you can replay." },
 ];
@@ -27,7 +27,7 @@ export function WhereWeStand() {
               <TextAnimate as="span" by="word" animation="slideUp" duration={0.5} delay={0.3} once className="block text-white/45" aria-hidden>Built carefully, going live deliberately.</TextAnimate>
             </h2>
             <Reveal delay={0.1}>
-              <p className="mt-6 max-w-md text-lg text-white/65">Testnet today. This is what is already true, and what stands between here and production.</p>
+              <p className="mt-6 max-w-md text-lg text-white/65">Live on Arc today. This is what is already true, and what stands between here and production.</p>
               <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[0.9375rem] font-medium">
                 {([["Security model", "/security"], ["Live status", "/status"], ["Pricing", "/pricing"], ["Risk disclosure", "/legal/risk-disclosure"]] as const).map(([l, h]) => (
                   <Link key={h} href={h} className="text-on-ink underline decoration-white/30 underline-offset-4 hover:decoration-white">{l}</Link>

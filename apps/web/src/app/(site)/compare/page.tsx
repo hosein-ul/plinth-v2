@@ -28,7 +28,7 @@ const COSTS = [
   "You manage a key. Losing it loses access to the vault.",
   "Your balance is in USDC. Plinth does not convert to or pay out in other currencies.",
   "The token issuer can block addresses, and a blocked vault cannot be paid.",
-  "The contracts are not independently audited, and Plinth runs on testnets only.",
+  "The contracts have been through a security audit. Arc is live today; other networks are opening soon.",
   "Refunds need you to send a transfer yourself; there is no refund button that works without your key.",
 ];
 

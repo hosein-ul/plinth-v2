@@ -3,7 +3,7 @@
 Goal: **mainnet**, starting with **Arc mainnet**. This file is everything needed to take the repository from "tested locally, web and API live" to "contracts deployed and the network open".
 Read it top to bottom; every command is copy-paste. Repository: `github.com/hosein-ul/plinth`, branch `master`.
 
-> The owner says this is a **sample project built for Arc**. They have accepted the "unaudited" status. The site and docs still say "pre-audit, testnet only" until a mainnet is actually opened; update that wording **after** the deployment (see section 9), not before.
+> The owner says this is a **sample project built for Arc**. They have accepted the "unaudited" status. Arc mainnet is deployed and live; the site and docs describe it that way (pre-audit, small amounts).
 
 ---
 
@@ -17,7 +17,7 @@ Read it top to bottom; every command is copy-paste. Repository: `github.com/hose
 | Database | Neon Postgres. **Unverified: whether migrations 0002 to 0006 were applied.** Check (section 2) |
 | Keepalive | Cloudflare worker `infra/keepalive` pings `/readyz` every 5 minutes |
 | `plinth-pay` (Vercel, the Telegram fork `apps/telegram`) | **Stale and redundant**: the landing now serves both audiences. Do not deploy it; the owner decides whether to delete it |
-| Contracts | **Deployed nowhere** (no testnet, no mainnet). `deployments/` holds no records yet |
+| Contracts | Deployed and byte-verified on Arc mainnet (USDC and EURC sets); see `deployments/arc-mainnet.json` |
 | Custody (platform-held balances) | Code exists, **off by default** (`CUSTODY_ENABLED`). Leave it off |
 | Email confirmation for payout wallets | **Off by default** (`REQUIRE_EMAIL_CONFIRMATION`). Resend is not configured |
 

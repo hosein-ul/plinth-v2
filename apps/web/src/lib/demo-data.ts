@@ -61,11 +61,11 @@ export interface DemoDataset {
 
 const NETS = {
   "arc-testnet": {
-    id: "arc-testnet", chain_id: 5042002, name: "Arc Testnet", usdc: "0x3600000000000000000000000000000000000000",
+    id: "arc-testnet", chain_id: 5042, name: "Arc", usdc: "0x3600000000000000000000000000000000000000",
     gas_model: "usdc-native", native: { symbol: "USDC", decimals: 18 }, finality: { strategy: "confirmations", confirmations: 1 }, cctp: 26, confs: 3,
   },
   "base-sepolia": {
-    id: "base-sepolia", chain_id: 84532, name: "Base Sepolia", usdc: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    id: "base-sepolia", chain_id: 8453, name: "Base", usdc: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     gas_model: "eth", native: { symbol: "ETH", decimals: 18 }, finality: { strategy: "finalized-tag", confirmations: 0 }, cctp: 6, confs: 24,
   },
 } as const;
@@ -377,7 +377,7 @@ function build(anchor: number): DemoDataset {
       checkout_methods: ["WALLET", "ADDRESS"], checkout_url: `/demo/payments/${pid}`, success_url: null,
       expires_at: iso(expires), created_at: iso(s.createdAt), paid_at: paidAt ? iso(paidAt) : null, settled_at: settledAt ? iso(settledAt) : null,
       networks: netIds.map((x) => ({
-        network: x, chain_id: NETS[x].chain_id, name: NETS[x].name, environment: "testnet", usdc_address: NETS[x].usdc, deposit_address: deposit[x], deposit_address_explorer_url: null,
+        network: x, chain_id: NETS[x].chain_id, name: NETS[x].name, environment: "mainnet", usdc_address: NETS[x].usdc, deposit_address: deposit[x], deposit_address_explorer_url: null,
         explorer_url: null, native_currency: NETS[x].native, public_rpc_urls: [], finality_confirmations: NETS[x].finality.confirmations, wallet_checkout_supported: true,
       })),
       // detail-only
@@ -414,7 +414,7 @@ function build(anchor: number): DemoDataset {
       },
     };
     return {
-      id: x, chain_id: n.chain_id, name: n.name, environment: "testnet", operational: true, not_operational_reasons: [], explorer_url: null, public_rpc_urls: [],
+      id: x, chain_id: n.chain_id, name: n.name, environment: "mainnet", operational: true, not_operational_reasons: [], explorer_url: null, public_rpc_urls: [],
       chain_native: n.native, native_currency: n.native.symbol, gas_model: n.gas_model, usdc: { address: n.usdc, decimals: 6 }, payment_methods: { address: true, wallet: true },
       authorization: { receive_with_authorization: true, transfer_with_authorization: true, verified_at: "2026-10-01" }, finality: n.finality,
       circle: { cctpDomain: n.cctp, gatewayNanopayments: null, gasStation: null },
@@ -423,12 +423,12 @@ function build(anchor: number): DemoDataset {
     };
   });
 
-  // Base Sepolia forwards instantly: nothing stays in the vault.
+  // Base forwards instantly: nothing stays in the vault.
   // ── payment links
   const links = [
     ["Ethiopia Guji, 1 kg", "34.00", "guji-1kg", true], ["Espresso blend, 5 kg", "118.00", "espresso-5kg", true],
     ["Gift box, medium", "48.00", "gift-box-m", true], ["Brew class, 2 seats", "90.00", "brew-class", false],
-  ].map(([name, amount, slug, active]) => ({ id: id("plink"), name, amount, url: `https://pay.plinth.example/l/${slug}`, networks: ["Arc Testnet", "Base Sepolia"], active, created_at: iso(anchor - between(5, 28) * DAY) }));
+  ].map(([name, amount, slug, active]) => ({ id: id("plink"), name, amount, url: `https://${new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://plinth.zerolayer.online").host}/l/${slug}`, networks: ["Arc", "Base"], active, created_at: iso(anchor - between(5, 28) * DAY) }));
 
   // ── invoices (the invoice-kind payments, newest first)
   const invoices = payments.filter((p) => p.kind === "INVOICE").slice(0, 8).map((p, i, all) => ({

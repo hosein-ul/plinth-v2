@@ -2,7 +2,10 @@
 import { useRef, useState } from "react";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import { Band } from "@/components/marketing/band";
+import { CoinFlight } from "@/components/marketing/motion/coin-flight";
+import { TunnelField } from "@/components/marketing/motion/tunnel-field";
 import { useReduced } from "@/components/marketing/motion/use-reduced";
+import { useCompact } from "@/components/marketing/motion/use-compact";
 import { SweepIllustration } from "@/components/marketing/sweep-illustration";
 import { WordScrub } from "@/components/marketing/motion/word-scrub";
 import { wrap } from "@/components/marketing/parts";
@@ -24,13 +27,14 @@ const STAGES: [title: string, note: string][] = [
 export function Statement() {
   const outer = useRef<HTMLDivElement>(null);
   const reduce = useReduced();
+  const compact = useCompact();
   const [stage, setStage] = useState(0);
   const { scrollYProgress } = useScroll({ target: outer, offset: ["start 55%", "end 85%"] });
   useMotionValueEvent(scrollYProgress, "change", (v) => setStage(Math.min(3, Math.max(0, Math.floor(v * 4)))));
     const active = reduce ? 3 : stage;
 
   return (
-    <Band tone="dark" labelledBy="state-h" className="[--grid-x:85%] [--grid-y:40%]">
+    <Band tone="dark" labelledBy="state-h" className="[--grid-x:85%] [--grid-y:40%]" backdrop={<><TunnelField progress={scrollYProgress} className="absolute inset-0 size-full" />{!reduce && !compact && <div aria-hidden className="pointer-events-none absolute inset-0"><div className="sticky top-0 h-dvh overflow-hidden"><CoinFlight progress={scrollYProgress} src="/brand/usdc-coin.webp" /></div></div>}<div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(10_16_25/0.7),rgb(10_16_25/0.2)_60%,transparent)]" /></>}>
       <div className={wrap}>
         <h2 id="state-h" className="sr-only">Nobody holds the money in between</h2>
         <div ref={outer} className="lg:h-[220dvh]">

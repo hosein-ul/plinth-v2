@@ -141,7 +141,7 @@ export function Shell({ me, env, children, variant = "live" }: { me: { merchant:
               className={cn("flex h-7 items-center justify-center gap-1.5 rounded-[9px] transition-[background-color,color,box-shadow] duration-[var(--duration-fast)]", env === e ? "bg-raised text-ink shadow-[0_1px_2px_rgb(15_23_42/0.12)]" : "text-ink-3 hover:text-ink")}
             >
               <span aria-hidden className={cn("size-1.5 rounded-full", e === "live" ? "bg-warn" : "bg-ink-4")} />
-              {e === "test" ? "Testnet" : "Mainnet"}
+              {e === "test" ? "Test" : "Live"}
             </button>
           ))}
         </div>

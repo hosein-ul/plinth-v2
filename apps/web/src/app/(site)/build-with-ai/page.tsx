@@ -29,18 +29,18 @@ const MCP_CONFIG = `{
   "mcpServers": {
     "plinth": {
       "url": "${MCP_URL}",
-      "headers": { "Authorization": "Bearer sk_test_..." }
+      "headers": { "Authorization": "Bearer sk_..." }
     }
   }
 }`;
 
-const MCP_CLAUDE_CODE = `claude mcp add --transport http plinth ${MCP_URL} --header "Authorization: Bearer sk_test_..."`;
+const MCP_CLAUDE_CODE = `claude mcp add --transport http plinth ${MCP_URL} --header "Authorization: Bearer sk_..."`;
 
 const KIT: { name: string; text: string; ok: boolean }[] = [
   { name: "MCP server (hosted)", text: "One URL, your key in a header. 29 tools: payments, payment links, invoices, refunds, webhooks and reports, plus the integration playbook, a ready prompt and resources. It cannot change where money goes.", ok: true },
   { name: "Plain-text docs for assistants", text: "/llms.txt and /llms-full.txt, generated from the same playbook the MCP server serves.", ok: true },
   { name: "Copy-and-paste prompts", text: "One prompt, tuned for a store, a SaaS, a bot or bookings. Each ends with a checklist.", ok: true },
-  { name: "Test networks and sandbox", text: "Try everything with test USDC. No real money moves.", ok: true },
+  { name: "Safe by design", text: "No tool can change payout destinations, keys or team.", ok: true },
   { name: "SDKs and framework starters", text: "Not published. The REST API works from any language today.", ok: false },
 ];
 
@@ -78,7 +78,7 @@ export default function BuildWithAiPage() {
             ))}
           </ol>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/signup" className={buttonStyles({ variant: "primary", size: "lg" })}>Create a test account<ArrowRight className="size-4" aria-hidden /></Link>
+            <Link href="/signup" className={buttonStyles({ variant: "primary", size: "lg" })}>Create an account<ArrowRight className="size-4" aria-hidden /></Link>
             <Link href={DEMO_HREF} className={buttonStyles({ variant: "secondary", size: "lg" })}>Look around the demo first</Link>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function BuildWithAiPage() {
 
       <section className={`${wrap} py-16`} aria-labelledby="ai-connect">
         <H2 id="ai-connect">1. Connect your assistant (optional).</H2>
-        <p className="mt-3 max-w-2xl text-[0.9375rem] text-ink-2">Works with any assistant that supports MCP over HTTP (Claude, Cursor, and others). The server URL is <span className="font-mono text-[0.8125rem] text-ink">{MCP_URL}</span>. Send your secret key as a Bearer token; create a test key in your dashboard under Developers, API keys.</p>
+        <p className="mt-3 max-w-2xl text-[0.9375rem] text-ink-2">Works with any assistant that supports MCP over HTTP (Claude, Cursor, and others). The server URL is <span className="font-mono text-[0.8125rem] text-ink">{MCP_URL}</span>. Send your secret key as a Bearer token; create a key in your dashboard under Developers, API keys.</p>
         <div className="mt-6 grid max-w-2xl gap-4"><CopyCode label="mcp settings · json">{MCP_CONFIG}</CopyCode><CopyCode label="claude code · one line">{MCP_CLAUDE_CODE}</CopyCode></div>
       </section>
 

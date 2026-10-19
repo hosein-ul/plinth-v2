@@ -72,7 +72,7 @@ export function TwoFlows() {
                   <div className="relative mx-auto max-w-[21rem]">
                     <WipeStack wipe={left} panels={frames} />
                   </div>
-                  <figcaption className="relative mt-8 text-center text-2xs text-white/45">Illustration of the hosted checkout. Amounts and addresses are placeholders.</figcaption>
+                  <figcaption className="relative mt-8 text-center text-2xs text-white/45">Illustration of the hosted checkout, with sample amounts and addresses.</figcaption>
                 </div>
               </figure>
             </Parallax>

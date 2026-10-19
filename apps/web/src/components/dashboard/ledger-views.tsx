@@ -27,7 +27,7 @@ export function TransactionsView() {
       <Ledger<any>
         caption="On-chain transactions" rows={q.data?.data} loading={q.isLoading} error={q.error} retry={() => q.refetch()} rowKey={(t) => t.id}
         filter={{ status: (t) => t.status, statusLabel: (s) => TX_STATUS_META[s]?.label ?? cap(s), text: (t) => `${t.tx_hash} ${t.payment_intent_id ?? ""} ${t.network} ${KIND[t.kind] ?? t.kind}`, placeholder: "Search hash, payment or network" }}
-        empty={{ title: "No on-chain activity yet", body: "Transfers appear here the moment they are seen on a supported network, before they are final. Create a payment and pay it from a testnet wallet to see the first one.", action: <StartPaymentAction /> }}
+        empty={{ title: "No on-chain activity yet", body: "Transfers appear here the moment they are seen on a supported network, before they are final. Create a payment and pay it from your wallet to see the first one.", action: <StartPaymentAction /> }}
         columns={[
           {
             key: "kind", header: "Type",
