@@ -348,18 +348,16 @@ main:has([data-joins-footer]) + .site-footer.grid-ink::before { display: none; }
   .cp-hide-static { display: none !important; }
 }
 
-/* Liquid-glass navigation pill. The glass itself is clear and carries no colour of its own: Chromium bends whatever is behind it
-   through an SVG displacement map (GlassFilter in site-header.tsx), splits the light into red, green and blue at the rim, and a
-   thin specular rim catches light on two opposite edges. Other engines get a light blur. data-tone switches the text between
-   dark-on-light and light-on-dark depending on what sits underneath. */
+/* Liquid-glass navigation pill: clear glass with no colour of its own. A strong blur keeps text scrolling underneath unreadable, a thin specular
+   rim catches light on two opposite edges, and data-tone switches the text between dark-on-light and light-on-dark depending on what sits underneath. */
 .nav-glass {
   --mx: 30%;
   position: relative;
   isolation: isolate;
   color: #0b1220;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05) 60%, rgba(255, 255, 255, 0.09));
-  -webkit-backdrop-filter: blur(10px) saturate(1.35) brightness(1.04);
-  backdrop-filter: blur(10px) saturate(1.35) brightness(1.04);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35) brightness(1.04);
+  backdrop-filter: blur(16px) saturate(1.35) brightness(1.04);
   border: 0;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
@@ -368,10 +366,6 @@ main:has([data-joins-footer]) + .site-footer.grid-ink::before { display: none; }
     0 12px 28px -20px rgba(10, 20, 60, 0.4);
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
   transition: color 0.3s, box-shadow 0.4s, background 0.4s;
-}
-.glass-refract .nav-glass {
-  -webkit-backdrop-filter: url(#plinth-glass) saturate(1.4) brightness(1.05);
-  backdrop-filter: url(#plinth-glass) saturate(1.4) brightness(1.05);
 }
 /* specular rim: light catches the top-left and bottom-right edges only, like a lit glass pill */
 .nav-glass::before {

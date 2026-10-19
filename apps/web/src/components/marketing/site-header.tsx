@@ -49,46 +49,6 @@ const MENU: MenuGroup[] = [
 ];
 const QUICK: [string, string][] = [["Security", "/security"], ["FAQ", "/faq"], ["Contact", "/contact"]];
 
-/** Builds the displacement map and filter that let the pill refract the page behind it (Chromium only; other engines use the blur fallback in CSS). */
-function GlassFilter({ target }: { target: React.RefObject<HTMLElement | null> }) {
-  const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-  useEffect(() => {
-    const el = target.current;
-    if (!el || !/Chrome\//.test(navigator.userAgent) || !window.matchMedia("(pointer: fine) and (min-width: 768px)").matches) return;
-    const measure = () => { const r = el.getBoundingClientRect(); if (r.width > 0) setBox({ w: Math.round(r.width), h: Math.round(r.height) }); };
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [target]);
-  useEffect(() => {
-    document.documentElement.classList.toggle("glass-refract", box !== null);
-    return () => document.documentElement.classList.remove("glass-refract");
-  }, [box]);
-  if (!box) return null;
-  const { w, h } = box;
-  const inset = Math.round(h * 0.26);
-  const map = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><defs><linearGradient id="x" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#f00"/><stop offset="1" stop-color="#000"/></linearGradient><linearGradient id="y" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#00f"/><stop offset="1" stop-color="#000"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="${Math.round(h * 0.13)}"/></filter></defs><rect width="${w}" height="${h}" fill="#000"/><rect width="${w}" height="${h}" fill="url(#x)"/><rect width="${w}" height="${h}" fill="url(#y)" style="mix-blend-mode:screen"/><rect x="${inset}" y="${inset}" width="${w - inset * 2}" height="${h - inset * 2}" rx="${(h - inset * 2) / 2}" fill="rgb(128,0,128)" filter="url(#b)"/></svg>`;
-  const uri = `data:image/svg+xml;utf8,${encodeURIComponent(map)}`;
-  const S = 30;
-  return (
-    <svg aria-hidden width="0" height="0" className="pointer-events-none absolute">
-      <filter id="plinth-glass" filterUnits="userSpaceOnUse" x="0" y="0" width={w} height={h} colorInterpolationFilters="sRGB">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="3" edgeMode="duplicate" result="soft" />
-        <feImage href={uri} x="0" y="0" width={w} height={h} preserveAspectRatio="none" result="map" />
-        <feDisplacementMap in="soft" in2="map" scale={S} xChannelSelector="R" yChannelSelector="B" result="dr" />
-        <feColorMatrix in="dr" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="cr" />
-        <feDisplacementMap in="soft" in2="map" scale={S * 0.8} xChannelSelector="R" yChannelSelector="B" result="dg" />
-        <feColorMatrix in="dg" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="cg" />
-        <feDisplacementMap in="soft" in2="map" scale={S * 0.6} xChannelSelector="R" yChannelSelector="B" result="db" />
-        <feColorMatrix in="db" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="cb" />
-        <feBlend in="cr" in2="cg" mode="screen" result="rg" />
-        <feBlend in="rg" in2="cb" mode="screen" />
-      </filter>
-    </svg>
-  );
-}
-
 /**
  * A floating pill. The hover indicator is one shared element that glides between items; Product and Developers open a
  * panel with real links and one featured entry. Opens on hover or focus, closes on Escape, leaving the pill, or a click.
@@ -157,7 +117,6 @@ export function SiteHeader() {
   return (
     <header className="sticky top-3 z-30 px-3 sm:px-5">
       <div ref={wrap} onMouseLeave={leave} onMouseEnter={() => clearTimeout(timer.current)} className="relative mx-auto max-w-[70rem]">
-        <GlassFilter target={pill} />
         <div ref={pill} onPointerMove={(e) => { const r = e.currentTarget.getBoundingClientRect(); e.currentTarget.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`); }} className="flex h-14 items-center gap-2 rounded-full pl-5 pr-2 nav-glass">
           <Logo className="mr-2" />
           <LayoutGroup id="nav">
