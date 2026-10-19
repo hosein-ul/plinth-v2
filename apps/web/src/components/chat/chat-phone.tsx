@@ -1,7 +1,7 @@
 import { Check, Lock, Send } from "lucide-react";
 import { ChainIcon, LogoMark, TokenIcon } from "@/components/brand";
 
-const NETS: [string, string][] = [["base-mainnet", "Base"], ["arbitrum-mainnet", "Arbitrum"], ["polygon-mainnet", "Polygon"], ["ethereum-mainnet", "Ethereum"]];
+const NETS: [string, string][] = [["arc-mainnet", "Arc"], ["base-mainnet", "Base"], ["arbitrum-mainnet", "Arbitrum"], ["polygon-mainnet", "Polygon"]];
 
 /**
  * A phone running one story on a 12 s loop: a bot offers an item with a pay button, the buyer taps it, a checkout sheet opens
@@ -39,7 +39,7 @@ export function ChatPhone({ className }: { className?: string }) {
 
                 <div className="cp ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-ink p-3 text-on-ink" style={{ animationName: "cp-m2" }}>
                   <p className="flex items-center gap-1.5 text-[12.5px] font-medium"><span className="grid size-4 place-items-center rounded-full bg-signal"><Check className="size-2.5" strokeWidth={4} aria-hidden /></span>Payment received</p>
-                  <p className="mt-0.5 text-[11px] text-white/60">25.00 USDC on Base</p>
+                  <p className="mt-0.5 text-[11px] text-white/60">25.00 USDC on Arc</p>
                 </div>
 
                 <div className="cp max-w-[88%] rounded-2xl rounded-bl-md bg-raised p-3 shadow-low" style={{ animationName: "cp-m3" }}>
