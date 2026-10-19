@@ -102,6 +102,10 @@ export interface NetworkConfig {
   };
   /** Max block range per eth_getLogs request on typical public RPCs for this chain. */
   maxLogRange: number;
+  /** Arc: native USDC movements (plain sends, contract endowments) are logged as ERC-20-style Transfer events with 18 decimals by this system address (EIP-7708). */
+  nativeTransferEmitter?: Address;
+  /** Arc: the Memo contract. It forwards a call and emits the memo id and data while the original sender stays the caller. */
+  memoContract?: Address;
   /** Further official payment tokens on this network (USDC is `usdc`). Each needs its own contracts. */
   extraTokens?: Partial<Record<TokenSymbol, TokenConfig>>;
 }
@@ -150,6 +154,8 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     },
     circle: { cctpDomain: 26, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 2000,
+    nativeTransferEmitter: "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
+    memoContract: "0x5294E9927c3306DcBaDb03fe70b92e01cCede505",
     extraTokens: {
       EURC: {
         symbol: "EURC",
@@ -216,6 +222,8 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     },
     circle: { cctpDomain: 26, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 2000,
+    nativeTransferEmitter: "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
+    memoContract: "0x5294E9927c3306DcBaDb03fe70b92e01cCede505",
     extraTokens: {
       EURC: {
         symbol: "EURC",

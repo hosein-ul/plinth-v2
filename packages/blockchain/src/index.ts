@@ -3,6 +3,7 @@ export * from "./invoice-address";
 export * from "./eip3009";
 export * from "./clients";
 export * from "./gas";
+export * from "./memo";
 export * from "./adapter";
 export * from "./deployments";
 export * from "./artifacts";

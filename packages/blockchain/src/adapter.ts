@@ -25,6 +25,9 @@ const erc20Abi = [
   { type: "function", name: "decimals", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] },
 ] as const;
 
+/** Native USDC has 18 decimals, its ERC-20 view has 6: a native amount converts by dropping the last 12 digits. */
+const NATIVE_TO_TOKEN = 10n ** 12n;
+
 export interface ObservedTransfer {
   /** Token contract that emitted the Transfer (may NOT be the official USDC). */
   token: Address;
@@ -198,6 +201,8 @@ export class EvmAdapter implements ChainAdapter {
   async scanTransfers(from: bigint, to: bigint, addresses: Address[]): Promise<ObservedTransfer[]> {
     const out: ObservedTransfer[] = [];
     if (addresses.length === 0 || to < from) return out;
+    const emitter = this.network.nativeTransferEmitter;
+    const native: ObservedTransfer[] = [];
     const chunk = 100;
     for (let i = 0; i < addresses.length; i += chunk) {
       const logs = await this.client.getLogs({
@@ -210,7 +215,7 @@ export class EvmAdapter implements ChainAdapter {
         // ERC-721 Transfer shares topic0 but has 4 topics; ERC-20 value lives in data.
         if (l.topics.length !== 3 || l.data.length !== 66) continue;
         if (l.blockNumber === null || l.logIndex === null || l.transactionHash === null || l.blockHash === null) continue;
-        out.push({
+        const seen: ObservedTransfer = {
           token: getAddress(l.address),
           from: getAddress(`0x${l.topics[1]!.slice(26)}`),
           to: getAddress(`0x${l.topics[2]!.slice(26)}`),
@@ -219,10 +224,37 @@ export class EvmAdapter implements ChainAdapter {
           logIndex: l.logIndex,
           blockNumber: l.blockNumber,
           blockHash: l.blockHash,
-        });
+        };
+        // Arc logs every native USDC movement from a system address, in 18 decimals (EIP-7708). Those logs are the same asset as the token, not another token.
+        if (emitter && isAddressEqual(l.address, emitter)) native.push(seen);
+        else out.push(seen);
       }
     }
+    if (this.symbol === "USDC") out.push(...this.foldNativeTransfers(native, out));
     return out.sort((a, b) => Number(a.blockNumber - b.blockNumber) || a.logIndex - b.logIndex);
+  }
+
+  /**
+   * Turn system-emitter logs into USDC deposits. An ERC-20 transfer() emits BOTH its own log and a system log for the same movement, so a
+   * system log that has a matching ERC-20 log in the same transaction (same sender, recipient and amount, each used once) is dropped.
+   * What remains is a plain native send, which has no ERC-20 log at all. Amounts below one token unit (6 decimals) are not payments.
+   */
+  private foldNativeTransfers(native: ObservedTransfer[], erc20: ObservedTransfer[]): ObservedTransfer[] {
+    const used = new Set<ObservedTransfer>();
+    const result: ObservedTransfer[] = [];
+    for (const n of native) {
+      const value = n.value / NATIVE_TO_TOKEN;
+      if (value === 0n) continue;
+      const twin = erc20.find(
+        (t) => !used.has(t) && isAddressEqual(t.token, this.usdc) && t.txHash === n.txHash && isAddressEqual(t.from, n.from) && isAddressEqual(t.to, n.to) && t.value === value,
+      );
+      if (twin) {
+        used.add(twin);
+        continue;
+      }
+      result.push({ ...n, token: getAddress(this.usdc), value });
+    }
+    return result;
   }
 
   /** InvoicePaid events from the PaymentRouter for the given invoice ids (wallet checkout). */
@@ -302,18 +334,23 @@ export class EvmAdapter implements ChainAdapter {
       return { ok: false, reason: "log is not an ERC-20 Transfer" };
     }
     if (!isAddressEqual(decoded.args.to, expectedTo)) return { ok: false, reason: "recipient mismatch" };
+    // A system-emitter log is the native view of USDC (18 decimals): same asset, amount in token units.
+    const emitter = this.network.nativeTransferEmitter;
+    const fromSystem = this.symbol === "USDC" && emitter !== undefined && isAddressEqual(log.address, emitter);
+    const value = fromSystem ? decoded.args.value / NATIVE_TO_TOKEN : decoded.args.value;
+    if (fromSystem && value === 0n) return { ok: false, reason: "native amount below one token unit" };
     const meta = await this.blockMeta(receipt.blockNumber);
     if (!meta) return { ok: false, reason: "block not found" };
     if (meta.hash.toLowerCase() !== receipt.blockHash.toLowerCase()) return { ok: false, reason: "block hash changed" };
     return {
       ok: true,
       blockTimestamp: meta.timestamp,
-      official: isAddressEqual(log.address, this.usdc),
+      official: fromSystem || isAddressEqual(log.address, this.usdc),
       transfer: {
-        token: getAddress(log.address),
+        token: fromSystem ? getAddress(this.usdc) : getAddress(log.address),
         from: decoded.args.from,
         to: decoded.args.to,
-        value: decoded.args.value,
+        value,
         txHash,
         logIndex,
         blockNumber: receipt.blockNumber,

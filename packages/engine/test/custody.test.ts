@@ -145,6 +145,25 @@ describe("withdrawing", () => {
     expect(h.mail.to(m.email).map((x) => x.subject)).toEqual(expect.arrayContaining(["A custody withdrawal was requested", "A custody withdrawal was sent"]));
   });
 
+  it("a memo contract that is not on the chain never stops a payout: the plain transfer is used", async () => {
+    const network = h.engine.chains.get(h.net)!.network;
+    const before = network.memoContract;
+    network.memoContract = getAddress("0x00000000000000000000000000000000000d3ad0"); // no code there: a call to it would "succeed" and move nothing
+    try {
+      const who = wallet(7);
+      const m = await custodialMerchant(who);
+      await payAndSettle(m, "12.00");
+      const net = parseUsdc("12") - computeFee(parseUsdc("12"), 20);
+      const walletBefore = await bal(who.address);
+      await requestWithdrawal(h.engine, m.ctx, { network: h.net, token: "USDC", reauth: { password: PASSWORD }, idempotencyKey: "memo-fallback" });
+      await h.pump(6);
+      expect((await listWithdrawals(h.engine, m.ctx))[0]).toMatchObject({ status: "CONFIRMED" });
+      expect((await bal(who.address)) - walletBefore).toBe(net);
+    } finally {
+      network.memoContract = before;
+    }
+  });
+
   it("a part of the balance can be withdrawn, and a withdrawal needs a fresh sign-in", async () => {
     const m = await custodialMerchant();
     await payAndSettle(m, "20.00");

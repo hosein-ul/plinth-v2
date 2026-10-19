@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, schema, sql, type Executor } from "@plinth/db";
-import { quoteFees, type FeeQuote } from "@plinth/blockchain";
+import { quoteFees, wrapWithMemo, type FeeQuote } from "@plinth/blockchain";
 import { formatAmount, newId, parseAmount, TOKEN_DECIMALS, TOKEN_SYMBOLS, type TokenSymbol } from "@plinth/shared";
 import { encodeFunctionData, getAddress, keccak256, type Address, type Hex } from "viem";
 import { audit } from "./audit";
@@ -323,15 +323,29 @@ async function submitNext(e: Engine, chain: ChainRuntime): Promise<number> {
   if (!w) return 0;
 
   const token = tokenRuntime(chain, w.tokenSymbol as TokenSymbol, { open: false });
-  const data = encodeFunctionData({ abi: erc20Transfer, functionName: "transfer", args: [getAddress(w.toAddress) as Address, w.amount] });
-  const to = token.config.address;
+  let data = encodeFunctionData({ abi: erc20Transfer, functionName: "transfer", args: [getAddress(w.toAddress) as Address, w.amount] });
+  let to = token.config.address;
   const defer = async (ms: number, why: string) => {
     await e.db.update(schema.custodyWithdrawals).set({ nextAttemptAt: new Date(e.now().getTime() + ms), lastError: why }).where(eq(schema.custodyWithdrawals.id, w.id));
   };
 
-  let gas: bigint;
+  let gas: bigint | undefined;
+  // On Arc the withdrawal goes through the Memo contract so the payout carries its reference on chain (the merchant can match it to the withdrawal).
+  // If the wrapped call cannot be simulated for any reason, the plain transfer is used: a memo must never stop a payout.
+  // A call to an address with no code succeeds without doing anything, so the Memo contract must really be there.
+  const memoReady = net.memoContract ? ((await chain.client.getCode({ address: net.memoContract }).catch(() => undefined)) ?? "0x") !== "0x" : false;
+  if (net.memoContract && memoReady) {
+    const wrapped = wrapWithMemo(net.memoContract, to, data, w.id);
+    try {
+      gas = await chain.client.estimateGas({ account: custody.address, to: wrapped.to, data: wrapped.data });
+      to = wrapped.to;
+      data = wrapped.data;
+    } catch {
+      gas = undefined;
+    }
+  }
   try {
-    gas = await chain.client.estimateGas({ account: custody.address, to, data });
+    if (gas === undefined) gas = await chain.client.estimateGas({ account: custody.address, to, data });
   } catch (err) {
     // A transfer that would revert (blocked recipient, paused token) moves nothing: fail it and give the balance back.
     await failWithdrawal(e, chain, w, `simulation reverted: ${shortError(err)}`);
