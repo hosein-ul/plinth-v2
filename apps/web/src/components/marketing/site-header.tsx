@@ -70,11 +70,11 @@ function GlassFilter({ target }: { target: React.RefObject<HTMLElement | null> }
   const inset = Math.round(h * 0.26);
   const map = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><defs><linearGradient id="x" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#f00"/><stop offset="1" stop-color="#000"/></linearGradient><linearGradient id="y" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#00f"/><stop offset="1" stop-color="#000"/></linearGradient><filter id="b"><feGaussianBlur stdDeviation="${Math.round(h * 0.13)}"/></filter></defs><rect width="${w}" height="${h}" fill="#000"/><rect width="${w}" height="${h}" fill="url(#x)"/><rect width="${w}" height="${h}" fill="url(#y)" style="mix-blend-mode:screen"/><rect x="${inset}" y="${inset}" width="${w - inset * 2}" height="${h - inset * 2}" rx="${(h - inset * 2) / 2}" fill="rgb(128,0,128)" filter="url(#b)"/></svg>`;
   const uri = `data:image/svg+xml;utf8,${encodeURIComponent(map)}`;
-  const S = 44;
+  const S = 30;
   return (
     <svg aria-hidden width="0" height="0" className="pointer-events-none absolute">
       <filter id="plinth-glass" filterUnits="userSpaceOnUse" x="0" y="0" width={w} height={h} colorInterpolationFilters="sRGB">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="9" edgeMode="duplicate" result="soft" />
+        <feGaussianBlur in="SourceGraphic" stdDeviation="3" edgeMode="duplicate" result="soft" />
         <feImage href={uri} x="0" y="0" width={w} height={h} preserveAspectRatio="none" result="map" />
         <feDisplacementMap in="soft" in2="map" scale={S} xChannelSelector="R" yChannelSelector="B" result="dr" />
         <feColorMatrix in="dr" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="cr" />
@@ -128,11 +128,18 @@ export function SiteHeader() {
       el.dataset.tone = l !== null && l < 0.42 ? "dark" : "light";
     };
     let lastProbe = 0;
-    const on = () => { const now = performance.now(); if (!raf && now - lastProbe > 120) { lastProbe = now; raf = requestAnimationFrame(probe); } };
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    const on = () => {
+      const now = performance.now();
+      if (!raf && now - lastProbe > 120) { lastProbe = now; raf = requestAnimationFrame(probe); }
+      // The last scroll event can land inside the throttle window; probe once more when scrolling stops so the tone never goes stale.
+      clearTimeout(settle);
+      settle = setTimeout(probe, 160);
+    };
     probe();
     window.addEventListener("scroll", on, { passive: true });
     window.addEventListener("resize", on);
-    return () => { window.removeEventListener("scroll", on); window.removeEventListener("resize", on); cancelAnimationFrame(raf); };
+    return () => { window.removeEventListener("scroll", on); window.removeEventListener("resize", on); cancelAnimationFrame(raf); clearTimeout(settle); };
   }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(null); };
