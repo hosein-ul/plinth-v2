@@ -348,24 +348,30 @@ main:has([data-joins-footer]) + .site-footer.grid-ink::before { display: none; }
   .cp-hide-static { display: none !important; }
 }
 
-/* Liquid-glass navigation pill: clear glass with no colour of its own. A strong blur keeps text scrolling underneath unreadable, a thin specular
-   rim catches light on two opposite edges, and data-tone switches the text between dark-on-light and light-on-dark depending on what sits underneath. */
+/* Liquid-glass navigation pill. The glass itself is clear and carries no colour of its own: Chromium bends whatever is behind it
+   through an SVG displacement map (GlassFilter in site-header.tsx), splits the light into red, green and blue at the rim, and a
+   thin specular rim catches light on two opposite edges. Other engines get a light blur. data-tone switches the text between
+   dark-on-light and light-on-dark depending on what sits underneath. */
 .nav-glass {
   --mx: 30%;
   position: relative;
   isolation: isolate;
   color: #0b1220;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05) 60%, rgba(255, 255, 255, 0.09));
-  -webkit-backdrop-filter: blur(16px) saturate(1.35) brightness(1.04);
-  backdrop-filter: blur(16px) saturate(1.35) brightness(1.04);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.12) 55%, rgba(255, 255, 255, 0.2));
+  -webkit-backdrop-filter: blur(14px) saturate(1.6) brightness(1.06);
+  backdrop-filter: blur(14px) saturate(1.6) brightness(1.06);
   border: 0;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 1px 2px 3px -2px rgba(255, 255, 255, 0.35),
-    inset -1px -2px 3px -2px rgba(255, 255, 255, 0.18),
-    0 12px 28px -20px rgba(10, 20, 60, 0.4);
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
-  transition: color 0.3s, box-shadow 0.4s, background 0.4s;
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 2px 3px 6px -3px rgba(255, 255, 255, 0.6),
+    inset -2px -3px 6px -3px rgba(255, 255, 255, 0.3),
+    0 10px 24px -18px rgba(10, 20, 60, 0.35);
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+  transition: color 0.3s, box-shadow 0.4s;
+}
+.glass-refract .nav-glass {
+  -webkit-backdrop-filter: url(#plinth-glass) saturate(1.7) brightness(1.06);
+  backdrop-filter: url(#plinth-glass) saturate(1.7) brightness(1.06);
 }
 /* specular rim: light catches the top-left and bottom-right edges only, like a lit glass pill */
 .nav-glass::before {
@@ -374,9 +380,9 @@ main:has([data-joins-footer]) + .site-footer.grid-ink::before { display: none; }
   inset: 0;
   z-index: 1;
   border-radius: inherit;
-  padding: 1px;
+  padding: 1.5px;
   pointer-events: none;
-  background: conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.55) 0deg, rgba(255, 255, 255, 0.06) 70deg, rgba(255, 255, 255, 0.06) 160deg, rgba(255, 255, 255, 0.45) 200deg, rgba(255, 255, 255, 0.06) 270deg, rgba(255, 255, 255, 0.06) 330deg, rgba(255, 255, 255, 0.55) 360deg);
+  background: conic-gradient(from 0deg at 50% 50%, rgba(255, 255, 255, 0.95) 0deg, rgba(255, 255, 255, 0.05) 70deg, rgba(255, 255, 255, 0.05) 160deg, rgba(255, 255, 255, 0.85) 200deg, rgba(255, 255, 255, 0.05) 270deg, rgba(255, 255, 255, 0.05) 330deg, rgba(255, 255, 255, 0.95) 360deg);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -389,7 +395,7 @@ main:has([data-joins-footer]) + .site-footer.grid-ink::before { display: none; }
   z-index: -1;
   border-radius: inherit;
   pointer-events: none;
-  background: radial-gradient(34% 90% at var(--mx) -20%, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(34% 90% at var(--mx) -20%, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 70%);
 }
 
 /* link text inherits the tone; the dark primary button flips to white on a dark tone */
@@ -399,9 +405,16 @@ main:has([data-joins-footer]) + .site-footer.grid-ink::before { display: none; }
 .nav-glass [class*="text-ink"] { color: inherit; }
 .nav-glass[data-tone="dark"] {
   color: #f6f8ff;
-  background: linear-gradient(180deg, rgba(14, 20, 40, 0.2), rgba(14, 20, 40, 0.12) 60%, rgba(14, 20, 40, 0.18));
+  background: linear-gradient(180deg, rgba(14, 20, 40, 0.28), rgba(14, 20, 40, 0.16) 55%, rgba(14, 20, 40, 0.24));
   text-shadow: 0 1px 12px rgba(0, 0, 20, 0.55);
+  /* over dark and blue sections white inner glow reads as plastic: keep only a thin lit edge */
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 1px 2px 4px -2px rgba(255, 255, 255, 0.3),
+    inset -1px -2px 4px -2px rgba(255, 255, 255, 0.12),
+    0 12px 28px -18px rgba(0, 0, 20, 0.6);
 }
+.nav-glass[data-tone="dark"]::after { opacity: 0.4; }
 .nav-glass[data-tone="dark"] a[class*="bg-ink"] { background: #fff; color: #0b1220; text-shadow: none; }
 .nav-glass[data-tone="dark"] [class*="bg-sunk"] { background: rgba(255, 255, 255, 0.16); }
 
