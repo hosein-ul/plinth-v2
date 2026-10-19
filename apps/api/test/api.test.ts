@@ -568,6 +568,17 @@ describe("audit regressions", () => {
     expect(b.body.id).not.toBe(a.body.id);
   });
 
+  it("a live key cannot read a test payment (or link) by id, nor the other way round", async () => {
+    const live = await call("POST", "/v1/api-keys", { token: session, body: { name: "live-read", environment: "live" } });
+    const pi = await call("POST", "/v1/payment-intents", { token: apiKey, body: { amount: "4.00" } });
+    expect(pi.status).toBe(201);
+    expect((await call("GET", `/v1/payment-intents/${pi.body.id}`, { token: apiKey })).status).toBe(200);
+    expect((await call("GET", `/v1/payment-intents/${pi.body.id}`, { token: live.body.key })).status).toBe(404);
+    expect((await call("GET", `/v1/payments/${pi.body.id}`, { token: live.body.key })).status).toBe(404);
+    const link = await call("POST", "/v1/payment-links", { token: apiKey, body: { name: "L", amount: "1.00" } });
+    expect((await call("GET", `/v1/payment-links/${link.body.id}`, { token: live.body.key })).status).toBe(404);
+  });
+
   it("team changes need the acting person's password; a stolen session alone cannot add, promote or remove anyone", async () => {
     const noReauth = await call("POST", "/v1/team", { token: session, body: { email: "backdoor@evil.test", role: "OWNER" } });
     expect(noReauth.status).toBe(400);

@@ -103,7 +103,8 @@ export async function createPaymentIntent(e: Engine, ctx: AuthContext, input: Cr
 }
 
 export async function getPaymentIntent(e: Engine, ctx: AuthContext, id: string): Promise<IntentView> {
-  const [row] = await e.db.select().from(schema.paymentIntents).where(and(eq(schema.paymentIntents.id, id), eq(schema.paymentIntents.merchantId, ctx.merchantId)));
+  // A test key never reads live payments and a live key never reads test payments, even by id (lists already work this way).
+  const [row] = await e.db.select().from(schema.paymentIntents).where(and(eq(schema.paymentIntents.id, id), eq(schema.paymentIntents.merchantId, ctx.merchantId), eq(schema.paymentIntents.environment, ctx.environment)));
   if (!row) throw new EngineError("NOT_FOUND", "Payment not found", 404);
   const view = await loadIntentView(e, e.db, id);
   return view!;
@@ -197,7 +198,7 @@ export async function listPaymentLinks(e: Engine, ctx: AuthContext) {
 }
 
 export async function getPaymentLink(e: Engine, ctx: AuthContext, id: string) {
-  const [l] = await e.db.select().from(schema.paymentLinks).where(and(eq(schema.paymentLinks.id, id), eq(schema.paymentLinks.merchantId, ctx.merchantId)));
+  const [l] = await e.db.select().from(schema.paymentLinks).where(and(eq(schema.paymentLinks.id, id), eq(schema.paymentLinks.merchantId, ctx.merchantId), eq(schema.paymentLinks.environment, ctx.environment)));
   if (!l) throw new EngineError("NOT_FOUND", "Payment link not found", 404);
   return linkView(e, l);
 }

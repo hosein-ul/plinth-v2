@@ -9,7 +9,7 @@ if (databaseUrl.startsWith("pglite://")) {
   console.warn("DATABASE_URL points at embedded PGlite: the worker must run in the same process (use `pnpm dev:stack`).");
 }
 
-if (process.env.NODE_ENV === "production" && process.env.TRUST_PROXY === undefined) {
+if (process.env.NODE_ENV === "production" && process.env.TRUST_PROXY === undefined && process.env.RENDER !== "true") {
   console.warn("TRUST_PROXY is not set. Behind a proxy or the web app every client then looks like one address and shares its rate limits; set TRUST_PROXY=true (and make sure only your proxy can reach this port) or TRUST_PROXY=false to silence this.");
 }
 
@@ -20,7 +20,8 @@ const engine = await createEngine({ db: handle.db, logger: consoleLogger });
 const { app, routes } = await buildServer(engine, {
   adminToken: process.env.ADMIN_API_TOKEN,
   corsOrigins: (process.env.CORS_ORIGINS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
-  trustProxy: process.env.TRUST_PROXY === "true",
+  // Render (RENDER=true) always puts the service behind its own proxy; without trusting it every client would share one address.
+  trustProxy: process.env.TRUST_PROXY !== undefined ? process.env.TRUST_PROXY === "true" : process.env.RENDER === "true",
   logger: true,
 });
 app.get("/v1/openapi.json", async () => buildOpenApi(routes, process.env.PUBLIC_API_URL));

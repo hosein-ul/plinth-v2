@@ -91,12 +91,16 @@ export async function buildServer(engine: Engine, opts: ServerOptions = {}): Pro
   const badCredentials = new FailureLimiter(60, 60_000);
   const authenticateReq = async (req: FastifyRequest, def: RouteDef): Promise<AuthContext | null> => {
     if (def.auth === "none") return null;
-    const wait = badCredentials.retryAfter(req.ip);
-    if (wait > 0) throw new EngineError("RATE_LIMITED", `Too many failed authentication attempts. Retry in ${wait}s.`, 429);
     try {
       return await authenticateReqInner(req, def);
     } catch (err) {
-      if (err instanceof EngineError && err.status === 401) badCredentials.fail(req.ip);
+      // Only FAILED authentication is slowed down. A caller with a valid credential is never refused because of someone else's bad guesses
+      // (behind a proxy that is not trusted, many clients can share one address).
+      if (err instanceof EngineError && err.status === 401) {
+        const wait = badCredentials.retryAfter(req.ip);
+        badCredentials.fail(req.ip);
+        if (wait > 0) throw new EngineError("RATE_LIMITED", `Too many failed authentication attempts. Retry in ${wait}s.`, 429);
+      }
       throw err;
     }
   };
