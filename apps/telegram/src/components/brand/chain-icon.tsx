@@ -30,6 +30,11 @@ const marks: Record<Exclude<Family, "local" | "other">, Mark> = {
   avalanche: { Icon: NetworkAvalanche, variant: "branded", tile: false },
 };
 
+const TILE_BG: Partial<Record<Family, string>> = {
+  arc: "linear-gradient(180deg, #182680, #842D56)",
+  polygon: "linear-gradient(120deg, #A726C1, #803BDF 88%, #7B3FE4)",
+};
+
 /** Names and environments mirror packages/shared/src/networks.ts. Record<NetworkId, ...> makes tsc flag a new registry id. */
 const registry: Record<NetworkId, { family: Family; name: string; testnet: boolean }> = {
   "arc-testnet": { family: "arc", name: "Arc Testnet", testnet: true },
@@ -97,6 +102,16 @@ export function ChainIcon({ id, size = 20, testnet, className }: { id: NetworkId
     );
   }
   const m = marks[meta.family as Exclude<Family, "local" | "other">];
+  // The library's gradient tiles reference ids such as "arc__b". With many copies on a page, the first copy can sit inside a hidden
+  // (display: none) layout and every other copy then paints nothing. These two are drawn as a CSS gradient with the one-colour glyph instead.
+  const flat = TILE_BG[meta.family];
+  if (flat) {
+    return (
+      <span role="img" aria-label={label} className={cn("inline-grid shrink-0 place-items-center overflow-hidden text-white", className)} style={{ width: size, height: size, borderRadius: Math.round(size * 0.28), background: flat }}>
+        <m.Icon variant="mono" size={Math.round(size * 0.83)} />
+      </span>
+    );
+  }
   return (
     <span role="img" aria-label={label} className={cn("inline-flex shrink-0", m.tile && "overflow-hidden", className)} style={{ width: size, height: size, borderRadius: m.tile ? Math.round(size * 0.28) : undefined }}>
       <m.Icon variant={m.variant} size={size} />
