@@ -15,6 +15,7 @@ import { relativeTime } from "@/lib/format";
 import { ActivationChecklist } from "./activation";
 import { CreatePaymentDialog, StartPaymentAction } from "./create-payment";
 import { PaymentCell, TableHeading } from "./parts-payments";
+import { WaysToGetPaid } from "./ways-to-get-paid";
 
 export function OverviewView() {
   const router = useRouter();
@@ -41,6 +42,8 @@ export function OverviewView() {
         description="Received means final on-chain. Settled means delivered to your vault or wallet. They are shown separately on purpose."
         actions={hasVault ? <div className="flex flex-wrap items-center gap-3"><TokenPicker tokens={tokens} value={cur} onChange={setPicked} label="Showing" compact /><CreatePaymentDialog /></div> : undefined}
       />
+
+      <WaysToGetPaid createAction={hasVault ? <CreatePaymentDialog /> : undefined} />
 
       {!readOnly && <ActivationChecklist />}
 
