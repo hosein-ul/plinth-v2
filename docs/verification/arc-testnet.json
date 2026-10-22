@@ -1,0 +1,169 @@
+{
+  "startedAt": "2026-10-22T07:53:27.773Z",
+  "steps": [
+    {
+      "name": "customer funded",
+      "address": "0xb5d5BA5f60C01CcB8D3Fa6e2bf23e678801771c0",
+      "usdc": "1.2",
+      "at": "2026-10-22T07:53:47.603Z"
+    },
+    {
+      "name": "platform fee configured",
+      "feeBps": 20,
+      "treasury": "0xC0d1AC70A3A32BceA4a124e65eb22eb5f0d0Adc2",
+      "treasuryHasCode": false,
+      "at": "2026-10-22T07:53:48.266Z"
+    },
+    {
+      "name": "vault deployed by relayer, owned by merchant",
+      "vault": "0xC75dCFF4Fe4B9BF81d826325a90aEE0383BbF995",
+      "owner": "0x79669deb596AaFEA380cc044fb63fD0BfceB8483",
+      "gatewayIsOwner": false,
+      "explorer": "https://explorer.testnet.arc.io/address/0xC75dCFF4Fe4B9BF81d826325a90aEE0383BbF995",
+      "at": "2026-10-22T07:53:54.264Z"
+    },
+    {
+      "name": "invoice created with counterfactual address",
+      "id": "pi_ac4ca8327fd2a74de288664ab45c8d71",
+      "depositAddr": "0xE52f253719628b97c57E0158E847D5BFdA8a25eF",
+      "deployed": false,
+      "at": "2026-10-22T07:53:55.025Z"
+    },
+    {
+      "name": "customer transferred USDC to the deposit address",
+      "tx": "0xffe4ce03aa6651cd40d17345f9d504bfd5a3fade170539b699364727ab3b6a33",
+      "explorer": "https://explorer.testnet.arc.io/tx/0xffe4ce03aa6651cd40d17345f9d504bfd5a3fade170539b699364727ab3b6a33",
+      "invoiceNativeBalance": "50000000000000000",
+      "at": "2026-10-22T07:54:00.786Z"
+    },
+    {
+      "name": "address payment SETTLED",
+      "transfer": "https://explorer.testnet.arc.io/tx/0xffe4ce03aa6651cd40d17345f9d504bfd5a3fade170539b699364727ab3b6a33",
+      "sweep": "https://explorer.testnet.arc.io/tx/0xf80b0e440977e1bfca650147ed2a2d3ae2390e4c879962a931c96f71343d6c5f",
+      "vaultDelta": "0.0499",
+      "treasuryDelta": "0.0001",
+      "invoiceAddressNativeBalanceAfter": "0",
+      "invoiceDeployed": true,
+      "relayerGasSpentWei": "4462700000000000",
+      "at": "2026-10-22T07:54:09.187Z"
+    },
+    {
+      "name": "wallet payment SETTLED (customer signed; relayer paid gas)",
+      "tx": "https://explorer.testnet.arc.io/tx/0x4e6ddaeb0b4c64c73e95b4eb7df576b9a0aafd80800649240a6a4c69c7f7289b",
+      "vaultDelta": "0.02994",
+      "treasuryDelta": "0.00016",
+      "at": "2026-10-22T07:54:19.772Z"
+    },
+    {
+      "name": "payout wallet registered: signed proof and fresh sign-in (email confirmation is off)",
+      "status": "ACTIVE",
+      "wallet": "0x79669deb596AaFEA380cc044fb63fD0BfceB8483",
+      "at": "2026-10-22T07:54:21.316Z"
+    },
+    {
+      "name": "direct payment SETTLED to the payout wallet",
+      "walletDelta": "0.03992",
+      "vaultDelta": "0",
+      "treasuryDelta": "0.00008",
+      "at": "2026-10-22T07:54:32.927Z"
+    },
+    {
+      "name": "EURC payment skipped: the customer wallet holds no EURC",
+      "address": "0xb5d5BA5f60C01CcB8D3Fa6e2bf23e678801771c0",
+      "at": "2026-10-22T07:54:33.394Z"
+    },
+    {
+      "name": "signed webhooks delivered",
+      "count": 14,
+      "types": [
+        "payment.detected",
+        "payment.confirmed",
+        "settlement.submitted",
+        "settlement.completed",
+        "payment.completed",
+        "payout.confirmed"
+      ],
+      "invalidSignatures": 0,
+      "at": "2026-10-22T07:54:33.412Z"
+    },
+    {
+      "name": "relayer operations",
+      "ops": [
+        {
+          "kind": "CREATE_VAULT",
+          "status": "CONFIRMED",
+          "tx": "0x02b7fe662cf9029d383e7b65ede16a05d01202d0c4b2daa0a182f40339166e56",
+          "gasUsed": "1287705",
+          "feeNativeWei": "32192625000000000",
+          "feeUsdc": "32192"
+        },
+        {
+          "kind": "DEPLOY_AND_SWEEP",
+          "status": "CONFIRMED",
+          "tx": "0xf80b0e440977e1bfca650147ed2a2d3ae2390e4c879962a931c96f71343d6c5f",
+          "gasUsed": "178508",
+          "feeNativeWei": "4462700000000000",
+          "feeUsdc": "4462"
+        },
+        {
+          "kind": "WALLET_PAYMENT",
+          "status": "CONFIRMED",
+          "tx": "0x4e6ddaeb0b4c64c73e95b4eb7df576b9a0aafd80800649240a6a4c69c7f7289b",
+          "gasUsed": "145198",
+          "feeNativeWei": "3629950000000000",
+          "feeUsdc": "3629"
+        },
+        {
+          "kind": "DEPLOY_AND_SWEEP",
+          "status": "CONFIRMED",
+          "tx": "0x82215fe885731b4d380414fc58d276035c692e1bcfbe85ea530d2afc2287c93d",
+          "gasUsed": "198443",
+          "feeNativeWei": "4961075000000000",
+          "feeUsdc": "4961"
+        }
+      ],
+      "at": "2026-10-22T07:54:33.420Z"
+    }
+  ],
+  "network": "arc-testnet",
+  "contracts": {
+    "networkId": "arc-testnet",
+    "chainId": 5042002,
+    "version": 2,
+    "vaultFactory": "0x7FC3413026Fc652a51201Bc38E7F8E63EFEB9d26",
+    "invoiceImplementation": "0x278a1554436AD6E8f8FfDaa9a43516c0206fD843",
+    "invoiceFactory": "0xEd05D3680073b69e503AF6dbfbd4A934365a1860",
+    "paymentRouter": "0x51f88051045eea4b6eE85f5a1BfDd7324EC29c7f",
+    "treasury": "0xC0d1AC70A3A32BceA4a124e65eb22eb5f0d0Adc2",
+    "maxFeeBps": 100,
+    "deployBlock": 68486264,
+    "deployer": "0xC0d1AC70A3A32BceA4a124e65eb22eb5f0d0Adc2",
+    "bytecodeVerified": true,
+    "productionApproved": false,
+    "vaultConfigDelaySeconds": 86400,
+    "treasuryHasCode": false,
+    "verifiedAt": "2026-10-22T07:45:29.382Z",
+    "artifactHashes": {
+      "VaultFactory": "0x75b42e5fb7b28b34026d6a6ca6a28cde39d49987a1e7549a890cdd2390350055",
+      "InvoiceDeposit": "0xdd7eb0bfc4361c8d6e1e8b96442ace0f203026369a0942158e9bb8e332a08d91",
+      "InvoiceFactory": "0x8d3244994dd41c59fa94a419c4ef1dc6c206febc1044c7c2068ed550e46b531c",
+      "PaymentRouter": "0x4937dc3bcbd21b4e0848af0fde5d3dd81385ad2b586fb7b5658cc8c3df7c7bb9"
+    },
+    "tokens": {
+      "EURC": {
+        "vaultFactory": "0xE79C9437145cb37AF6215fBFaDF2C98d1af0a554",
+        "invoiceImplementation": "0x98cD93BC722F3F546D9740131F0d97521aEFcc78",
+        "invoiceFactory": "0xed13fD9249D8dAE3c7CcaAa936F434834e1EcA5e",
+        "paymentRouter": "0x912c3fE34606806aA34ae1e8aDCa028D470A491B",
+        "version": 2,
+        "deployBlock": 68486326,
+        "bytecodeVerified": true
+      }
+    }
+  },
+  "relayer": "0x837039CccA6d61Cd5eDea8Db1794029Ac2866Bd0",
+  "customer": "0xb5d5BA5f60C01CcB8D3Fa6e2bf23e678801771c0",
+  "vaultOwner": "0x79669deb596AaFEA380cc044fb63fD0BfceB8483",
+  "ok": true,
+  "finishedAt": "2026-10-22T07:54:33.420Z"
+}

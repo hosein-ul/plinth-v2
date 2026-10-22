@@ -6,7 +6,7 @@
 
 A payment gateway where every payment gets its own address, the chain proves the payment, and the money goes to **your** vault or **your** wallet. Built on **Arc**.
 
-[**Live site**](https://plinth.zerolayer.online) · [**MCP server**](docs/mcp.md) · [**Docs**](docs/README.md) · [**API guide**](docs/api-guide.md) · [**Arc mainnet contracts**](#live-on-arc-mainnet)
+[**Live site**](https://plinth.zerolayer.online) · [**MCP server**](docs/mcp.md) · [**Docs**](docs/README.md) · [**API guide**](docs/api-guide.md) · [**Contracts**](#smart-contracts) · [**Arc mainnet**](#live-on-arc-mainnet) · [**Arc testnet**](#live-on-arc-testnet)
 
 <img src="docs/assets/landing.png" alt="The Plinth landing page: a hosted checkout and a Telegram Mini App checkout over a glass-wave background" width="900">
 
@@ -19,17 +19,20 @@ A payment gateway where every payment gets its own address, the chain proves the
 1. [Why Plinth](#why-plinth)
 2. [How a payment works](#how-a-payment-works)
 3. [Features](#features)
-4. [Live on Arc mainnet](#live-on-arc-mainnet)
-5. [Three ways to be paid](#three-ways-to-be-paid)
-6. [Fees](#fees)
-7. [AI-native: the hosted MCP server](#ai-native-the-hosted-mcp-server)
-8. [Networks and tokens](#networks-and-tokens)
-9. [Architecture](#architecture)
-10. [Repository layout](#repository-layout)
-11. [Quick start](#quick-start)
-12. [Quality: what was tested](#quality-what-was-tested)
-13. [Security and status](#security-and-status)
-14. [Documentation](#documentation)
+4. [Smart contracts](#smart-contracts)
+5. [Live on Arc mainnet](#live-on-arc-mainnet)
+6. [Live on Arc testnet](#live-on-arc-testnet)
+7. [Three ways to be paid](#three-ways-to-be-paid)
+8. [Fees](#fees)
+9. [AI-native: the hosted MCP server](#ai-native-the-hosted-mcp-server)
+10. [Networks and tokens](#networks-and-tokens)
+11. [Architecture](#architecture)
+12. [Repository layout](#repository-layout)
+13. [Quick start](#quick-start)
+14. [Deploying contracts](#deploying-contracts)
+15. [Quality: what was tested](#quality-what-was-tested)
+16. [Security and status](#security-and-status)
+17. [Documentation](#documentation)
 
 ## Why Plinth
 
@@ -77,6 +80,32 @@ The address is **computed offline** and cross-checked against the deployed facto
 | **AI-native** | Hosted MCP server (29 tools), `llms.txt`, integration playbook, ready prompts |
 | **Reliability** | Idempotent API, persisted raw transactions, fee replacement, nonce recovery, kill switch, deployment self-check every 5 minutes |
 
+## Smart contracts
+
+Solidity 0.8.28, Foundry, OpenZeppelin 5, EVM target `paris` (no PUSH0, so the same bytecode runs on every chain in the registry). **No proxies, no admin role, no upgrade path, no `delegatecall`, no `selfdestruct`.** Every deployment is a **set of four contracts per payment token**: USDC and EURC each get their own set, because the token is an immutable of the implementation.
+
+| Contract | One per | Role |
+| --- | --- | --- |
+| [`MerchantVault`](contracts/src/MerchantVault.sol) | merchant and chain | Holds settled funds. Only the **owner** (the merchant) can withdraw, set a settlement policy or rotate ownership (`Ownable2Step`, renounce disabled). Anyone may call `forward()` and `applyPendingSettlement()`, but neither lets the caller pick a recipient. Policies that send funds out automatically take effect only after a delay; moving back to "keep in vault" is instant |
+| [`VaultFactory`](contracts/src/VaultFactory.sol) | token and chain | Deploys a merchant's vault at a deterministic address (`createVault`, idempotent) and keeps the registry of genuine vaults that the other contracts check |
+| [`InvoiceDeposit`](contracts/src/InvoiceDeposit.sol) | the implementation | The code behind every per-invoice deposit address (an ERC-1167 clone with immutable arguments). `sweep()` takes **no arguments**: it splits the whole balance into the platform fee (to the fixed treasury) and the rest (to the destination committed in the address) |
+| [`InvoiceFactory`](contracts/src/InvoiceFactory.sol) | token and chain | `predict()` computes an invoice's address before it exists; `deployAndSweep()` deploys the clone and sweeps in one transaction; `deployAndSweepBatch()` settles many invoices, and one failing item does not block the others |
+| [`PaymentRouter`](contracts/src/PaymentRouter.sol) | token and chain | Gasless wallet checkout: the customer signs an EIP-3009 `receiveWithAuthorization`, anyone (normally the relayer) calls `pay()`. The authorization nonce commits to the payment, so a signature cannot be replayed for a different destination or amount |
+
+Supporting code: [`DestinationKind`](contracts/src/DestinationKind.sol) (vault or direct wallet), [`FeeSplit`](contracts/src/lib/FeeSplit.sol) (fee arithmetic and the fail-open fee transfer), [`IFiatToken`](contracts/src/interfaces/IFiatToken.sol) (the EIP-3009 surface of Circle's token).
+
+**Properties the contracts enforce**
+
+- The deposit address is derived from the destination, fee, kind, merchant id and invoice id. A different recipient or fee is a different address, so nobody (the gateway included) can redirect a payment after the address was shown.
+- The fee is fixed per address and can never exceed `MAX_FEE_BPS` (100 bps, set at deployment). It is taken in the settlement transaction, rounded down in the token's own units.
+- The fee leg **fails open**: if the treasury transfer fails (for example the treasury is blocklisted by the token issuer), the merchant gets the full amount and `FeeSkipped` is emitted. A hostile treasury can never block a settlement. If the transfer to the destination fails, the sweep reverts.
+- Tokens other than the settlement token that land on an address can be rescued, but the settlement token never can.
+- The chain id and the contract version are immutables, so an address derived for one chain or version cannot be swept on another.
+
+**Events** the backend reads: `Swept`, `FeeSkipped`, `InvoiceDeployed`, `InvoicePaid`, `VaultCreated`, `SettlementScheduled`, `SettlementApplied`, `Forwarded`, `Withdrawn`, `TokenRescued`.
+
+Tests live in [`contracts/test`](contracts/test): unit, fuzz and invariant suites for the vault, sweep, fee split, router, two-token deployments and gas, plus a fork test. See [contracts/README.md](contracts/README.md).
+
 ## Live on Arc mainnet
 
 The contracts are deployed on **Arc** (chain id `5042`), byte-verified against the build, and approved for production. Source of truth: [`deployments/arc-mainnet.json`](deployments/arc-mainnet.json).
@@ -89,6 +118,21 @@ The contracts are deployed on **Arc** (chain id `5042`), byte-verified against t
 | PaymentRouter | [`0xf154…0728`](https://explorer.arc.io/address/0xf154b3Da58EEa004d5B05a90fF5BA595F8A40728) | [`0x134C…5Dfb`](https://explorer.arc.io/address/0x134C791F1aFC4f51D19d698Fae981D6663905Dfb) |
 
 Tokens: USDC `0x3600…0000` (Arc's native USDC, 6-decimal interface) and EURC `0xbEf5…21c1`. Treasury (fee recipient): `0xC0d1…Adc2`. The API reads the deployed contracts back from the chain (token, chain id, version, treasury, fee cap) and closes the network if anything differs.
+
+## Live on Arc testnet
+
+The same four contracts per token are deployed on **Arc Testnet** (chain id `5042002`, from block `68486264`) and byte-verified against the build. Source of truth: [`deployments/arc-testnet.json`](deployments/arc-testnet.json) (`bytecodeVerified: true`, `productionApproved: false`).
+
+| Contract | USDC set | EURC set |
+| --- | --- | --- |
+| VaultFactory | [`0x7FC3…9d26`](https://explorer.testnet.arc.io/address/0x7FC3413026Fc652a51201Bc38E7F8E63EFEB9d26) | [`0xE79C…a554`](https://explorer.testnet.arc.io/address/0xE79C9437145cb37AF6215fBFaDF2C98d1af0a554) |
+| InvoiceDeposit (implementation) | [`0x278a…D843`](https://explorer.testnet.arc.io/address/0x278a1554436AD6E8f8FfDaa9a43516c0206fD843) | [`0x98cD…cc78`](https://explorer.testnet.arc.io/address/0x98cD93BC722F3F546D9740131F0d97521aEFcc78) |
+| InvoiceFactory | [`0xEd05…1860`](https://explorer.testnet.arc.io/address/0xEd05D3680073b69e503AF6dbfbd4A934365a1860) | [`0xed13…cA5e`](https://explorer.testnet.arc.io/address/0xed13fD9249D8dAE3c7CcaAa936F434834e1EcA5e) |
+| PaymentRouter | [`0x51f8…9c7f`](https://explorer.testnet.arc.io/address/0x51f88051045eea4b6eE85f5a1BfDd7324EC29c7f) | [`0x912c…491B`](https://explorer.testnet.arc.io/address/0x912c3fE34606806aA34ae1e8aDCa028D470A491B) |
+
+Tokens: USDC `0x3600…0000` and EURC `0x89B5…D72a`. Treasury: `0xC0d1…Adc2`.
+
+**Acceptance run on the real testnet** ([`docs/verification/arc-testnet.json`](docs/verification/arc-testnet.json), reproduce with `pnpm e2e:testnet arc-testnet`): the relayer deployed a vault owned by the merchant; a customer paid an invoice by plain transfer and the invoice address was swept to the vault **without ever holding gas**; a gasless wallet payment (the customer signed, the relayer paid gas) settled; a direct payout to a proven wallet settled; 14 signed webhooks arrived with 0 invalid signatures. Gas used: vault creation 1,287,705; deploy and sweep about 178,000 to 198,000; wallet payment 145,198.
 
 ## Three ways to be paid
 
@@ -121,7 +165,7 @@ claude mcp add --transport http plinth https://plinth-api.zerolayer.online/mcp -
 
 ## Networks and tokens
 
-The registry holds **26 networks**: Arc, Base, Arbitrum, OP, Ethereum, Polygon and 18 more Circle-native USDC chains, each with its chain id, token addresses, EIP-712 domain, finality rule and log window **verified read-only against the live chain**. Only Arc has contracts deployed today; every other network stays closed until it is deployed and approved. Table, verification method and what is pending: [docs/networks.md](docs/networks.md).
+The registry holds **26 networks**: Arc, Base, Arbitrum, OP, Ethereum, Polygon and 18 more Circle-native USDC chains, each with its chain id, token addresses, EIP-712 domain, finality rule and log window **verified read-only against the live chain**. Contracts are deployed on Arc (mainnet and testnet) only; every other network stays closed until it is deployed and approved. Table, verification method and what is pending: [docs/networks.md](docs/networks.md).
 
 ## Architecture
 
@@ -194,14 +238,40 @@ curl -X POST localhost:4000/v1/payment-intents -H "Authorization: Bearer <test k
 
 Open the returned `checkout_url`. Deploying contracts to a network: [docs/DEPLOY-HANDOFF.md](docs/DEPLOY-HANDOFF.md) and [docs/deploy-testnet.md](docs/deploy-testnet.md).
 
+## Deploying contracts
+
+Deploy a set of contracts to a network, then record and verify it:
+
+```bash
+# 1. the registry must agree with the live token (chain id, EIP-712 domain, EIP-3009 and permit)
+pnpm verify:networks arc-testnet
+
+# 2. deploy (a Foundry keystore is preferred; a raw key only for throwaway testnet keys, locally)
+cd contracts
+DEPLOYER_PRIVATE_KEY=... TREASURY=0x... USDC_ADDRESS=0x3600000000000000000000000000000000000000 EXPECTED_CHAIN_ID=5042002 \
+  forge script script/Deploy.s.sol --rpc-url https://rpc.testnet.arc.io --private-key $DEPLOYER_PRIVATE_KEY --broadcast
+# a second token has its own set: add TOKEN_SYMBOL=EURC TOKEN_ADDRESS=0x...
+
+# 3. byte-compare the four contracts with the build, check wiring and CREATE2 derivation, write the record
+cd .. && pnpm finalize:deployment --network arc-testnet      # add --token EURC for the second set
+
+# 4. real transactions: vault, address payment, wallet payment, direct payout, webhooks
+pnpm e2e:testnet arc-testnet
+```
+
+The script refuses a chain id that differs from `EXPECTED_CHAIN_ID`, a token without code or with other than 6 decimals, and any production chain without `ALLOW_MAINNET_DEPLOY=true`. A mainnet record is only usable after a human runs `pnpm approve:deployment`. Guides: [docs/deploy-testnet.md](docs/deploy-testnet.md), [docs/DEPLOY-HANDOFF.md](docs/DEPLOY-HANDOFF.md).
+
+**Relayer spending limits.** Each network has per-transaction and daily gas caps. Creating a vault costs about 0.03 USDC on Arc, so the default cap on Arc and Arc Testnet is 0.1 USDC per transaction. Override any field with `RELAYER_POLICY_<NETWORK>` (JSON, wei as decimal strings). Arc rejects `maxFeePerGas` below 20 gwei; the relayer enforces that floor.
+
 ## Quality: what was tested
 
 | Suite | Result |
 | --- | --- |
-| Foundry (`pnpm test:contracts`) | **87 passed**: unit, fuzz, invariants, fee split and fail-open fee, vault and direct kinds, router nonce binding, two-token deployments, gas-griefing fuzz |
+| Foundry (`pnpm test:contracts`) | **89 passed** (also under Arc's Foundry fork, `arc-forge`): unit, fuzz, invariants, fee split and fail-open fee, vault and direct kinds, router nonce binding, two-token deployments, gas-griefing fuzz |
 | Heavy campaign | 20,000 fuzz runs per test and 1,000 invariant runs at depth 100: no counterexample |
 | Static analysis | Slither, 80 detectors: no high or medium finding |
-| TypeScript (`pnpm test`) | engine **120**, api **28**, blockchain **23**, shared **23**, mcp **8**, db **6**, all passing |
+| TypeScript (`pnpm test`) | engine **160**, api **38**, blockchain **30**, shared **23**, mcp **8**, db **6**, all passing |
+| Arc testnet (`pnpm e2e:testnet arc-testnet`) | real transactions on Arc Testnet: vault, address payment, gasless wallet payment, direct payout, signed webhooks |
 | End to end (`pnpm e2e:local`) | vault, address payment, wallet payment, direct payout and EURC on a local chain, with merchant and treasury balances checked on-chain |
 | Network probes (`pnpm verify:networks`) | chain id, token identity, EIP-712 domain, EIP-3009 and permit selectors, log window |
 

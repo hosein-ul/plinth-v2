@@ -68,7 +68,8 @@ export interface ResolvedPolicy {
 /** The policy for a network: its tier default, overridden field by field by RELAYER_POLICY_<NETWORK>. */
 export function resolvePolicyDetails(net: NetworkConfig, env: Record<string, string | undefined> = process.env): ResolvedPolicy {
   const tier = tierOf(net);
-  const base = DEFAULTS[tier];
+  // Arc Testnet pays gas in USDC at the same fee level as Arc: creating a vault costs about 0.03 USDC, above the generic testnet cap.
+  const base = tier === "testnet" && net.gas.model === "usdc-native" ? { ...DEFAULTS.testnet, maxFeePerTxWei: E18 / 10n, maxDailyGasWei: 5n * E18 } : DEFAULTS[tier];
   const key = `RELAYER_POLICY_${net.id.toUpperCase().replace(/-/g, "_")}`;
   const raw = env[key];
   if (!raw) return { policy: { ...base }, source: "default", tier };
