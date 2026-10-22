@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ArrowUpRight, Clock, Lock, Wallet, QrCode, ShieldCheck, Zap } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Clock, Globe, Lock, Wallet, QrCode, ShieldCheck, Zap } from "lucide-react";
 import { apiFetch } from "@/lib/client-api";
 import { formatCountdown } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WalletProvider } from "./wallet-provider";
 import { WalletPanel } from "./wallet-panel";
 import { AddressPanel } from "./address-panel";
+import { BridgePanel } from "./bridge-panel";
 import { ConfirmingPanel, ReceiptPanel, ClosedPanel } from "./checkout-states";
 import { HelpPanel, HowItWorks, MerchantMark, Meter, NetworkSelector, StatusThread, TestBadge, useCountdown, utcClock, type Net, type PaymentRow } from "./checkout-parts";
 
@@ -43,8 +44,9 @@ export function CheckoutView({ id, initial }: { id: string; initial: any }) {
   const left = useCountdown(data.seconds_remaining);
   const walletOn = data.checkout_methods.includes("WALLET");
   const addressOn = data.checkout_methods.includes("ADDRESS");
-  const [tab, setTab] = useState<"wallet" | "address">(walletOn ? "wallet" : "address");
-  const usable = (n: Net, t: "wallet" | "address") => (t === "wallet" ? n.wallet_checkout_supported : !!n.deposit_address);
+  const bridgeOn = walletOn && addressOn && (data.currency ?? "USDC") === "USDC";
+  const [tab, setTab] = useState<"wallet" | "address" | "bridge">(walletOn ? "wallet" : "address");
+  const usable = (n: Net, t: "wallet" | "address" | "bridge") => (t === "wallet" ? n.wallet_checkout_supported : !!n.deposit_address);
   const [network, setNetwork] = useState<string>(() => (networks.find((n) => usable(n, tab)) ?? networks[0])?.network ?? "");
   // The chosen network must be valid for the chosen method; otherwise move to the first one that is.
   useEffect(() => {
@@ -195,18 +197,24 @@ export function CheckoutView({ id, initial }: { id: string; initial: any }) {
                     </div>
                   )}
 
-                  <NetworkSelector networks={networks} value={network} onChange={setNetwork} mode={tab} />
+                  <NetworkSelector networks={networks} value={network} onChange={setNetwork} mode={tab === "wallet" ? "wallet" : "address"} />
 
-                  <Tabs value={tab} onValueChange={(v) => setTab(v as "wallet" | "address")}>
+                  <Tabs value={tab} onValueChange={(v) => setTab(v as "wallet" | "address" | "bridge")}>
                     {walletOn && addressOn && (
                       <TabsList className="grid w-full grid-flow-col auto-cols-fr" aria-label="How to pay">
                         <TabsTrigger value="wallet" className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap px-2"><Wallet className="size-4 max-[400px]:hidden" aria-hidden />Pay with wallet</TabsTrigger>
+                        {bridgeOn && <TabsTrigger value="bridge" className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap px-2"><Globe className="size-4 max-[400px]:hidden" aria-hidden />Other network</TabsTrigger>}
                         <TabsTrigger value="address" className="inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap px-2"><QrCode className="size-4 max-[400px]:hidden" aria-hidden />Send to address</TabsTrigger>
                       </TabsList>
                     )}
                     {walletOn && (
                       <TabsContent value="wallet" className="pt-5 focus-visible:outline-none data-[state=active]:animate-[rise-in_var(--duration-base)_var(--ease-out)]">
                         <WalletPanel id={id} net={net} remaining={data.remaining} remainingUnits={remainingUnits} onUseAddress={() => setTab("address")} disabled={!canTransact} />
+                      </TabsContent>
+                    )}
+                    {bridgeOn && (
+                      <TabsContent value="bridge" className="pt-5 focus-visible:outline-none data-[state=active]:animate-[rise-in_var(--duration-base)_var(--ease-out)]">
+                        <BridgePanel net={net} remaining={data.remaining} remainingUnits={remainingUnits} onUseAddress={() => setTab("address")} disabled={!canTransact} />
                       </TabsContent>
                     )}
                     {addressOn && (
