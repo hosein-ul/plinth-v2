@@ -13,6 +13,7 @@ import { apiFetch, ClientApiError } from "@/lib/client-api";
 import { shortHash } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { ActionBar, utcClock, type Net } from "./checkout-parts";
+import { BuyUsdc, ONRAMP_ENABLED } from "./buy-usdc";
 
 type Phase = "idle" | "preparing" | "review" | "signing" | "submitting" | "relaying" | "rejected" | "failed";
 
@@ -243,7 +244,10 @@ export function WalletPanel({
                 <div role="alert" className="rounded-ctl border border-bad/25 bg-bad-quiet px-3.5 py-3 text-sm text-bad-ink">
                   <p className="font-medium">Insufficient {sym}</p>
                   <p className="mt-0.5">This wallet holds {fmt(have!)} {sym} on {net.name}. {remaining} {sym} is needed.</p>
-                  <button type="button" onClick={onUseAddress} className="mt-1.5 font-medium underline underline-offset-4">Pay from another wallet or exchange by address</button>
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    {ONRAMP_ENABLED && address && sym === "USDC" && <BuyUsdc paymentId={id} address={address} sym={sym} />}
+                    <button type="button" onClick={onUseAddress} className="font-medium underline underline-offset-4">Pay from another wallet or exchange by address</button>
+                  </div>
                 </div>
               )}
               <ActionBar>

@@ -22,6 +22,7 @@ export * from "./forwarding";
 export * from "./worker";
 export * from "./settlement-plan";
 export * from "./web3auth";
+export * from "./circle-wallets";
 export * from "./payout-route";
 export * from "./deployment-check";
 export * from "./email";

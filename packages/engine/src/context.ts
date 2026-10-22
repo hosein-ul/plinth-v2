@@ -98,6 +98,10 @@ export interface EngineConfig {
   allowCustodyMainnet: boolean;
   /** Web3Auth client id the identity tokens must be issued for. */
   web3authClientId?: string;
+  /** Circle API key for sign-in with Circle User-Controlled Wallets (server only). */
+  circleApiKey?: string;
+  /** Replaces the Circle user-token check (tests only). */
+  verifyCircleUserToken?: (userToken: string) => Promise<import("./web3auth").Web3AuthIdentity>;
   /** Replaces identity-token verification (tests only). */
   verifyIdentityToken?: (idToken: string) => Promise<import("./web3auth").Web3AuthIdentity>;
 }

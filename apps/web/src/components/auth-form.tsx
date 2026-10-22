@@ -12,6 +12,7 @@ import { Notice } from "@/components/page";
 import { ShaderField } from "@/components/marketing/shader-field";
 import { SHADER_COLORS } from "@/components/marketing/shader-colors";
 import { SignInCancelled, WEB3AUTH_CLIENT_ID, getWeb3AuthIdToken } from "@/lib/web3auth-client";
+import { CIRCLE_APP_ID, CircleCancelled, getCircleUserToken } from "@/lib/circle-wallets-client";
 import { cn } from "@/lib/cn";
 
 /** Turn the SDK's technical errors into something a person can act on. */
@@ -29,7 +30,8 @@ const rise = (i: number) => ({ animation: `slide-up-in 0.7s var(--ease-out) ${0.
  */
 export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const router = useRouter();
-  const [busy, setBusy] = useState<"w3a" | "pw" | null>(null);
+  const [busy, setBusy] = useState<"w3a" | "pw" | "circle" | null>(null);
+  const [circleOpen, setCircleOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const signup = mode === "signup";
@@ -39,6 +41,23 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   function done() {
     router.push(signup ? "/dashboard/networks?welcome=1" : "/dashboard");
     router.refresh();
+  }
+
+  async function viaCircle(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const email = String(new FormData(e.currentTarget).get("circle_email") ?? "").trim();
+    setBusy("circle");
+    setError(null);
+    try {
+      const user_token = await getCircleUserToken(email);
+      const res = await fetch("/api/auth/circle", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ user_token }) });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok) return done();
+      setError(json?.error?.message ?? "Could not sign in");
+    } catch (err) {
+      if (!(err instanceof CircleCancelled)) setError(err instanceof Error ? err.message : "Could not sign in");
+    }
+    setBusy(null);
   }
 
   async function viaWeb3Auth() {
@@ -102,6 +121,23 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
               <button type="button" aria-expanded={showPw} onClick={() => setShowPw((v) => !v)} className="text-sm text-ink-3 underline decoration-line-strong underline-offset-4 transition-colors hover:text-ink hover:decoration-ink">
                 {showPw ? "Hide email and password" : signup ? "Sign up with email and password instead" : "Use email and password instead"}
               </button>
+            </div>
+          )}
+
+          {CIRCLE_APP_ID && (
+            <div className="mt-3 text-center" style={rise(5)}>
+              <button type="button" aria-expanded={circleOpen} onClick={() => setCircleOpen((v) => !v)} className="text-sm text-ink-3 underline decoration-line-strong underline-offset-4 transition-colors hover:text-ink hover:decoration-ink">
+                {circleOpen ? "Hide the email code option" : "Get a sign-in code by email (Circle Wallets)"}
+              </button>
+              {circleOpen && (
+                <form onSubmit={viaCircle} className="mt-4 space-y-3 text-left" noValidate>
+                  <Field label="Email" htmlFor="circle_email">
+                    <Input id="circle_email" name="circle_email" type="email" required autoComplete="email" />
+                  </Field>
+                  <Button type="submit" variant="secondary" size="lg" className="w-full" loading={busy === "circle"} disabled={busy === "pw" || busy === "w3a"}>Send code</Button>
+                  <p className="text-xs text-ink-3">Circle sends a one-time code and creates a wallet you control. Plinth never sees the code.</p>
+                </form>
+              )}
             </div>
           )}
 

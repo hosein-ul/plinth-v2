@@ -3,7 +3,7 @@ import { getAddress, type Hex } from "viem";
 import { and, eq, schema, sql } from "@plinth/db";
 import {
   createApiKeySchema, createInvoiceSchema, createPaymentIntentSchema, createPaymentLinkSchema, createRefundRequestSchema, createWebhookEndpointSchema,
-  custodyScheduleSchema, custodyWithdrawalSchema, passwordChangeSchema, teamAddSchema, teamRemoveSchema, teamRoleSchema, emailChangeSchema, emailConfirmSchema, enableNetworkSchema, loginSchema, merchantFeeSchema, payoutChallengeSchema, payoutConfirmSchema, payoutVaultSchema, payoutWalletSchema, reauthSchema, web3authSchema, TOKEN_SYMBOLS, type TokenSymbol, selectAddressNetworkSchema, signupSchema, submitRefundProofSchema, txHashSchema, walletPrepareSchema, walletSubmitSchema, WEBHOOK_EVENT_TYPES,
+  circleOtpSchema, circleSignInSchema, custodyScheduleSchema, custodyWithdrawalSchema, passwordChangeSchema, teamAddSchema, teamRemoveSchema, teamRoleSchema, emailChangeSchema, emailConfirmSchema, enableNetworkSchema, loginSchema, merchantFeeSchema, payoutChallengeSchema, payoutConfirmSchema, payoutVaultSchema, payoutWalletSchema, reauthSchema, web3authSchema, TOKEN_SYMBOLS, type TokenSymbol, selectAddressNetworkSchema, signupSchema, submitRefundProofSchema, txHashSchema, walletPrepareSchema, walletSubmitSchema, WEBHOOK_EVENT_TYPES,
 } from "@plinth/shared";
 import * as E from "@plinth/engine";
 import type { Engine } from "@plinth/engine";
@@ -77,6 +77,19 @@ export function buildRoutes(e: Engine): RouteDef[] {
       response: "A session token. The identity token is verified against Web3Auth's published keys for this deployment's client id.",
       handler: async ({ req, body }) => {
         const identity = await E.verifyIdentity(e, body.id_token);
+        return E.signInWithIdentity(e, identity, { business_name: body.business_name }, { type: "USER", ip: req.ip });
+      },
+    }),
+    route({
+      method: "POST", path: "/v1/auth/circle/otp", tag: "Auth", summary: "Send a one-time code with Circle Wallets", auth: "none", body: circleOtpSchema, rateLimit: 5,
+      response: "The tokens Circle's hosted code screen needs. The code itself goes to the user's email and never reaches this server.",
+      handler: async ({ body }) => E.circleRequestOtp(e, body),
+    }),
+    route({
+      method: "POST", path: "/v1/auth/circle", tag: "Auth", summary: "Sign in or sign up with a Circle Wallets user token", auth: "none", body: circleSignInSchema, rateLimit: 10,
+      response: "A session token. The user token is confirmed with Circle using this deployment's API key.",
+      handler: async ({ req, body }) => {
+        const identity = await E.verifyCircleUserToken(e, body.user_token);
         return E.signInWithIdentity(e, identity, { business_name: body.business_name }, { type: "USER", ip: req.ip });
       },
     }),

@@ -93,6 +93,7 @@ export async function createEngine(opts: CreateEngineOptions): Promise<Engine> {
     custodyEnabled: env.CUSTODY_ENABLED === "true",
     allowCustodyMainnet: env.ALLOW_CUSTODY_MAINNET === "true",
     web3authClientId: env.WEB3AUTH_CLIENT_ID ?? env.NEXT_PUBLIC_WEB3AUTH_CLIENT_ID,
+    circleApiKey: env.CIRCLE_API_KEY,
     ...opts.config,
   };
   const alerts = opts.alerts ?? new DefaultAlertSink(opts.db, log, cfg.alertWebhookUrl, undefined, now);

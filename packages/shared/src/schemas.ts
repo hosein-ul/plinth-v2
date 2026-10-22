@@ -114,6 +114,8 @@ export const signupSchema = z.object({
   email: z.string().email().max(320),
   password: z.string().min(12).max(200),
 });
+export const circleOtpSchema = z.object({ device_id: z.string().min(8).max(200), email: z.string().trim().toLowerCase().email().max(254) });
+export const circleSignInSchema = z.object({ user_token: z.string().min(20).max(8000), business_name: z.string().trim().min(1).max(120).optional() });
 export const web3authSchema = z.object({ id_token: z.string().min(20).max(8000), business_name: z.string().trim().min(1).max(120).optional() });
 /** Proof that the person at the keyboard owns the account right now: a password, or a fresh sign-in identity token. */
 export const reauthSchema = z

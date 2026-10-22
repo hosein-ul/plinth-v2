@@ -115,7 +115,7 @@ export async function verifyIdentity(e: Engine, idToken: string): Promise<Web3Au
  * proof of ownership we control, so the user must sign in with their password first.
  */
 export async function signInWithIdentity(e: Engine, id: Web3AuthIdentity, input: { business_name?: string }, actor: Actor) {
-  const provider = "web3auth";
+  const provider = id.connection === "circle" ? "circle" : "web3auth";
   const aliases = id.aliases?.length ? id.aliases : [id.subject];
   const rows = await e.db.select().from(schema.externalIdentities).where(and(eq(schema.externalIdentities.provider, provider), inArray(schema.externalIdentities.subject, aliases)));
   // The first alias that is already linked decides who this is. If the aliases point at DIFFERENT accounts, nothing
