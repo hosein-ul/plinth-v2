@@ -1,16 +1,16 @@
 {
   "chainId": 5042002,
-  "deployBlock": 68486326,
+  "deployBlock": 68750957,
   "deployer": "0xC0d1AC70A3A32BceA4a124e65eb22eb5f0d0Adc2",
-  "invoiceFactory": "0xed13fD9249D8dAE3c7CcaAa936F434834e1EcA5e",
-  "invoiceImplementation": "0x98cD93BC722F3F546D9740131F0d97521aEFcc78",
+  "invoiceFactory": "0x4fc43E574DE8a226fD5da334340c3Beb348C6adE",
+  "invoiceImplementation": "0x1C31E4F2c6abb04c9847544901CBCf7706B1aDe8",
   "maxFeeBps": 100,
-  "paymentRouter": "0x912c3fE34606806aA34ae1e8aDCa028D470A491B",
+  "paymentRouter": "0x2804DD604DFC8e81F139468a46d955f83981F50E",
   "token": "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
   "tokenSymbol": "EURC",
   "treasury": "0xC0d1AC70A3A32BceA4a124e65eb22eb5f0d0Adc2",
   "treasuryHasCode": false,
   "usdc": "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
-  "vaultFactory": "0xE79C9437145cb37AF6215fBFaDF2C98d1af0a554",
+  "vaultFactory": "0x2b25cC1Fd31daA1364B342B08d5EA173828847Bb",
   "version": 2
 }

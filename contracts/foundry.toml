@@ -10,8 +10,8 @@ solc_version = "0.8.28"
 evm_version = "paris"
 optimizer = true
 optimizer_runs = 200
-bytecode_hash = "none"
-cbor_metadata = false
+# Default metadata (IPFS hash + CBOR) stays on so explorers can prove an exact source match.
+# Contracts deployed before 2026-10-23 on Arc mainnet were built without it and only show a partial match.
 remappings = ["@openzeppelin/=lib/openzeppelin-contracts/", "forge-std/=lib/forge-std/src/"]
 fs_permissions = [{ access = "read-write", path = "../deployments" }]
 

@@ -112,10 +112,10 @@ The contracts are deployed on **Arc** (chain id `5042`), byte-verified against t
 
 | Contract | USDC set | EURC set |
 | --- | --- | --- |
-| VaultFactory | [`0xeBc9…D56D`](https://explorer.arc.io/address/0xeBc902Cee74345DD23f63E2f132f81E5fBE1D56D) | [`0x0A31…B2Ea`](https://explorer.arc.io/address/0x0A310C2cC7c445D33fe91586240992b6f432B2ea) |
-| InvoiceDeposit (implementation) | [`0x7950…ea84`](https://explorer.arc.io/address/0x795090A656f472cdddeF8cF367A4ee446b39ea84) | [`0x8e33…7a9f`](https://explorer.arc.io/address/0x8e3326B7638b388717B821aA225a5E2c19477a9f) |
-| InvoiceFactory | [`0xb106…a168`](https://explorer.arc.io/address/0xb10655458F990335b6339d0c95D9755B5CACa168) | [`0xc8a6…ad65`](https://explorer.arc.io/address/0xc8a620C0dD6370DeB0254848D3877160f057ad65) |
-| PaymentRouter | [`0xf154…0728`](https://explorer.arc.io/address/0xf154b3Da58EEa004d5B05a90fF5BA595F8A40728) | [`0x134C…5Dfb`](https://explorer.arc.io/address/0x134C791F1aFC4f51D19d698Fae981D6663905Dfb) |
+| VaultFactory | [`0x2585…a625`](https://explorer.arc.io/address/0x258591720519F42775693Ff7da0a41406387a625) | [`0x0A31…B2Ea`](https://explorer.arc.io/address/0xBcA006285F0Bec19AdD48333B6f5fd8bD2BDA8e9) |
+| InvoiceDeposit (implementation) | [`0x7913…184D`](https://explorer.arc.io/address/0x79136c787DeE7e8583DaAD0f55683149c4BF184D) | [`0x75b5…08E1`](https://explorer.arc.io/address/0x75b553Baf2c926C0E29e53e551437C85De4c08E1) |
+| InvoiceFactory | [`0x1609…0538`](https://explorer.arc.io/address/0x16091911885102D71A5aa3774AeD56Fb51e60538) | [`0x1D9e…CbBf`](https://explorer.arc.io/address/0x1D9eb25f4eb550250BB5631ED451bBDA862FCbBf) |
+| PaymentRouter | [`0x3960…9312`](https://explorer.arc.io/address/0x396081691Ea3CBEDAa5D8A26595081cC76a79312) | [`0x2Aed…6A30`](https://explorer.arc.io/address/0x2Aed78F76fD40a1BAf6F00BDEe30Ec0ABcb06A30) |
 
 Tokens: USDC `0x3600…0000` (Arc's native USDC, 6-decimal interface) and EURC `0xbEf5…21c1`. Treasury (fee recipient): `0xC0d1…Adc2`. The API reads the deployed contracts back from the chain (token, chain id, version, treasury, fee cap) and closes the network if anything differs.
 
@@ -125,10 +125,10 @@ The same four contracts per token are deployed on **Arc Testnet** (chain id `504
 
 | Contract | USDC set | EURC set |
 | --- | --- | --- |
-| VaultFactory | [`0x7FC3…9d26`](https://explorer.testnet.arc.io/address/0x7FC3413026Fc652a51201Bc38E7F8E63EFEB9d26) | [`0xE79C…a554`](https://explorer.testnet.arc.io/address/0xE79C9437145cb37AF6215fBFaDF2C98d1af0a554) |
-| InvoiceDeposit (implementation) | [`0x278a…D843`](https://explorer.testnet.arc.io/address/0x278a1554436AD6E8f8FfDaa9a43516c0206fD843) | [`0x98cD…cc78`](https://explorer.testnet.arc.io/address/0x98cD93BC722F3F546D9740131F0d97521aEFcc78) |
-| InvoiceFactory | [`0xEd05…1860`](https://explorer.testnet.arc.io/address/0xEd05D3680073b69e503AF6dbfbd4A934365a1860) | [`0xed13…cA5e`](https://explorer.testnet.arc.io/address/0xed13fD9249D8dAE3c7CcaAa936F434834e1EcA5e) |
-| PaymentRouter | [`0x51f8…9c7f`](https://explorer.testnet.arc.io/address/0x51f88051045eea4b6eE85f5a1BfDd7324EC29c7f) | [`0x912c…491B`](https://explorer.testnet.arc.io/address/0x912c3fE34606806aA34ae1e8aDCa028D470A491B) |
+| VaultFactory | [`0x9CF7…0F08`](https://explorer.testnet.arc.io/address/0x9CF73da5594A6edB62928EB65Cfe2A62a0C10F08) | [`0x2b25…47Bb`](https://explorer.testnet.arc.io/address/0x2b25cC1Fd31daA1364B342B08d5EA173828847Bb) |
+| InvoiceDeposit (implementation) | [`0xFAD5…8853`](https://explorer.testnet.arc.io/address/0xFAD5b71b2ECf9Ab553d54Bb94E93B26e37C18853) | [`0x1C31…aDe8`](https://explorer.testnet.arc.io/address/0x1C31E4F2c6abb04c9847544901CBCf7706B1aDe8) |
+| InvoiceFactory | [`0x7614…855f`](https://explorer.testnet.arc.io/address/0x761428302C7fD463D42338a7284a43026793855f) | [`0x4fc4…6adE`](https://explorer.testnet.arc.io/address/0x4fc43E574DE8a226fD5da334340c3Beb348C6adE) |
+| PaymentRouter | [`0x2323…5165`](https://explorer.testnet.arc.io/address/0x2323E6da83644E7E30A0f9eCb1523F5b86405165) | [`0x2804…F50E`](https://explorer.testnet.arc.io/address/0x2804DD604DFC8e81F139468a46d955f83981F50E) |
 
 Tokens: USDC `0x3600…0000` and EURC `0x89B5…D72a`. Treasury: `0xC0d1…Adc2`.
 
