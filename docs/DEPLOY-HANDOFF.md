@@ -166,5 +166,5 @@ Polygon PoS was never probed (no RPC in the earlier environment); EDGE and Pharo
 ## 11. Where to look
 
 * `docs/operations.md`: every environment variable, alerts, emergency stop, treasury rotation, adding a token.
-* `docs/mainnet-launch-checklist.md`: the original gate (it assumes an audit and a KMS; the owner has chosen to proceed without them for this sample).
+* The mainnet launch checklist was removed. The owner approves mainnet directly with `pnpm approve:deployment`.
 * `docs/networks.md`, `docs/architecture.md`, `docs/threat-model.md`, `docs/security-review.md`, `docs/mcp.md`, `docs/api-guide.md`.

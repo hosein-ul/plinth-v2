@@ -66,7 +66,7 @@ RELAYER_POLICY_AVALANCHE_MAINNET={"maxFeePerTxWei":"20000000000000000","maxDaily
 1. Registry entry, then `pnpm verify:networks <id>` must pass.
 2. Foundry deploy with `TREASURY`, `MAX_FEE_BPS` and `CONTRACT_VERSION`, then `pnpm finalize:deployment --network <id>` (also `--token EURC` where listed).
 3. Set `RPC_URLS_<NETWORK>` (at least two providers), `RELAYER_POLICY_<NETWORK>` where required, `ENABLED_NETWORKS`, and for mainnets `ALLOW_MAINNET=true`.
-4. A human completes [mainnet-launch-checklist.md](mainnet-launch-checklist.md) and runs `pnpm approve:deployment`.
+4. The owner runs `pnpm approve:deployment` to approve the network for production.
 
 ## Not in the registry, and why
 

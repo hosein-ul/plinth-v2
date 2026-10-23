@@ -10,7 +10,6 @@
 | [threat-model.md](threat-model.md) | security | Assets, actors, mitigations, what a compromised backend can and cannot do, payout and custody trade-offs |
 | [security-review.md](security-review.md) | security, launch | The internal review of 2026-10-15 (not an audit): tools, results, findings, what an audit must cover |
 | [verification.md](verification.md) | everyone | What was tested, with real counts, and what was **not** done |
-| [mainnet-launch-checklist.md](mainnet-launch-checklist.md) | launch | The gate before any mainnet |
 | [DEPLOY-HANDOFF.md](DEPLOY-HANDOFF.md) | whoever deploys | Current state, security rules, preflight, Arc mainnet deploy commands, approval, Render configuration, canary, rollback |
 | [deploy-testnet.md](deploy-testnet.md) | operators | Deploying to a testnet |
 | [circle-integrations.md](circle-integrations.md) | engineers | CCTP, Gateway, Gas Station: verified facts and status |

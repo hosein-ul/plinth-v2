@@ -101,7 +101,7 @@ Because payments are sent to a platform address, a **compromised backend can als
 
 ## Residual risks (not mitigated by this repository)
 
-* **Unaudited contracts.** Fee splitting and the Direct mode are new code and have had no independent review. An independent audit is a precondition for mainnet. See [mainnet-launch-checklist.md](mainnet-launch-checklist.md).
+* **Unaudited contracts.** Fee splitting and the Direct mode are new code and have had no independent review. An independent audit has not been done; the owner accepted this risk.
 * **Issuer controls.** USDC and EURC can be paused/blocklisted by their issuer; a blocked vault, payout wallet, treasury or invoice address cannot receive or sweep (a blocked treasury only skips the fee).
 * **Plinth treasury key.** The treasury receives the fee on every payment. Its key is outside this repository; it is assumed to be a plain account, and rotating it needs a new implementation version that affects only new addresses.
 * **Wrong network deposits** sent to an address that does not exist on that chain are unrecoverable (no one holds a key); the UI warns prominently.

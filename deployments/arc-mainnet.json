@@ -11,7 +11,7 @@
   "deployBlock": 27520124,
   "deployer": "0xC0d1AC70A3A32BceA4a124e65eb22eb5f0d0Adc2",
   "bytecodeVerified": true,
-  "productionApproved": false,
+  "productionApproved": true,
   "vaultConfigDelaySeconds": 86400,
   "treasuryHasCode": false,
   "verifiedAt": "2026-10-23T21:59:05.425Z",
@@ -31,5 +31,10 @@
       "deployBlock": 27520186,
       "bytecodeVerified": true
     }
+  },
+  "approval": {
+    "reviewer": "hosein-ul",
+    "audit": "none: owner accepted risk",
+    "approvedAt": "2026-10-23T22:18:36.458Z"
   }
 }

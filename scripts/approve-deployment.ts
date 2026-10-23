@@ -5,7 +5,7 @@
  *   I_HAVE_COMPLETED_THE_MAINNET_CHECKLIST=yes pnpm approve:deployment --network arc-mainnet \
  *       --reviewer "Name <email>" --audit "report id or URL"
  *
- * Requires: docs/mainnet-launch-checklist.md completed, an independent audit reference, and an explicit
+ * Requires: an audit reference ("none: owner accepted risk" when there is none) and an explicit
  * reviewer identity. The approval is recorded inside the deployment file so it is part of the repo history.
  * The application additionally requires ENABLED_NETWORKS + ALLOW_MAINNET=true at runtime.
  */
@@ -17,7 +17,7 @@ const args = Object.fromEntries(process.argv.slice(2).reduce<[string, string][]>
 const { network, reviewer, audit } = args;
 if (!network || !reviewer || !audit) throw new Error("--network, --reviewer and --audit are all required");
 if (process.env.I_HAVE_COMPLETED_THE_MAINNET_CHECKLIST !== "yes") {
-  throw new Error("Set I_HAVE_COMPLETED_THE_MAINNET_CHECKLIST=yes to confirm docs/mainnet-launch-checklist.md is complete");
+  throw new Error("Set I_HAVE_COMPLETED_THE_MAINNET_CHECKLIST=yes to confirm that you approve this deployment for production");
 }
 const file = join(deploymentsDir(), `${network}.json`);
 if (!existsSync(file)) throw new Error(`No deployment record for ${network}. Run finalize:deployment first.`);
