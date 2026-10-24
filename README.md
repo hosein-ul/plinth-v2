@@ -132,7 +132,7 @@ The same four contracts per token are deployed on **Arc Testnet** (chain id `504
 
 Tokens: USDC `0x3600…0000` and EURC `0x89B5…D72a`. Treasury: `0xC0d1…Adc2`.
 
-**Acceptance run on the real testnet** ([`docs/verification/arc-testnet.json`](docs/verification/arc-testnet.json), reproduce with `pnpm e2e:testnet arc-testnet`): the relayer deployed a vault owned by the merchant; a customer paid an invoice by plain transfer and the invoice address was swept to the vault **without ever holding gas**; a gasless wallet payment (the customer signed, the relayer paid gas) settled; a direct payout to a proven wallet settled; 14 signed webhooks arrived with 0 invalid signatures. Gas used: vault creation 1,287,705; deploy and sweep about 178,000 to 198,000; wallet payment 145,198.
+**Acceptance run on the real testnet** (reproduce with `pnpm e2e:testnet arc-testnet`): the relayer deployed a vault owned by the merchant; a customer paid an invoice by plain transfer and the invoice address was swept to the vault **without ever holding gas**; a gasless wallet payment (the customer signed, the relayer paid gas) settled; a direct payout to a proven wallet settled; 14 signed webhooks arrived with 0 invalid signatures. Gas used: vault creation 1,287,705; deploy and sweep about 178,000 to 198,000; wallet payment 145,198.
 
 ## Three ways to be paid
 
