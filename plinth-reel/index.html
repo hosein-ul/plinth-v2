@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Plinth — launch</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "General Sans"; font-weight: 400; src: url("assets/fonts/GeneralSans-400.woff2") format("woff2"); }
+      @font-face { font-family: "General Sans"; font-weight: 500; src: url("assets/fonts/GeneralSans-500.woff2") format("woff2"); }
+      @font-face { font-family: "General Sans"; font-weight: 600; src: url("assets/fonts/GeneralSans-600.woff2") format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("assets/fonts/JetBrainsMono-400.ttf") format("truetype"); }
+      @font-face { font-family: "JetBrains Mono"; font-weight: 500; src: url("assets/fonts/JetBrainsMono-500.ttf") format("truetype"); }
+      :root { --ink: #0c1220; --ink2: #485366; --ink3: #6b7688; --ink4: #8d97a8; --mint: #0ea66b; --mint2: #34d399; --mintq: #dff5ea; --bg: #f6f8fb; --deep: #080d19; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); font-family: "General Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; color: var(--ink); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+      .abs { position: absolute; }
+      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+      .tn { font-variant-numeric: tabular-nums; }
+      .sc { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+      .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.1em 0.06em 0.2em; margin: -0.1em -0.06em -0.2em; }
+      .wi { display: inline-block; will-change: transform; }
+      .blob { position: absolute; border-radius: 50%; filter: blur(10px); }
+      #dots { position: absolute; inset: 0; background: radial-gradient(circle, rgba(15, 23, 42, 0.11) 1.4px, transparent 1.8px) 0 0 / 40px 40px; -webkit-mask: radial-gradient(55% 60% at 62% 48%, #000, transparent 80%); mask: radial-gradient(55% 60% at 62% 48%, #000, transparent 80%); }
+      .big { font-weight: 500; letter-spacing: -0.05em; line-height: 1.02; }
+      .gray { color: var(--ink3); }
+      .card { position: absolute; border-radius: 30px; overflow: hidden; background: #fff; box-shadow: 0 50px 100px -34px rgba(15, 23, 42, 0.38), 0 14px 30px -14px rgba(15, 23, 42, 0.14), 0 0 0 1px rgba(15, 23, 42, 0.07); }
+      .vv { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; max-width: none; }
+      .chip { position: absolute; display: flex; align-items: center; gap: 14px; height: 68px; padding: 0 30px 0 24px; border-radius: 999px; background: #fff; font-size: 32px; font-weight: 500; letter-spacing: -0.015em; white-space: nowrap; box-shadow: 0 24px 50px -20px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(15, 23, 42, 0.08); }
+      .chip i { width: 14px; height: 14px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 6px rgba(14, 166, 107, 0.18); display: block; flex: none; }
+      .chip.dark { background: var(--ink); color: #fff; }
+      .chip.dash { background: transparent; box-shadow: none; border: 2.5px dashed rgba(15, 23, 42, 0.28); color: var(--ink3); }
+      .step { position: absolute; left: 150px; display: flex; align-items: center; gap: 26px; font-size: 78px; font-weight: 500; letter-spacing: -0.04em; color: #c3cad5; }
+      .step b { width: 64px; height: 64px; border-radius: 50%; border: 4px solid #d4dae3; display: flex; align-items: center; justify-content: center; color: #fff; flex: none; background: transparent; }
+      .step b svg { width: 34px; height: 34px; opacity: 0; }
+      #term { position: absolute; border-radius: 28px; background: #0b1120; box-shadow: 0 50px 100px -34px rgba(15, 23, 42, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.06); overflow: hidden; }
+      #termbar { height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 22px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+      #termbar i { width: 13px; height: 13px; border-radius: 50%; background: #2a3550; display: block; }
+      #termbody { padding: 26px 30px; font-size: 22px; line-height: 1.6; color: rgba(255, 255, 255, 0.92); white-space: pre; }
+      .g { color: #34d399; } .k { color: #8ab4ff; } .dim { color: rgba(255, 255, 255, 0.45); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="51.429" data-width="1920" data-height="1080">
+      <audio id="snd" src="assets/soundtrack.wav" data-start="0" data-duration="51.429" data-volume="1"></audio>
+
+      <div id="bg">
+        <div class="blob" id="bl1" style="left:1180px;top:-260px;width:900px;height:900px;background:radial-gradient(circle,rgba(14,166,107,0.16),transparent 66%)"></div>
+        <div class="blob" id="bl2" style="left:-300px;top:620px;width:1000px;height:1000px;background:radial-gradient(circle,rgba(47,107,255,0.10),transparent 66%)"></div>
+        <div id="dots"></div>
+      </div>
+      <img id="logo" class="abs" src="assets/brand/plinth-logo.svg" style="left:84px;top:62px;height:46px;z-index:20;opacity:0" />
+
+      <!-- 1 · the problem -->
+      <div id="s1" class="sc">
+        <div id="s1a" class="abs big" style="left:0;right:0;top:340px;text-align:center;font-size:140px">Getting paid in stablecoins</div>
+        <div id="s1b" class="abs big gray" style="left:0;right:0;top:500px;text-align:center;font-size:140px">should be <span style="position:relative;display:inline-block;color:var(--ink)"><span id="s1c">simple.</span><svg class="abs" style="left:-6px;bottom:-6px;width:calc(100% + 12px);height:30px" viewBox="0 0 300 30" preserveAspectRatio="none"><path id="s1u" d="M4 18 C 70 6, 150 26, 296 10" fill="none" stroke="#0ea66b" stroke-width="8" stroke-linecap="round"/></svg></span></div>
+      </div>
+
+      <!-- 2 · one link -->
+      <div id="s2" class="sc">
+        <div id="s2a" class="abs big" style="left:150px;top:300px;font-size:176px">One link.</div>
+        <div id="s2b" class="abs big gray" style="left:150px;top:530px;font-size:68px;line-height:1.28"><div class="l">Name it.</div><div class="l">Price it.</div><div class="l">Share it.</div></div>
+        <div id="cCreate" class="card" style="left:1040px;top:200px;width:620px;height:660px"><video id="v_create" class="vv" src="assets/shots/create.mp4" muted playsinline data-start="4.536" data-duration="6.279"></video></div>
+        <div id="s2chip" class="chip" style="left:1480px;top:170px"><i></i><span class="tn">25.00 USDC</span></div>
+        <div id="s2link" class="chip dark mono" style="left:1010px;top:900px;font-size:27px">plinth.zerolayer.online/l/coffee</div>
+      </div>
+
+      <!-- 3 · its own address -->
+      <div id="s3" class="sc">
+        <div id="s3a" class="abs big" style="left:150px;top:250px;font-size:118px;width:900px">Every order gets its own address.</div>
+        <div id="cAddr" class="card" style="left:1130px;top:230px;width:560px;height:560px"><video id="v_addr" class="vv" src="assets/shots/addr.mp4" muted playsinline data-start="11.014" data-duration="6.229"></video></div>
+        <div id="s3c1" class="chip" style="left:1000px;top:170px"><i></i>Unique to this order</div>
+        <div id="s3c2" class="chip dash" style="left:1130px;top:850px">Contract: not deployed yet</div>
+      </div>
+
+      <!-- 4 · the chain proves it -->
+      <div id="s4" class="sc">
+        <div id="s4h" class="abs" style="left:150px;top:200px;font-size:44px;font-weight:500;letter-spacing:-0.02em;color:var(--ink3)">The chain proves the payment.</div>
+        <div id="s4rail" class="abs" style="left:181px;top:372px;width:4px;height:420px;border-radius:2px;background:#e1e6ee"></div>
+        <div id="s4prog" class="abs" style="left:181px;top:372px;width:4px;height:420px;border-radius:2px;background:var(--mint);transform-origin:top"></div>
+        <div class="step"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Detected</div><div class="step"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Verified</div><div class="step"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Final</div><div class="step"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Swept</div><div class="step"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>In vault</div>
+        <div id="cPaid" class="card" style="left:1120px;top:150px;width:620px;height:800px"><video id="v_paid" class="vv" src="assets/shots/paid.mp4" muted playsinline data-start="17.343" data-duration="8.471"></video></div>
+      </div>
+
+      <!-- 5 · the numbers -->
+      <div id="s5" class="sc">
+        <div class="abs" id="s5l1" style="left:150px;top:170px;font-size:34px;font-weight:500;color:var(--ink3)">Received</div>
+        <div class="abs big tn" id="s5n1" style="left:150px;top:210px;font-size:236px">25.00</div>
+        <div class="abs" id="s5l2" style="left:760px;top:170px;font-size:34px;font-weight:500;color:var(--ink3)">Platform fee</div>
+        <div class="abs big tn gray" id="s5n2" style="left:760px;top:210px;font-size:236px">−0.05</div>
+        <div class="abs" id="s5l3" style="left:1360px;top:170px;font-size:34px;font-weight:500;color:var(--mint)">Delivered to your vault</div>
+        <div class="abs big tn" id="s5n3" style="left:1360px;top:210px;font-size:236px;color:var(--mint)">24.95</div>
+        <div id="cNum" class="card" style="left:460px;top:590px;width:1000px;height:416px"><video id="v_numbers" class="vv" src="assets/shots/numbers.mp4" muted playsinline data-start="26.614" data-duration="5.629"></video></div>
+      </div>
+
+      <!-- 6 · the vault -->
+      <div id="s6" class="sc">
+        <div id="s6a" class="abs big" style="left:150px;top:250px;font-size:128px;width:760px">A vault only you can open.</div>
+        <div id="cV0" class="card" style="left:900px;top:330px;width:880px;height:358px"><video id="v_vault0" class="vv" src="assets/shots/vault0.mp4" muted playsinline data-start="32.493" data-duration="6.179"></video></div>
+        <div id="cV1" class="card" style="left:900px;top:330px;width:880px;height:358px"><video id="v_vault1" class="vv" src="assets/shots/vault1.mp4" muted playsinline data-start="35.343" data-duration="3.329"></video></div>
+        <div id="s6c1" class="chip" style="left:900px;top:740px"><i></i>Owner: your wallet</div>
+        <div id="s6c2" class="chip" style="left:1250px;top:740px"><i></i>No admin key</div>
+        <div id="s6badge" class="chip dark tn" style="left:1500px;top:222px;font-size:40px;height:84px;padding:0 36px 0 30px"><i style="background:var(--mint2)"></i>+24.95</div>
+      </div>
+
+      <!-- 7 · api, webhooks, ai -->
+      <div id="s7" class="sc">
+        <div id="s7a" class="abs big" style="left:150px;top:210px;font-size:150px">API.</div>
+        <div id="s7b" class="abs big" style="left:150px;top:410px;font-size:150px">Webhooks.</div>
+        <div id="s7c" class="abs big" style="left:150px;top:610px;font-size:150px">AI.</div>
+        <div id="term" style="left:1030px;top:150px;width:700px;height:320px"><div id="termbar"><i></i><i></i><i></i></div><div id="termbody"></div></div>
+        <div id="cHooks" class="card" style="left:1130px;top:520px;width:640px;height:200px"><video id="v_hooks" class="vv" src="assets/shots/hooks.mp4" muted playsinline data-start="40.271" data-duration="4.829"></video></div>
+        <div id="cMcp" class="card" style="left:1010px;top:770px;width:600px;height:300px"><video id="v_mcp" class="vv" src="assets/shots/mcp.mp4" muted playsinline data-start="41.471" data-duration="3.629"></video></div>
+      </div>
+
+      <!-- 8 · end -->
+      <div id="s8" class="sc">
+        <div class="abs" style="left:0;right:0;top:250px;display:flex;justify-content:center"><img id="e_logo" src="assets/brand/plinth-logo.svg" style="height:200px;display:block" /></div>
+        <div id="e_t" class="abs big" style="left:0;right:0;top:500px;text-align:center;font-size:92px"><div id="e_t1">Non-custodial</div><div id="e_t2" class="gray">stablecoin payments.</div></div>
+        <div id="e_arc" class="abs" style="left:0;right:0;top:800px;display:flex;justify-content:center;align-items:center;gap:22px"><span style="font-size:32px;color:var(--ink3)">Built on</span><span style="background:#fff;border-radius:18px;padding:12px 28px;display:flex;box-shadow:0 20px 40px -20px rgba(15,23,42,.3),0 0 0 1px rgba(15,23,42,.07)"><img src="assets/brand/arc-logo.svg" style="height:50px;display:block" /></span></div>
+        <div id="e_url" class="abs mono" style="left:0;right:0;top:925px;text-align:center;font-size:28px;color:var(--ink3)">plinth.zerolayer.online</div>
+      </div>
+    </div>
+
+    <script>
+      const D = {"total": 51.429, "bpm": 112, "beat": 0.5357142857142857, "bar": 2.142857142857143, "scenes": {"s1": {"start": 0.0, "dur": 4.286, "bars": 2}, "s2": {"start": 4.286, "dur": 6.429, "bars": 3}, "s3": {"start": 10.714, "dur": 6.429, "bars": 3}, "s4": {"start": 17.143, "dur": 8.571, "bars": 4}, "s5": {"start": 25.714, "dur": 6.429, "bars": 3}, "s6": {"start": 32.143, "dur": 6.429, "bars": 3}, "s7": {"start": 38.571, "dur": 6.429, "bars": 3}, "s8": {"start": 45.0, "dur": 6.429, "bars": 3}}, "chunks": {"a1": {"scene": "s1", "text": "Getting paid in stablecoins should be simple.", "start": 0.45, "end": 2.925}, "b1": {"scene": "s2", "text": "One link. Name it, price it, share it.", "start": 4.736, "end": 6.823}, "c1": {"scene": "s3", "text": "Every order gets its own address.", "start": 11.164, "end": 13.116}, "c2": {"scene": "s3", "text": "It exists before the contract does.", "start": 13.864, "end": 15.972}, "d1": {"scene": "s4", "text": "The chain proves the payment.", "start": 17.493, "end": 19.083}, "d2": {"scene": "s4", "text": "Detected.", "start": 20.093, "end": 20.979}, "d3": {"scene": "s4", "text": "Verified.", "start": 21.093, "end": 22.03}, "d4": {"scene": "s4", "text": "Final.", "start": 22.093, "end": 22.82}, "d5": {"scene": "s4", "text": "Swept.", "start": 22.943, "end": 23.662}, "d6": {"scene": "s4", "text": "In your vault.", "start": 23.893, "end": 24.887}, "e1": {"scene": "s5", "text": "Twenty-five in. Five cents of fee.", "start": 26.064, "end": 28.461}, "e2": {"scene": "s5", "text": "Twenty-four ninety-five is yours.", "start": 29.064, "end": 31.194}, "f1": {"scene": "s6", "text": "A vault only you can open.", "start": 32.493, "end": 34.372}, "f2": {"scene": "s6", "text": "No admin key.", "start": 35.143, "end": 36.31}, "g1": {"scene": "s7", "text": "One API call. Webhooks. Even your AI assistant.", "start": 38.921, "end": 42.866}, "h1": {"scene": "s8", "text": "Plinth. Non-custodial stablecoin payments.", "start": 45.55, "end": 48.302}, "h2": {"scene": "s8", "text": "Built on Arc.", "start": 48.4, "end": 49.579}}, "cards": {"create": 7.0, "addr": 6.6, "paid": 9.0, "numbers": 7.2, "vault0": 7.0, "vault1": 4.0, "hooks": 6.2, "mcp": 6.2}};
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const S = (id) => D.scenes[id].start, E = (id) => D.scenes[id].start + D.scenes[id].dur, C = (id) => D.chunks[id];
+      const BEAT = D.beat, BAR = D.bar;
+      const EXPO = 'expo.out';
+
+      function split(el) {
+        const walk = (node) => [...node.childNodes].forEach((n) => {
+          if (n.nodeType === 3) {
+            const frag = document.createDocumentFragment();
+            n.textContent.split(/(\s+)/).forEach((p) => {
+              if (!p) return;
+              if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(' ')); return; }
+              const w = document.createElement('span'); w.className = 'w'; const i = document.createElement('span'); i.className = 'wi'; i.textContent = p; w.appendChild(i); frag.appendChild(w);
+            });
+            n.replaceWith(frag);
+          } else if (n.nodeType === 1 && !n.querySelector('svg')) walk(n);
+        });
+        walk(el); return el.querySelectorAll('.wi');
+      }
+      const rise = (els, t, o = {}) => tl.fromTo(els, { yPercent: 118 }, { yPercent: 0, duration: o.d ?? 1.0, ease: EXPO, stagger: o.s ?? 0.07 }, t);
+      const pop = (el, t, o = {}) => tl.fromTo(el, { opacity: 0, y: o.y ?? 30, scale: o.sc ?? 0.94 }, { opacity: 1, y: 0, scale: 1, duration: o.d ?? 0.8, ease: o.ease ?? EXPO }, t);
+      const cardIn = (el, t, o = {}) => {
+        gsap.set(el, { transformPerspective: 1500, transformOrigin: '50% 60%' });
+        tl.fromTo(el, { opacity: 0, y: o.y ?? 170, rotationX: o.rx ?? 16, rotationY: o.ry ?? -7, scale: 0.92 }, { opacity: 1, y: 0, rotationX: 0, rotationY: o.ryEnd ?? 0, scale: 1, duration: o.d ?? 1.25, ease: EXPO }, t);
+      };
+      const counter = (el, t, d, from, to, fmt, ease = 'power3.out') => { const o = { v: from }; tl.fromTo(o, { v: from }, { v: to, duration: d, ease, onUpdate: () => { el.textContent = fmt(o.v); } }, t); };
+      const show = (id, a, b) => { tl.set(id, { autoAlpha: 1 }, a - 0.02); tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.01 }, a - 0.02); tl.to(id, { opacity: 0, y: -26, duration: 0.42, ease: 'power2.in' }, b - 0.44); tl.set(id, { autoAlpha: 0 }, b); };
+      // crop a region of the 1280x720 recording into a card: the video is laid out at 1920x1080, so one css px of the page is 1.5 px
+      const crop = (card, vid, [x, y, w, h]) => { const W = card.offsetWidth, s = W / (1.5 * w); gsap.set(vid, { scale: s, x: -1.5 * x * s, y: -1.5 * y * s, transformOrigin: '0 0' }); card.style.height = Math.round(1.5 * h * s) + 'px'; };
+      crop(document.getElementById('cCreate'), '#v_create', [368, 58, 544, 580]);
+      crop(document.getElementById('cAddr'), '#v_addr', [689, 0, 478, 470]);
+      crop(document.getElementById('cPaid'), '#v_paid', [689, 44, 478, 611]);
+      crop(document.getElementById('cNum'), '#v_numbers', [297, 131, 942, 393]);
+      crop(document.getElementById('cV0'), '#v_vault0', [296, 325, 945, 385]);
+      crop(document.getElementById('cV1'), '#v_vault1', [296, 325, 945, 385]);
+      crop(document.getElementById('cHooks'), '#v_hooks', [297, 220, 942, 297]);
+      crop(document.getElementById('cMcp'), '#v_mcp', [788, 495, 420, 210]);
+
+      gsap.set('#bl1', { x: 0, y: 0 }); gsap.set('#bl2', { x: 0, y: 0 });
+      tl.to('#bl1', { x: -260, y: 160, duration: D.total, ease: 'none' }, 0);
+      tl.to('#bl2', { x: 320, y: -140, duration: D.total, ease: 'none' }, 0);
+      tl.fromTo('#logo', { opacity: 0, y: -14 }, { opacity: 1, y: 0, duration: 0.8, ease: EXPO }, 0.5);
+      tl.to('#logo', { opacity: 0, duration: 0.4 }, E('s7') - 0.5);
+
+      /* ── 1 ── */
+      show('#s1', 0, E('s1'));
+      { const a = split(document.getElementById('s1a')), b = split(document.getElementById('s1b'));
+        rise(a, 0.3, { s: 0.08, d: 1.1 }); rise(b, 0.7, { s: 0.09, d: 1.1 });
+        tl.fromTo('#s1u', { strokeDasharray: 330, strokeDashoffset: 330 }, { strokeDashoffset: 0, duration: 0.9, ease: 'power3.inOut' }, C('a1').end - 0.55); }
+
+      /* ── 2 ── */
+      show('#s2', S('s2'), E('s2'));
+      { const a = split(document.getElementById('s2a'));
+        rise(a, S('s2') + 0.15, { s: 0.1, d: 1.1 });
+        const ls = document.querySelectorAll('#s2b .l'); ls.forEach((l, i) => { const w = split(l); rise(w, C('b1').start + 1.05 + i * 0.5, { s: 0.05, d: 0.8 }); });
+        cardIn('#cCreate', S('s2') + 0.25, { ry: -9 });
+        tl.to('#cCreate', { y: -18, duration: 5.5, ease: 'sine.inOut' }, S('s2') + 1.5);
+        pop('#s2chip', S('s2') + 2.6, { y: 24 }); pop('#s2link', S('s2') + 4.2, { y: 24 }); }
+
+      /* ── 3 ── */
+      show('#s3', S('s3'), E('s3'));
+      { const a = split(document.getElementById('s3a')); rise(a, C('c1').start - 0.1, { s: 0.08, d: 1.05 });
+        cardIn('#cAddr', S('s3') + 0.3, { ry: 9, ryEnd: -3 });
+        tl.to('#cAddr', { y: -16, duration: 5.5, ease: 'sine.inOut' }, S('s3') + 1.6);
+        pop('#s3c1', S('s3') + 1.5, { y: 24 }); pop('#s3c2', C('c2').start + 0.15, { y: 26 }); }
+
+      /* ── 4 ── */
+      show('#s4', S('s4'), E('s4'));
+      { pop('#s4h', S('s4') + 0.3, { y: 20 });
+        cardIn('#cPaid', S('s4') + 0.2, { ry: 8, ryEnd: -2 });
+        const rows = [...document.querySelectorAll('.step')];
+        rows.forEach((r, i) => { gsap.set(r, { top: 340 + i * 94 }); tl.fromTo(r, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.7, ease: EXPO }, S('s4') + 1.0 + i * 0.1); });
+        gsap.set('#s4prog', { scaleY: 0 });
+        ['d2', 'd3', 'd4', 'd5', 'd6'].forEach((id, i) => {
+          const t = C(id).start - 0.03, r = rows[i];
+          tl.to(r, { color: '#0c1220', duration: 0.25 }, t);
+          tl.to(r.querySelector('b'), { backgroundColor: '#0ea66b', borderColor: '#0ea66b', duration: 0.25, ease: 'power2.out' }, t);
+          tl.to(r.querySelector('svg'), { opacity: 1, duration: 0.15 }, t + 0.05);
+          tl.fromTo(r.querySelector('b'), { scale: 1 }, { scale: 1.22, duration: 0.18, yoyo: true, repeat: 1, ease: 'power2.out' }, t);
+          tl.to('#s4prog', { scaleY: (i + 1) / 5, duration: 0.5, ease: 'power3.out' }, t);
+        }); }
+
+      /* ── 5 ── */
+      show('#s5', S('s5'), E('s5'));
+      { const f2 = (v) => v.toFixed(2);
+        tl.fromTo('#s5l1', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: EXPO }, S('s5') + 0.25);
+        const n1 = document.getElementById('s5n1'); n1.textContent = '0.00';
+        pop('#s5n1', S('s5') + 0.3, { y: 60, sc: 0.96, d: 1.0 }); counter(n1, S('s5') + 0.35, 1.1, 0, 25, f2, 'expo.out');
+        tl.fromTo('#s5l2', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: EXPO }, C('e1').start + 1.55);
+        const n2 = document.getElementById('s5n2'); n2.textContent = '−0.00';
+        pop('#s5n2', C('e1').start + 1.6, { y: 60, sc: 0.96, d: 1.0 }); counter(n2, C('e1').start + 1.65, 0.9, 0, 0.05, (v) => '−' + v.toFixed(2), 'expo.out');
+        tl.fromTo('#s5l3', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.6, ease: EXPO }, C('e2').start - 0.05);
+        const n3 = document.getElementById('s5n3'); n3.textContent = '0.00';
+        pop('#s5n3', C('e2').start, { y: 70, sc: 0.94, d: 1.1 }); counter(n3, C('e2').start + 0.05, 1.5, 0, 24.95, f2, 'expo.out');
+        tl.fromTo('#s5n3', { scale: 1 }, { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: 'power2.out', transformOrigin: '0 60%' }, C('e2').start + 1.4);
+        cardIn('#cNum', S('s5') + 0.9, { y: 200, rx: 12, ry: 0 });
+        tl.to('#cNum', { y: -14, duration: 4.5, ease: 'sine.inOut' }, S('s5') + 2.2); }
+
+      /* ── 6 ── */
+      show('#s6', S('s6'), E('s6'));
+      { const a = split(document.getElementById('s6a')); rise(a, C('f1').start - 0.05, { s: 0.09, d: 1.05 });
+        cardIn('#cV0', S('s6') + 0.35, { ry: -8, ryEnd: -2 }); cardIn('#cV1', S('s6') + 0.35, { ry: -8, ryEnd: -2 });
+        gsap.set('#cV1', { opacity: 0 });
+        tl.to('#cV1', { opacity: 1, duration: 0.7, ease: 'power2.inOut' }, S('s6') + 3.3);
+        tl.to('#cV0,#cV1', { y: -14, duration: 4.5, ease: 'sine.inOut' }, S('s6') + 1.6);
+        pop('#s6c1', S('s6') + 1.4, { y: 22 }); pop('#s6c2', C('f2').start, { y: 22 });
+        tl.fromTo('#s6badge', { opacity: 0, y: 40, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: 'back.out(2)' }, S('s6') + 3.35); }
+
+      /* ── 7 ── */
+      show('#s7', S('s7'), E('s7'));
+      { const t0 = C('g1').start;
+        const a = split(document.getElementById('s7a')), b = split(document.getElementById('s7b')), c = split(document.getElementById('s7c'));
+        rise(a, t0 + 0.05, { d: 0.95 }); rise(b, t0 + 1.35, { d: 0.95 }); rise(c, t0 + 2.55, { d: 0.95 });
+        // terminal types the request the app itself shows
+        const el = document.getElementById('termbody');
+        const cmd = 'curl -X POST /v1/payment-intents -d \'{"amount":"25.00"}\'';
+        el.innerHTML = '<span class="g">$</span> <span id="tc"></span>\n\n<span id="tr1" style="opacity:0"><span class="k">"status"</span>: <span class="g">"AWAITING_PAYMENT"</span>,</span>\n<span id="tr2" style="opacity:0"><span class="k">"checkout_url"</span>: <span class="g">"…/pay/pi_f1a6…"</span>,</span>\n<span id="tr3" style="opacity:0"><span class="k">"deposit_address"</span>: <span class="g">"0xC0d8…eD96"</span></span>';
+        cardIn('#term', t0 + 0.1, { y: 150, ry: 8, ryEnd: -2 });
+        const o = { p: 0 }; tl.fromTo(o, { p: 0 }, { p: 1, duration: 0.9, ease: 'none', onUpdate: () => { document.getElementById('tc').textContent = cmd.slice(0, Math.floor(o.p * cmd.length)); } }, t0 + 0.55);
+        tl.fromTo('#tr1', { opacity: 0, x: 10 }, { opacity: 1, x: 0, duration: 0.4 }, t0 + 1.6); tl.fromTo('#tr2', { opacity: 0, x: 10 }, { opacity: 1, x: 0, duration: 0.4 }, t0 + 1.75); tl.fromTo('#tr3', { opacity: 0, x: 10 }, { opacity: 1, x: 0, duration: 0.4 }, t0 + 1.9);
+        cardIn('#cHooks', t0 + 1.4, { y: 150, ry: -8, ryEnd: 2 });
+        cardIn('#cMcp', t0 + 2.6, { y: 150, ry: 8, ryEnd: -2 });
+        tl.to('#term,#cHooks,#cMcp', { y: -14, duration: 3.6, ease: 'sine.inOut' }, t0 + 2.6); }
+
+      /* ── 8 ── */
+      show('#s8', S('s8'), D.total + 1);
+      { const t0 = S('s8');
+        tl.fromTo('#e_logo', { scale: 0.8, opacity: 0, y: 40 }, { scale: 1, opacity: 1, y: 0, duration: 1.2, ease: EXPO }, t0 + 0.3);
+        const a = split(document.getElementById('e_t1')), b = split(document.getElementById('e_t2'));
+        rise(a, C('h1').start + 0.5, { s: 0.09, d: 1.0 }); rise(b, C('h1').start + 0.95, { s: 0.09, d: 1.0 });
+        pop('#e_arc', C('h2').start - 0.05, { y: 26, d: 0.9 });
+        pop('#e_url', C('h2').end - 0.1, { y: 14, d: 0.9 });
+        tl.to('#s8', { opacity: 0, duration: 0.8, ease: 'power2.in' }, D.total - 0.8); }
+
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

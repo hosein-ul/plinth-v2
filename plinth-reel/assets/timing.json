@@ -1,0 +1,162 @@
+{
+ "total": 51.429,
+ "bpm": 112,
+ "beat": 0.5357142857142857,
+ "bar": 2.142857142857143,
+ "scenes": {
+  "s1": {
+   "start": 0.0,
+   "dur": 4.286,
+   "bars": 2
+  },
+  "s2": {
+   "start": 4.286,
+   "dur": 6.429,
+   "bars": 3
+  },
+  "s3": {
+   "start": 10.714,
+   "dur": 6.429,
+   "bars": 3
+  },
+  "s4": {
+   "start": 17.143,
+   "dur": 8.571,
+   "bars": 4
+  },
+  "s5": {
+   "start": 25.714,
+   "dur": 6.429,
+   "bars": 3
+  },
+  "s6": {
+   "start": 32.143,
+   "dur": 6.429,
+   "bars": 3
+  },
+  "s7": {
+   "start": 38.571,
+   "dur": 6.429,
+   "bars": 3
+  },
+  "s8": {
+   "start": 45.0,
+   "dur": 6.429,
+   "bars": 3
+  }
+ },
+ "chunks": {
+  "a1": {
+   "scene": "s1",
+   "text": "Getting paid in stablecoins should be simple.",
+   "start": 0.45,
+   "end": 2.925
+  },
+  "b1": {
+   "scene": "s2",
+   "text": "One link. Name it, price it, share it.",
+   "start": 4.736,
+   "end": 6.823
+  },
+  "c1": {
+   "scene": "s3",
+   "text": "Every order gets its own address.",
+   "start": 11.164,
+   "end": 13.116
+  },
+  "c2": {
+   "scene": "s3",
+   "text": "It exists before the contract does.",
+   "start": 13.864,
+   "end": 15.972
+  },
+  "d1": {
+   "scene": "s4",
+   "text": "The chain proves the payment.",
+   "start": 17.493,
+   "end": 19.083
+  },
+  "d2": {
+   "scene": "s4",
+   "text": "Detected.",
+   "start": 20.093,
+   "end": 20.979
+  },
+  "d3": {
+   "scene": "s4",
+   "text": "Verified.",
+   "start": 21.093,
+   "end": 22.03
+  },
+  "d4": {
+   "scene": "s4",
+   "text": "Final.",
+   "start": 22.093,
+   "end": 22.82
+  },
+  "d5": {
+   "scene": "s4",
+   "text": "Swept.",
+   "start": 22.943,
+   "end": 23.662
+  },
+  "d6": {
+   "scene": "s4",
+   "text": "In your vault.",
+   "start": 23.893,
+   "end": 24.887
+  },
+  "e1": {
+   "scene": "s5",
+   "text": "Twenty-five in. Five cents of fee.",
+   "start": 26.064,
+   "end": 28.461
+  },
+  "e2": {
+   "scene": "s5",
+   "text": "Twenty-four ninety-five is yours.",
+   "start": 29.064,
+   "end": 31.194
+  },
+  "f1": {
+   "scene": "s6",
+   "text": "A vault only you can open.",
+   "start": 32.493,
+   "end": 34.372
+  },
+  "f2": {
+   "scene": "s6",
+   "text": "No admin key.",
+   "start": 35.143,
+   "end": 36.31
+  },
+  "g1": {
+   "scene": "s7",
+   "text": "One API call. Webhooks. Even your AI assistant.",
+   "start": 38.921,
+   "end": 42.866
+  },
+  "h1": {
+   "scene": "s8",
+   "text": "Plinth. Non-custodial stablecoin payments.",
+   "start": 45.55,
+   "end": 48.302
+  },
+  "h2": {
+   "scene": "s8",
+   "text": "Built on Arc.",
+   "start": 48.4,
+   "end": 49.579
+  }
+ },
+ "cards": {
+  "create": 7.0,
+  "addr": 6.6,
+  "paid": 9.0,
+  "numbers": 7.2,
+  "vault0": 7.0,
+  "vault1": 4.0,
+  "hooks": 6.2,
+  "mcp": 6.2
+ }
+}
