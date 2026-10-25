@@ -153,7 +153,7 @@
         tl.fromTo(el, { opacity: 0, y: o.y ?? 170, rotationX: o.rx ?? 16, rotationY: o.ry ?? -7, scale: 0.92 }, { opacity: 1, y: 0, rotationX: 0, rotationY: o.ryEnd ?? 0, scale: 1, duration: o.d ?? 1.25, ease: EXPO }, t);
       };
       const counter = (el, t, d, from, to, fmt, ease = 'power3.out') => { const o = { v: from }; tl.fromTo(o, { v: from }, { v: to, duration: d, ease, onUpdate: () => { el.textContent = fmt(o.v); } }, t); };
-      const show = (id, a, b) => { tl.set(id, { autoAlpha: 1 }, a - 0.02); tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.01 }, a - 0.02); tl.to(id, { opacity: 0, y: -26, duration: 0.42, ease: 'power2.in' }, b - 0.44); tl.set(id, { autoAlpha: 0 }, b); };
+      const show = (id, a, b) => { tl.set(id, { autoAlpha: 1 }, a - 0.02); tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.01 }, a - 0.02); tl.to(id, { opacity: 0, y: -26, duration: 0.34, ease: 'power2.in' }, b - 0.36); tl.set(id, { autoAlpha: 0 }, b); };
       // crop a region of the 1280x720 recording into a card: the video is laid out at 1920x1080, so one css px of the page is 1.5 px
       const crop = (card, vid, [x, y, w, h]) => { const W = card.offsetWidth, s = W / (1.5 * w); gsap.set(vid, { scale: s, x: -1.5 * x * s, y: -1.5 * y * s, transformOrigin: '0 0' }); card.style.height = Math.round(1.5 * h * s) + 'px'; };
       crop(document.getElementById('cCreate'), '#v_create', [368, 58, 544, 580]);
@@ -254,7 +254,7 @@
       /* ── 8 ── */
       show('#s8', S('s8'), D.total + 1);
       { const t0 = S('s8');
-        tl.fromTo('#e_logo', { scale: 0.8, opacity: 0, y: 40 }, { scale: 1, opacity: 1, y: 0, duration: 1.2, ease: EXPO }, t0 + 0.3);
+        tl.fromTo('#e_logo', { scale: 0.8, opacity: 0, y: 40 }, { scale: 1, opacity: 1, y: 0, duration: 1.1, ease: EXPO }, t0 - 0.15);
         const a = split(document.getElementById('e_t1')), b = split(document.getElementById('e_t2'));
         rise(a, C('h1').start + 0.5, { s: 0.09, d: 1.0 }); rise(b, C('h1').start + 0.95, { s: 0.09, d: 1.0 });
         pop('#e_arc', C('h2').start - 0.05, { y: 26, d: 0.9 });

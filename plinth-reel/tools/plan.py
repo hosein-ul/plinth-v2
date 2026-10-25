@@ -15,7 +15,7 @@ import audio_helpers as A
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, "assets")
 SHOTS = os.path.join(ASSETS, "shots")
-LIVE = os.environ.get("LIVE", "/tmp/claude-0/-home-user-plinth-v2/330d461b-e79f-5f5a-b64f-53599d43d621/scratchpad/live/live.mp4")
+LIVE = os.environ.get("LIVE", "/tmp/claude-0/-home-user-plinth-v2/330d461b-e79f-5f5a-b64f-53599d43d621/scratchpad/take2/session.mp4")
 SR = A.SR
 BPM = 112
 BEAT = 60 / BPM
@@ -46,14 +46,14 @@ VO = {
 
 # footage cards: id -> segments (src_in, src_out, speed) of the recording, and how long the card must play (hold the last frame)
 CARDS = {
-    "create": dict(segs=[(120.4, 121.6, 1.0), (124.4, 134.6, 2.9), (139.6, 141.7, 1.3)], dur=7.0),
-    "addr": dict(segs=[(214.0, 219.9, 1.0)], dur=6.6),
-    "paid": dict(segs=[(239.4, 245.8, 2.0), (245.8, 249.0, 1.0)], dur=9.0),
-    "numbers": dict(segs=[(283.7, 292.0, 1.0)], dur=7.2),
-    "vault0": dict(segs=[(109.3, 113.0, 1.0)], dur=7.0),
-    "vault1": dict(segs=[(410.9, 413.2, 1.0)], dur=4.0),
-    "hooks": dict(segs=[(451.2, 456.5, 1.0)], dur=6.2),
-    "mcp": dict(segs=[(94.8, 98.4, 1.0)], dur=6.2),
+    "create": dict(segs=[(58.9, 67.4, 2.4), (67.9, 68.9, 1.0)], dur=6.2),
+    "addr": dict(segs=[(92.4, 96.6, 1.0)], dur=6.6),
+    "paid": dict(segs=[(101.0, 103.3, 0.8), (103.3, 105.5, 1.0), (105.5, 109.0, 1.0)], dur=9.0),
+    "numbers": dict(segs=[(120.0, 124.4, 1.0)], dur=7.2),
+    "vault0": dict(segs=[(49.8, 53.2, 1.0)], dur=7.0),
+    "vault1": dict(segs=[(146.8, 150.2, 1.0)], dur=4.0),
+    "hooks": dict(segs=[(162.9, 165.3, 1.0)], dur=6.2),
+    "mcp": dict(segs=[(40.6, 43.3, 1.0)], dur=6.2),
 }
 
 
