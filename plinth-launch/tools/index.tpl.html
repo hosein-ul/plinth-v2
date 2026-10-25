@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Plinth — launch film</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "General Sans"; font-weight: 400; src: url("assets/fonts/GeneralSans-400.woff2") format("woff2"); }
+      @font-face { font-family: "General Sans"; font-weight: 500; src: url("assets/fonts/GeneralSans-500.woff2") format("woff2"); }
+      @font-face { font-family: "General Sans"; font-weight: 600; src: url("assets/fonts/GeneralSans-600.woff2") format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("assets/fonts/JetBrainsMono-400.ttf") format("truetype"); }
+      @font-face { font-family: "JetBrains Mono"; font-weight: 500; src: url("assets/fonts/JetBrainsMono-500.ttf") format("truetype"); }
+
+      :root {
+        --ground: #f3f5f8; --raised: #fff; --sunk: #e9edf2; --line: rgba(15, 23, 42, 0.08); --line2: rgba(15, 23, 42, 0.16);
+        --ink: #0c1220; --ink2: #485366; --ink3: #6b7688; --ink4: #8d97a8;
+        --mint: #0ea66b; --mint2: #34d399; --mintq: #dff5ea; --mintink: #0a6f48;
+        --warn: #c98a04; --warnq: #fdf3d7; --warnink: #7a5200; --bad: #d5392f; --badq: #fce7e4; --badink: #9e1f17;
+        --info: #2f6bff; --infoq: #e4ecff;
+        --deep: #080d19; --lift: #121a2c; --rise: #19233a;
+        --soft: 0 1px 1px rgba(15, 23, 42, 0.04), 0 2px 4px rgba(15, 23, 42, 0.03), 0 30px 60px -24px rgba(15, 23, 42, 0.28);
+        --float: 0 2px 4px rgba(15, 23, 42, 0.06), 0 40px 90px -30px rgba(15, 23, 42, 0.42);
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--deep); font-family: "General Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--deep); }
+      .scene { position: absolute; inset: 0; overflow: hidden; color: var(--ink); }
+      .light { background: radial-gradient(60% 50% at 78% 18%, #fff 0, transparent 70%), radial-gradient(38% 34% at 92% 62%, rgba(14, 166, 107, 0.09), transparent 70%), var(--ground); }
+      .dark { background: radial-gradient(70% 80% at 85% 0%, rgba(14, 166, 107, 0.16), transparent 62%), radial-gradient(60% 70% at 10% 100%, rgba(47, 107, 255, 0.07), transparent 65%), linear-gradient(180deg, var(--lift), var(--deep)); color: #fff; }
+      .dots::before { content: ""; position: absolute; inset: -40px; background: radial-gradient(circle, rgba(15, 23, 42, 0.14) 1.4px, transparent 1.8px) 0 0 / 34px 34px; -webkit-mask: radial-gradient(60% 65% at var(--dx, 60%) var(--dy, 45%), #000, transparent 78%); mask: radial-gradient(60% 65% at var(--dx, 60%) var(--dy, 45%), #000, transparent 78%); }
+      .grid::before { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 80px 80px, linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 80px 80px; -webkit-mask: radial-gradient(75% 70% at 50% 45%, #000, transparent 85%); mask: radial-gradient(75% 70% at 50% 45%, #000, transparent 85%); }
+      .abs { position: absolute; }
+      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+      .tn { font-variant-numeric: tabular-nums; }
+      .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.1em 0.06em 0.16em; margin: -0.1em -0.06em -0.16em; }
+      .wi { display: inline-block; will-change: transform; }
+      .card { background: #fff; border: 1px solid var(--line); border-radius: 26px; box-shadow: var(--soft); }
+      .dcard { background: linear-gradient(180deg, var(--rise), var(--lift)); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 26px; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+      .lbl { font-size: 20px; font-weight: 500; color: var(--ink3); letter-spacing: -0.005em; }
+      .dark .lbl { color: rgba(255, 255, 255, 0.55); }
+      .dcard .lbl { color: rgba(255, 255, 255, 0.62); }
+      .pill { display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 20px; border-radius: 999px; font-size: 20px; font-weight: 500; }
+      .ic { width: 1em; height: 1em; display: inline-block; vertical-align: -0.12em; }
+
+      /* captions */
+      .cap { position: absolute; left: 0; right: 0; bottom: 64px; display: flex; justify-content: center; z-index: 90; pointer-events: none; }
+      .cap .box { display: inline-flex; gap: 0.3em; flex-wrap: nowrap; padding: 16px 34px 18px; border-radius: 999px; background: rgba(8, 13, 25, 0.84); box-shadow: 0 18px 50px -18px rgba(8, 13, 25, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.08); font-size: 40px; font-weight: 500; letter-spacing: -0.015em; color: #fff; white-space: nowrap; }
+      .cap .cw { opacity: 0.38; }
+      .grain { position: absolute; inset: 0; z-index: 80; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='220' height='220' filter='url(%23n)'/></svg>"); }
+
+      /* S1 */
+      #s1 .h { left: 0; right: 0; text-align: center; font-size: 150px; line-height: 1.04; letter-spacing: -0.05em; font-weight: 500; }
+      #s1 .l1 { top: 300px; color: var(--ink); }
+      #s1 .l2 { top: 462px; color: var(--ink3); }
+      /* S2 */
+      #s2 .c { top: 190px; height: 640px; width: 780px; }
+      /* S3 */
+      #s3 video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      /* shared rows */
+      .row { display: flex; align-items: center; justify-content: space-between; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="{{TOTAL}}" data-width="1920" data-height="1080">
+      <audio id="snd" src="assets/soundtrack.wav" data-start="0" data-duration="{{TOTAL}}" data-volume="1"></audio>
+
+      <!-- ───────────── S1 · the problem, stated plainly ───────────── -->
+      <div id="s1" class="scene light dots clip" data-start="{{s1.start}}" data-duration="{{s1.dur}}" style="--dx:50%;--dy:50%">
+        <div id="s1w" class="abs" style="inset:0">
+          <div class="abs h l1" id="s1a">Getting paid in stablecoins</div>
+          <div class="abs h l2" id="s1b">should be <span style="position:relative;display:inline-block;color:var(--ink)"><span id="s1c">simple.</span><svg id="s1u" class="abs" style="left:-6px;right:-6px;bottom:-4px;width:calc(100% + 12px);height:26px" viewBox="0 0 300 26" preserveAspectRatio="none"><path id="s1up" d="M4 16 C 70 6, 150 22, 296 8" fill="none" stroke="#0ea66b" stroke-width="7" stroke-linecap="round"/></svg></span></div>
+        </div>
+      </div>
+
+      <!-- ───────────── S2 · two compromises ───────────── -->
+      <div id="s2" class="scene light dots clip" data-start="{{s2.start}}" data-duration="{{s2.dur}}" style="--dx:50%;--dy:40%">
+        <div id="s2w" class="abs" style="inset:0">
+          <div id="s2l" class="abs card c" style="left:110px;padding:48px 52px">
+            <div class="row"><div class="lbl" style="font-size:22px">Custodial processor</div><div class="pill" style="background:var(--warnq);color:var(--warnink);height:40px;font-size:19px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Held</div></div>
+            <div class="lbl" style="margin-top:64px;font-size:22px">Your balance</div>
+            <div class="tn" id="s2bal" style="font-size:132px;letter-spacing:-0.05em;font-weight:500;line-height:1.1;margin-top:6px">$48,210<span style="color:var(--ink4)">.00</span></div>
+            <div style="margin-top:34px;height:14px;border-radius:99px;background:repeating-linear-gradient(135deg,var(--sunk) 0 10px,#dfe4eb 10px 20px)"></div>
+            <div class="row" style="margin-top:20px"><div class="lbl" style="font-size:22px">Their account. Their rules.</div><div class="lbl mono" style="font-size:20px">payout: pending review</div></div>
+            <div style="margin-top:56px;display:flex;gap:14px"><div class="pill" style="background:var(--sunk);color:var(--ink3)">Withdraw</div><div class="pill" style="background:transparent;border:1.5px dashed var(--line2);color:var(--ink4)">Frozen?</div></div>
+          </div>
+          <div id="s2r" class="abs card c" style="left:1030px;padding:48px 52px">
+            <div class="row"><div class="lbl" style="font-size:22px">A wallet and a spreadsheet</div><div class="pill" style="background:var(--badq);color:var(--badink);height:40px;font-size:19px">3 unmatched</div></div>
+            <div style="margin-top:44px">
+              <div class="row lbl mono" style="font-size:18px;padding:0 0 14px;border-bottom:1px solid var(--line)"><span style="width:250px">TX HASH</span><span style="width:170px;text-align:right">AMOUNT</span><span style="width:200px;text-align:right">ORDER</span></div>
+              <div id="s2rows"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────── S3 · brand ───────────── -->
+      <div id="s3" class="scene light clip">
+        <video id="s3v" src="assets/hero-bg.mp4" muted playsinline data-start="{{s3.start}}" data-duration="{{s3.dur}}" data-media-start="1"></video>
+        <div class="abs" style="inset:0;background:radial-gradient(70% 60% at 50% 50%,rgba(243,245,248,0.82),rgba(243,245,248,0.35) 70%,transparent)"></div>
+        <div id="s3brand" class="abs" style="left:0;right:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="display:flex;align-items:center;gap:36px">
+            <img id="s3mark" src="assets/brand/plinth-logo.svg" style="height:150px;display:block" />
+          </div>
+        </div>
+        <div id="s3h" class="abs" style="left:0;right:0;top:395px;text-align:center;font-size:124px;line-height:1.05;letter-spacing:-0.05em;font-weight:500">
+          <div id="s3h1">Get paid in USDC,</div>
+          <div id="s3h2" style="color:var(--ink3)">wherever you already sell.</div>
+        </div>
+      </div>
+
+      <!-- ───────────── S4 · an address before a contract ───────────── -->
+      <div id="s4" class="scene light dots clip" data-start="{{s4.start}}" data-duration="{{s4.dur}}" style="--dx:30%;--dy:45%">
+        <div id="s4inv" class="abs card" style="left:190px;top:170px;width:760px;padding:52px 56px">
+          <div class="row"><div class="row" style="gap:16px"><div style="width:52px;height:52px;border-radius:15px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:600">N</div><div><div class="lbl" style="font-size:18px">Payment to</div><div style="font-size:26px;font-weight:600;letter-spacing:-0.02em">Northwind Coffee</div></div></div><div class="pill" style="background:var(--infoq);color:#1e49b8;height:40px;font-size:19px">Order #1042</div></div>
+          <div class="lbl" style="margin-top:52px;font-size:22px">Amount due</div>
+          <div class="tn" style="font-size:118px;letter-spacing:-0.05em;font-weight:500;line-height:1.1">25.00 <span style="font-size:42px;color:var(--ink3);letter-spacing:-0.02em">USDC</span></div>
+          <div class="lbl" style="margin-top:44px;font-size:21px">Deposit address · this payment only</div>
+          <div id="s4addrbox" class="mono" style="margin-top:14px;padding:22px 26px;border-radius:18px;background:var(--wash,#f7f9fb);border:1px solid var(--line);font-size:26px;letter-spacing:-0.02em;line-height:1.4;white-space:pre;min-height:150px;line-height:1.5"><span id="s4addr"></span></div>
+        </div>
+        <div id="s4diag" class="abs" style="left:1040px;top:170px;width:700px;height:640px">
+          <div id="s4ready" class="abs card" style="left:0;top:40px;width:700px;padding:36px 40px">
+            <div class="row"><div class="row" style="gap:18px"><div id="s4rdot" style="width:44px;height:44px;border-radius:50%;background:var(--mintq);color:var(--mintink);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div><div style="font-size:30px;font-weight:600;letter-spacing:-0.02em">Address ready</div><div class="lbl" style="font-size:20px">computed offline · cross-checked with the factory</div></div></div></div>
+          </div>
+          <svg class="abs" style="left:60px;top:150px;width:80px;height:150px" viewBox="0 0 80 150"><path id="s4link" d="M40 0 V150" stroke="#8d97a8" stroke-width="3" stroke-dasharray="3 11" stroke-linecap="round" fill="none"/></svg>
+          <div id="s4ghost" class="abs" style="left:0;top:300px;width:700px;padding:36px 40px;border-radius:26px;border:2.5px dashed rgba(15,23,42,0.22)">
+            <div class="row"><div class="row" style="gap:18px"><div style="width:44px;height:44px;border-radius:12px;border:2.5px dashed var(--ink4);display:flex;align-items:center;justify-content:center;color:var(--ink4)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/></svg></div><div><div style="font-size:30px;font-weight:600;letter-spacing:-0.02em;color:var(--ink3)">Contract</div><div class="lbl" style="font-size:20px;color:var(--ink2)">not deployed yet. It does not need to be.</div></div></div></div>
+          </div>
+          <div id="s4chips" class="abs" style="left:0;top:520px;display:flex;gap:16px">
+            <div id="s4c1" class="pill" style="background:#fff;border:1px solid var(--line2);box-shadow:var(--soft);height:56px;font-size:23px;padding:0 26px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--mint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Nothing to fund</div>
+            <div id="s4c2" class="pill" style="background:#fff;border:1px solid var(--line2);box-shadow:var(--soft);height:56px;font-size:23px;padding:0 26px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--mint)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Nothing to babysit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────── S5 · the customer pays ───────────── -->
+      <div id="s5" class="scene light dots clip" data-start="{{s5.start}}" data-duration="{{s5.dur}}" style="--dx:50%;--dy:45%">
+        <div id="s5f" class="abs card" style="left:250px;top:92px;width:1420px;height:800px;overflow:hidden;border-radius:30px">
+          <div class="row" style="height:68px;padding:0 28px;border-bottom:1px solid var(--line);background:#fafbfc"><div style="display:flex;gap:10px"><i style="width:14px;height:14px;border-radius:50%;background:#e1e5eb;display:block"></i><i style="width:14px;height:14px;border-radius:50%;background:#e1e5eb;display:block"></i><i style="width:14px;height:14px;border-radius:50%;background:#e1e5eb;display:block"></i></div><div class="mono" style="font-size:19px;color:var(--ink3);background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 26px;width:560px;text-align:center">plinth.zerolayer.online/pay/ord_1042</div><div style="width:60px"></div></div>
+          <div class="abs" style="left:32px;top:100px;width:430px;height:668px;border-radius:24px;background:linear-gradient(180deg,var(--rise),var(--ink));color:#fff;padding:36px 36px">
+            <div style="display:flex;gap:14px;align-items:center"><div style="width:48px;height:48px;border-radius:14px;background:#fff;color:var(--ink);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:24px">N</div><div><div style="font-size:17px;color:rgba(255,255,255,.55)">Payment to</div><div style="font-size:24px;font-weight:600">Northwind Coffee</div></div></div>
+            <div style="margin-top:34px;font-size:19px;color:rgba(255,255,255,.55)">Amount due</div>
+            <div class="tn" style="font-size:82px;letter-spacing:-0.045em;font-weight:500;line-height:1.1">25.00 <span style="font-size:28px;color:rgba(255,255,255,.6)">USDC</span></div>
+            <div style="margin-top:24px;border-top:1px solid rgba(255,255,255,.12);padding-top:16px;font-size:20px;line-height:1.9"><div class="row"><span style="color:rgba(255,255,255,.55)">Reference</span><span class="mono" style="font-size:19px">order-1042</span></div><div class="row"><span style="color:rgba(255,255,255,.55)">Expires in</span><span class="mono tn" style="font-size:19px">17:42</span></div></div>
+            <div id="s5steps" style="margin-top:20px;border-top:1px solid rgba(255,255,255,.12);padding-top:14px"></div>
+          </div>
+          <div class="abs" style="left:498px;top:100px;width:890px;height:668px">
+            <div class="row"><div style="font-size:34px;font-weight:600;letter-spacing:-0.025em">Pay with USDC</div><div class="lbl" style="font-size:19px;display:flex;gap:8px;align-items:center"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Non-custodial</div></div>
+            <div class="lbl" style="margin-top:30px;font-size:19px">Network</div>
+            <div class="row" style="margin-top:12px;gap:14px;justify-content:flex-start"><div style="display:flex;align-items:center;gap:14px;height:62px;padding:0 24px;border-radius:16px;border:2px solid var(--ink);background:#fff;font-size:23px;font-weight:500"><span style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#1b3158,#3a5a9a);display:block"></span>Arc</div><div class="row" style="flex:1;height:62px;padding:0 24px;border-radius:16px;background:var(--wash,#f7f9fb);border:1px solid var(--line);font-size:21px"><span style="display:flex;gap:12px;align-items:center"><img src="assets/brand/usdc-coin.webp" style="width:30px;height:30px;border-radius:50%" />USDC on Arc</span><span style="color:var(--mintink);font-weight:500;font-size:19px">Official USDC</span></div></div>
+            <div id="s5tabs" class="abs" style="left:0;top:228px;width:890px;height:68px;border-radius:18px;background:var(--sunk);padding:6px;display:flex">
+              <div id="s5thumb" class="abs" style="left:6px;top:6px;width:436px;height:56px;border-radius:13px;background:#fff;box-shadow:var(--soft)"></div>
+              <div class="abs" style="left:6px;top:6px;width:436px;height:56px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500">Pay with wallet</div>
+              <div class="abs" style="left:448px;top:6px;width:436px;height:56px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500">Send to address</div>
+            </div>
+            <div id="s5wallet" class="abs" style="left:0;top:330px;width:890px;height:330px">
+              <div class="lbl" style="font-size:21px;line-height:1.6;max-width:760px">Connect a wallet and sign once. You pay no gas — the signature is all it takes.</div>
+              <div id="s5btn" class="abs" style="left:0;top:112px;width:890px;height:92px;border-radius:20px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:500;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 10px 24px -8px rgba(12,18,32,.5)">Pay 25.00 USDC with wallet</div>
+            </div>
+            <div id="s5addr" class="abs" style="left:0;top:330px;width:890px;height:330px;display:flex;gap:40px;align-items:flex-start">
+              <div id="s5qr" style="width:260px;height:260px;padding:16px;border-radius:22px;background:#fff;border:1px solid var(--line);box-shadow:var(--soft)"></div>
+              <div style="padding-top:8px"><div class="lbl" style="font-size:20px">Address for this payment only</div><div class="mono" style="font-size:25px;margin-top:12px;line-height:1.45;letter-spacing:-0.02em">0x8b2c9f41a7d3<br/>e5106b2a9c47f0<br/>d18e63a5e0e07d</div><div class="pill" style="margin-top:26px;background:var(--sunk);height:48px;font-size:20px">Copy address</div><div class="lbl" style="margin-top:24px;font-size:19px;max-width:420px;line-height:1.5">Send exactly 25.00 USDC on Arc.</div></div>
+            </div>
+          </div>
+          <div id="s5sheet" class="abs" style="left:0;top:68px;right:0;bottom:0;background:rgba(12,18,32,.32);display:flex;align-items:center;justify-content:center">
+            <div id="s5sheetc" style="width:660px;border-radius:28px;background:#fff;box-shadow:var(--float);padding:40px 44px">
+              <div class="row"><div style="font-size:28px;font-weight:600;letter-spacing:-0.02em">Sign to pay</div><div class="pill" style="background:var(--mintq);color:var(--mintink);height:38px;font-size:18px">Gasless</div></div>
+              <div class="tn" style="font-size:64px;font-weight:500;letter-spacing:-0.045em;margin-top:22px">25.00 <span style="font-size:26px;color:var(--ink3)">USDC</span></div>
+              <div class="mono" style="font-size:19px;color:var(--ink2);margin-top:12px;line-height:1.6">EIP-3009 · receiveWithAuthorization<br/>network fee for you: 0</div>
+              <div id="s5sign" style="margin-top:28px;height:74px;border-radius:18px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:25px;font-weight:500;gap:12px"><span id="s5signt">Sign</span></div>
+            </div>
+          </div>
+        </div>
+        <div id="s5cur" class="abs" style="left:0;top:0;width:44px;height:44px;z-index:60;filter:drop-shadow(0 6px 8px rgba(12,18,32,.35))"><svg viewBox="0 0 24 24" width="44" height="44"><path d="M4 2l15 8.2-6.6 1.9-3.1 6.4z" fill="#0c1220" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+      </div>
+
+      <!-- ───────────── S6 · settlement, the signature moment ───────────── -->
+      <div id="s6" class="scene dark grid clip" data-start="{{s6.start}}" data-duration="{{s6.dur}}">
+        <div id="s6log" class="abs mono" style="left:0;right:0;top:128px;text-align:center;font-size:23px;color:rgba(255,255,255,.55);height:34px"></div>
+        <div id="s6a" class="abs dcard" style="left:150px;top:230px;width:560px;height:330px;padding:40px 44px">
+          <div class="lbl" style="font-size:21px">Invoice address</div>
+          <div class="mono" style="font-size:26px;margin-top:10px;color:rgba(255,255,255,.9)">0x8b2c…e07d</div>
+          <div class="tn" id="s6amt" style="font-size:88px;letter-spacing:-0.05em;font-weight:500;margin-top:34px;line-height:1.1">25.00 <span style="font-size:30px;color:rgba(255,255,255,.55)">USDC</span></div>
+          <div id="s6st" class="pill" style="margin-top:20px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7)">Waiting for payment</div>
+        </div>
+        <div id="s6v" class="abs dcard" style="left:1210px;top:230px;width:560px;height:330px;padding:40px 44px;border-color:rgba(52,211,153,.35)">
+          <div class="lbl" style="font-size:21px">Your vault</div>
+          <div class="mono" style="font-size:26px;margin-top:10px;color:rgba(255,255,255,.9)">MerchantVault · you own it</div>
+          <div class="tn" id="s6bal" style="font-size:88px;letter-spacing:-0.05em;font-weight:500;margin-top:34px;line-height:1.1">0.00 <span style="font-size:30px;color:rgba(255,255,255,.55)">USDC</span></div>
+          <div id="s6ring" class="abs" style="left:0;top:0;width:100%;height:100%;border-radius:26px;border:2px solid #34d399;opacity:0"></div>
+        </div>
+        <svg class="abs" style="left:0;top:0;width:1920px;height:1080px;pointer-events:none" viewBox="0 0 1920 1080">
+          <path id="s6line" d="M710 395 H1210" stroke="rgba(255,255,255,.28)" stroke-width="3" stroke-dasharray="3 13" stroke-linecap="round" fill="none"/>
+          <path id="s6feeline" d="M960 395 V610" stroke="rgba(255,255,255,.2)" stroke-width="3" stroke-dasharray="3 13" stroke-linecap="round" fill="none"/>
+        </svg>
+        <div id="s6dot" class="abs" style="left:0;top:0;width:26px;height:26px;border-radius:50%;background:#34d399;box-shadow:0 0 0 8px rgba(52,211,153,.18),0 0 40px 10px rgba(52,211,153,.55)"></div>
+        <div id="s6fee" class="abs pill mono" style="left:800px;top:612px;width:320px;white-space:nowrap;justify-content:center;background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.12);font-size:20px">fee 0.05 → treasury</div>
+        <div id="s6net" class="abs pill tn" style="left:812px;top:352px;background:#34d399;color:#04271a;font-weight:600;height:50px;font-size:24px">24.95</div>
+        <div id="s6steps" class="abs" style="left:0;top:720px;width:1920px;height:160px"></div>
+      </div>
+
+      <!-- ───────────── S7 · the vault ───────────── -->
+      <div id="s7" class="scene dark grid clip" data-start="{{s7.start}}" data-duration="{{s7.dur}}">
+        <div id="s7h" class="abs" style="left:0;right:0;top:112px;text-align:center;font-size:104px;line-height:1.06;letter-spacing:-0.05em;font-weight:500"><div id="s7h1">Your vault.</div><div id="s7h2" style="color:rgba(255,255,255,.45)">Your key.</div></div>
+        <div id="s7card" class="abs dcard" style="left:600px;top:480px;width:720px;height:340px;padding:44px 52px;border-color:rgba(52,211,153,.38)">
+          <div class="row"><div class="mono" style="font-size:24px;color:rgba(255,255,255,.9)">MerchantVault</div><div class="pill" style="background:rgba(52,211,153,.14);color:#34d399;height:42px;font-size:20px">deployed · yours</div></div>
+          <div class="row" style="margin-top:46px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.1)"><div class="lbl" style="font-size:22px">Owner</div><div class="mono" style="font-size:24px">0x4F2e…a91C · <span style="color:#34d399">you</span></div></div>
+          <div class="row" style="margin-top:22px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.1)"><div class="lbl" style="font-size:22px">withdraw()</div><div style="display:flex;gap:10px;align-items:center;font-size:24px"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>owner only</div></div>
+          <div class="row" style="margin-top:22px"><div class="lbl" style="font-size:22px">Upgrade · admin · proxy</div><div class="mono" style="font-size:24px;color:rgba(255,255,255,.55)">none</div></div>
+        </div>
+        <div id="s7rel" class="abs pill mono" style="left:90px;top:610px;height:62px;padding:0 28px;font-size:22px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.85)"><span style="width:12px;height:12px;border-radius:50%;background:var(--warn);display:inline-block"></span>relayer · gas only</div>
+        <div id="s7x" class="abs" style="left:520px;top:575px;width:64px;height:64px;border-radius:50%;background:var(--bad);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 10px rgba(213,57,47,.22)"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+        <div id="s7nk" class="abs mono" style="left:420px;top:668px;font-size:23px;color:#ff8a80">no key. no way to move funds.</div>
+      </div>
+
+      <!-- ───────────── S8 · the fee ───────────── -->
+      <div id="s8" class="scene light dots clip" data-start="{{s8.start}}" data-duration="{{s8.dur}}" style="--dx:50%;--dy:42%">
+        <div id="s8l" class="abs lbl" style="left:0;right:0;top:128px;text-align:center;font-size:28px">Platform fee</div>
+        <div id="s8n" class="abs tn" style="left:0;right:0;top:170px;text-align:center;font-size:330px;line-height:1.05;letter-spacing:-0.06em;font-weight:500">0.00<span style="color:var(--ink4)">%</span></div>
+        <div id="s8f" class="abs mono" style="left:0;right:0;top:545px;text-align:center;font-size:30px;color:var(--ink2)">25.00 × 0.20% = <span style="color:var(--mintink);font-weight:500">0.05 USDC</span></div>
+        <div id="s8track" class="abs" style="left:310px;top:700px;width:1300px;height:22px;border-radius:99px;background:var(--sunk)">
+          <div id="s8fill" class="abs" style="left:0;top:0;height:22px;width:260px;border-radius:99px;background:var(--mint);box-shadow:0 0 24px rgba(14,166,107,.5)"></div>
+          <div id="s8hatch" class="abs" style="left:260px;top:0;height:22px;width:1040px;border-radius:0 99px 99px 0;background:repeating-linear-gradient(135deg,rgba(213,57,47,.0) 0 10px,rgba(213,57,47,.0) 10px 20px)"></div>
+        </div>
+        <div id="s8cap" class="abs" style="left:1572px;top:652px;width:76px;display:flex;flex-direction:column;align-items:center"><div style="width:4px;height:100px;background:var(--ink);border-radius:2px"></div></div>
+        <div id="s8capl" class="abs row" style="left:1100px;top:790px;width:548px;justify-content:flex-end;gap:12px;font-size:25px;font-weight:500"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:30px;height:30px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>1.00% cap · set in the contract</div>
+        <div id="s8z" class="abs lbl" style="left:310px;top:790px;font-size:23px">0%</div>
+      </div>
+
+      <!-- ───────────── S9 · integrations ───────────── -->
+      <div id="s9" class="scene light dots clip" data-start="{{s9.start}}" data-duration="{{s9.dur}}" style="--dx:50%;--dy:45%">
+        <div id="s9api" class="abs dcard" style="left:110px;top:100px;width:700px;height:380px;padding:34px 38px;border-radius:26px">
+          <div class="row"><div class="lbl" style="font-size:20px">POST /v1/payment-intents</div><div class="pill mono" style="height:34px;font-size:16px;background:rgba(52,211,153,.14);color:#34d399;padding:0 14px">201</div></div>
+          <div class="mono" id="s9code" style="font-size:21px;line-height:1.75;margin-top:22px;color:rgba(255,255,255,.88);white-space:pre"></div>
+        </div>
+        <div id="s9hook" class="abs card" style="left:110px;top:510px;width:700px;height:370px;padding:34px 38px">
+          <div class="row"><div class="lbl" style="font-size:20px">Webhooks · signed</div><div class="pill mono" style="height:34px;font-size:16px;background:var(--mintq);color:var(--mintink);padding:0 14px">HMAC-SHA256</div></div>
+          <div id="s9hooks" style="margin-top:22px"></div>
+        </div>
+        <div id="s9link" class="abs card" style="left:850px;top:100px;width:480px;height:380px;padding:34px 38px">
+          <div class="lbl" style="font-size:20px">Payment link</div>
+          <div style="font-size:36px;font-weight:600;letter-spacing:-0.03em;margin-top:18px;line-height:1.15">Coffee, ground<br/>250 g</div>
+          <div class="tn" style="font-size:56px;font-weight:500;letter-spacing:-0.045em;margin-top:18px">25.00 <span style="font-size:22px;color:var(--ink3)">USDC</span></div>
+          <div class="mono" style="margin-top:20px;font-size:17px;padding:14px 16px;border-radius:14px;background:var(--wash,#f7f9fb);border:1px solid var(--line);color:var(--ink2)">plinth.zerolayer.online/l/coffee</div>
+        </div>
+        <div id="s9tg" class="abs card" style="left:850px;top:510px;width:480px;height:370px;padding:34px 38px;overflow:hidden">
+          <div class="lbl" style="font-size:20px">Telegram Mini App</div>
+          <div class="abs" style="left:120px;top:84px;width:240px;height:420px;border-radius:40px;background:var(--ink);padding:10px"><div style="width:100%;height:100%;border-radius:31px;background:#fff;padding:18px 16px;overflow:hidden"><div class="row" style="gap:8px;justify-content:flex-start"><span style="width:26px;height:26px;border-radius:50%;background:#2aa7e6;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="15" height="15"><path d="M3 11.5l17-7-3 15-5-4-3 3v-5l8-7-10 6z" fill="#fff"/></svg></span><span style="font-size:15px;font-weight:600">Northwind</span></div><div style="margin-top:16px;font-size:14px;color:var(--ink3)">Order #1042</div><div class="tn" style="font-size:34px;font-weight:500;letter-spacing:-0.04em">25.00 <span style="font-size:14px;color:var(--ink3)">USDC</span></div><div style="margin-top:16px;height:44px;border-radius:12px;background:var(--ink);color:#fff;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center">Pay with wallet</div></div></div>
+        </div>
+        <div id="s9mcp" class="abs dcard" style="left:1370px;top:100px;width:440px;height:780px;padding:34px 34px">
+          <div class="row"><div class="lbl" style="font-size:20px">AI assistant · MCP</div><div class="pill mono" style="height:34px;font-size:16px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);padding:0 14px">29 tools</div></div>
+          <div id="s9u" style="margin-top:34px;margin-left:34px;padding:22px 24px;border-radius:22px 22px 6px 22px;background:#fff;color:var(--ink);font-size:24px;line-height:1.35;font-weight:500">Create a 25 USDC invoice for Northwind Coffee.</div>
+          <div id="s9a" style="margin-top:22px;margin-right:20px;padding:22px 24px;border-radius:22px 22px 22px 6px;background:rgba(255,255,255,.08);font-size:23px;line-height:1.45;color:rgba(255,255,255,.92)"><div style="color:#34d399;font-size:19px" class="mono">create_payment_intent ✓</div><div style="margin-top:10px">Done. Invoice #1042 is ready:</div><div class="mono" style="margin-top:10px;font-size:18px;color:rgba(255,255,255,.65);word-break:break-all">plinth.zerolayer.online/pay/ord_1042</div></div>
+          <div id="s9a2" style="margin-top:22px;margin-right:20px;padding:20px 24px;border-radius:22px 22px 22px 6px;background:rgba(255,255,255,.08);font-size:23px;line-height:1.45;color:rgba(255,255,255,.92)">I can also watch it and tell you when it settles.</div>
+        </div>
+      </div>
+
+      <!-- ───────────── S10 · close ───────────── -->
+      <div id="s10" class="scene dark grid clip" data-start="{{s10.start}}" data-duration="{{s10.dur}}">
+        <div class="abs" style="left:0;right:0;top:250px;display:flex;justify-content:center"><img id="s10logo" src="assets/brand/plinth-logo-dark.svg" style="height:170px;display:block" /></div>
+        <div id="s10t" class="abs" style="left:0;right:0;top:470px;text-align:center;font-size:84px;line-height:1.06;letter-spacing:-0.045em;font-weight:500"><div id="s10t1">Non-custodial</div><div id="s10t2" style="color:rgba(255,255,255,.45)">stablecoin payments.</div></div>
+        <div id="s10arc" class="abs" style="left:0;right:0;top:760px;display:flex;justify-content:center;align-items:center;gap:22px"><span style="font-size:30px;color:rgba(255,255,255,.6)">Built on</span><span style="background:#fff;border-radius:16px;padding:12px 26px;display:flex"><img src="assets/brand/arc-logo.svg" style="height:46px;display:block" /></span></div>
+        <div id="s10url" class="abs mono" style="left:0;right:0;top:880px;text-align:center;font-size:26px;color:rgba(255,255,255,.5)">plinth.zerolayer.online</div>
+      </div>
+
+      <!-- captions + film grain sit above every scene -->
+      <div id="caps">{{CAPTIONS}}</div>
+      <div class="grain"></div>
+      <div id="fade" class="abs" style="inset:0;background:var(--deep);z-index:95;opacity:0;pointer-events:none"></div>
+    </div>
+
+    <script>
+      const T = /*TIMING*/null;
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const C = (id) => T.chunks[id];
+      const S = (id) => T.scenes[id];
+      const ck = '<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+      // deterministic pseudo-random (no Math.random: renders must be repeatable)
+      function rnd(seed) { let a = seed >>> 0; return () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+      // wrap words so each can rise out of its own mask
+      function split(el) {
+        const walk = (node) => {
+          [...node.childNodes].forEach((n) => {
+            if (n.nodeType === 3) {
+              const frag = document.createDocumentFragment();
+              n.textContent.split(/(\s+)/).forEach((p) => {
+                if (!p) return;
+                if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(' ')); return; }
+                const w = document.createElement('span'); w.className = 'w';
+                const i = document.createElement('span'); i.className = 'wi'; i.textContent = p; w.appendChild(i); frag.appendChild(w);
+              });
+              n.replaceWith(frag);
+            } else if (n.nodeType === 1 && !n.querySelector('svg')) walk(n);
+          });
+        };
+        walk(el);
+        return el.querySelectorAll('.wi');
+      }
+      const rise = (els, t, o = {}) => tl.fromTo(els, { yPercent: 118, rotate: o.rot ?? 0 }, { yPercent: 0, rotate: 0, duration: o.d ?? 1.0, ease: 'expo.out', stagger: o.s ?? 0.07 }, t);
+      const pop = (el, t, o = {}) => tl.fromTo(el, { opacity: 0, y: o.y ?? 34, scale: o.sc ?? 0.96 }, { opacity: 1, y: 0, scale: 1, duration: o.d ?? 0.9, ease: 'expo.out' }, t);
+      const counter = (el, t, d, from, to, fmt, ease = 'power3.out') => { const o = { v: from }; tl.fromTo(o, { v: from }, { v: to, duration: d, ease, onUpdate: () => { el.innerHTML = fmt(o.v); } }, t); };
+      const sceneIn = (id, t, kind) => {
+        const el = '#' + id;
+        const map = {
+          up: [{ clipPath: 'inset(100% 0% 0% 0% round 220px 220px 0px 0px)' }, { clipPath: 'inset(0% 0% 0% 0% round 0px 0px 0px 0px)' }],
+          right: [{ clipPath: 'inset(0% 0% 0% 100% round 220px 0px 0px 220px)' }, { clipPath: 'inset(0% 0% 0% 0% round 0px)' }],
+          left: [{ clipPath: 'inset(0% 100% 0% 0% round 0px 220px 220px 0px)' }, { clipPath: 'inset(0% 0% 0% 0% round 0px)' }],
+          circle: [{ clipPath: 'circle(0% at 50% 52%)' }, { clipPath: 'circle(78% at 50% 52%)' }],
+          circleB: [{ clipPath: 'circle(0% at 50% 100%)' }, { clipPath: 'circle(130% at 50% 100%)' }],
+        };
+        const m = map[kind];
+        tl.fromTo(el, m[0], { ...m[1], duration: 1.15, ease: 'power4.inOut' }, t);
+      };
+      const sceneOut = (id, t) => tl.to('#' + id, { scale: 0.955, y: -28, duration: 1.0, ease: 'power3.in' }, t);
+
+      /* ═════════ S1 ═════════ */
+      {
+        const a = split(document.getElementById('s1a')), b = split(document.getElementById('s1b'));
+        rise(a, 0.35, { s: 0.09, d: 1.15 });
+        rise(b, 0.75, { s: 0.1, d: 1.15 });
+        tl.fromTo('#s1up', { strokeDasharray: 330, strokeDashoffset: 330 }, { strokeDashoffset: 0, duration: 0.9, ease: 'power3.inOut' }, C('a1').end - 0.5);
+        tl.fromTo('#s1', { '--dx': '30%' }, { '--dx': '70%', duration: S('s2').start - 0.7, ease: 'none' }, 0);
+        sceneOut('s1', S('s2').start - 0.75);
+      }
+
+      /* ═════════ S2 ═════════ */
+      {
+        const t0 = S('s2').start - 0.75;
+        sceneIn('s2', t0, 'up');
+        const rows = [['0x7a3f…c91e', '25.00', '?'], ['0x19bd…02aa', '25.00', '?'], ['0xe4c0…7d15', '12.50', 'order 1038?'], ['0x5b82…f3c0', '25.00', '?']];
+        document.getElementById('s2rows').innerHTML = rows.map((r) => `<div class="row mono s2row" style="height:76px;border-bottom:1px solid var(--line);font-size:23px"><span style="width:250px">${r[0]}</span><span class="tn" style="width:170px;text-align:right">${r[1]}</span><span style="width:200px;text-align:right;color:var(--badink);font-weight:500">${r[2]}</span></div>`).join('');
+        gsap.set('#s2l, #s2r', { top: 190 });
+        tl.fromTo('#s2l', { opacity: 0, y: 120, rotate: -2.5 }, { opacity: 1, y: 0, rotate: 0, duration: 1.2, ease: 'expo.out' }, C('b1').start - 0.1);
+        tl.fromTo('#s2r', { opacity: 0, y: 120, rotate: 2.5 }, { opacity: 1, y: 0, rotate: 0, duration: 1.2, ease: 'expo.out' }, C('b2').start - 0.1);
+        tl.fromTo('.s2row', { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.7, ease: 'power3.out', stagger: 0.28 }, C('b2').start + 0.2);
+        counter(document.getElementById('s2bal'), C('b1').start, 1.6, 0, 48210, (v) => '$' + Math.round(v).toLocaleString('en-US') + '<span style="color:var(--ink4)">.00</span>');
+        tl.to('#s2l', { y: -6, duration: 3, ease: 'sine.inOut' }, C('b1').start + 1.2);
+        tl.to('#s2l', { opacity: 0.55, scale: 0.97, duration: 0.8, ease: 'power2.out' }, C('b2').start);
+        sceneOut('s2', S('s3').start - 0.75);
+      }
+
+      /* ═════════ S3 ═════════ */
+      {
+        const t0 = S('s3').start - 0.85;
+        sceneIn('s3', t0, 'circle');
+        tl.fromTo('#s3mark', { scale: 0.7, opacity: 0, y: 30 }, { scale: 1, opacity: 1, y: 0, duration: 1.2, ease: 'expo.out' }, C('c1').start - 0.1);
+        tl.fromTo('#s3v', { scale: 1.18 }, { scale: 1.02, duration: S('s3').end - t0, ease: 'none' }, t0);
+        // brand moves up and shrinks while the headline arrives
+        tl.to('#s3brand', { y: -330, scale: 0.62, duration: 1.2, ease: 'power4.inOut' }, C('c2').start - 0.3);
+        const h1 = split(document.getElementById('s3h1')), h2 = split(document.getElementById('s3h2'));
+        rise(h1, C('c2').start - 0.05, { s: 0.09, d: 1.1 });
+        rise(h2, C('c2').start + 0.55, { s: 0.09, d: 1.1 });
+        sceneOut('s3', S('s4').start - 0.75);
+      }
+
+      /* ═════════ S4 ═════════ */
+      {
+        const t0 = S('s4').start - 0.75;
+        sceneIn('s4', t0, 'up');
+        pop('#s4inv', C('d1').start - 0.15, { y: 70, d: 1.2 });
+        const final = '0x8b2c9f41a7d3\ne5106b2a9c47f0\nd18e63a5e0e07d', hex = '0123456789abcdef';
+        const el = document.getElementById('s4addr');
+        const o = { p: 0 };
+        const draw = () => {
+          const n = Math.floor(o.p * final.length), r = rnd(Math.floor(o.p * 140) + 11);
+          let s = final.slice(0, n);
+          for (let i = n; i < Math.min(final.length, n + 14); i++) s += final[i] === '\n' ? '\n' : hex[Math.floor(r() * 16)];
+          el.textContent = s;
+        };
+        tl.fromTo(o, { p: 0 }, { p: 1, duration: C('d1').end - C('d1').start + 0.5, ease: 'power2.inOut', onUpdate: draw }, C('d1').start + 0.25);
+        pop('#s4ready', C('d1').end - 0.2, { y: 60 });
+        tl.fromTo('#s4link', { strokeDashoffset: 60, opacity: 0 }, { strokeDashoffset: 0, opacity: 1, duration: 0.9, ease: 'power2.out' }, C('d2').start);
+        tl.fromTo('#s4ghost', { opacity: 0, y: 50, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: 'expo.out' }, C('d2').start + 0.05);
+        tl.fromTo('#s4ghost', { borderColor: 'rgba(15,23,42,0.22)' }, { borderColor: 'rgba(15,23,42,0.1)', duration: 1.2, ease: 'sine.inOut', yoyo: true, repeat: 1 }, C('d2').start + 0.8);
+        pop('#s4c1', C('d3').start - 0.05, { y: 30 });
+        pop('#s4c2', C('d3').start + 0.85, { y: 30 });
+        tl.fromTo('#s4', { '--dx': '25%' }, { '--dx': '70%', duration: S('s4').end - S('s4').start, ease: 'none' }, S('s4').start);
+        sceneOut('s4', S('s5').start - 0.75);
+      }
+
+      /* ═════════ S5 ═════════ */
+      {
+        const t0 = S('s5').start - 0.75;
+        sceneIn('s5', t0, 'right');
+        // QR (decorative, deterministic)
+        {
+          const n = 25, r = rnd(42), cell = 228 / n; let svg = `<svg viewBox="0 0 228 228" width="228" height="228" shape-rendering="crispEdges">`;
+          const finder = (x, y) => (x < 7 && y < 7) || (x >= n - 7 && y < 7) || (x < 7 && y >= n - 7);
+          for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+            let on;
+            if (finder(x, y)) { const lx = x % (n - 7 >= 7 ? 1000 : 1), fx = x < 7 ? x : x - (n - 7), fy = y < 7 ? y : y - (n - 7); on = fx === 0 || fx === 6 || fy === 0 || fy === 6 || (fx >= 2 && fx <= 4 && fy >= 2 && fy <= 4); }
+            else if ((x === 7 || x === n - 8) && (y < 8 || y > n - 9)) on = false; else on = r() > 0.52;
+            if (on) svg += `<rect x="${(x * cell).toFixed(2)}" y="${(y * cell).toFixed(2)}" width="${cell.toFixed(2)}" height="${cell.toFixed(2)}" fill="#0c1220"/>`;
+          }
+          document.getElementById('s5qr').innerHTML = svg + '</svg>';
+        }
+        // five-step list on the dark panel
+        const names = ['Detected', 'Verified', 'Final', 'Swept', 'In vault'];
+        document.getElementById('s5steps').innerHTML = names.map((nm, i) => `<div class="row s5st" style="justify-content:flex-start;gap:16px;height:42px;font-size:21px;color:rgba(255,255,255,.55)"><span class="s5c" style="width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;color:#04271a">${ck}</span><span>${nm}</span></div>`).join('');
+        pop('#s5f', t0 + 0.55, { y: 90, d: 1.3 });
+        gsap.set('#s5sheet', { opacity: 0 });
+        gsap.set('#s5addr', { opacity: 0 });
+        gsap.set('#s5cur', { x: 1500, y: 1020, opacity: 0 });
+        gsap.set('#s5thumb', { x: 0 });
+        gsap.set('.s5c svg', { opacity: 0 });
+        // cursor glides to the wallet button and clicks as the first sentence lands
+        const bx = 250 + 498 + 445, by = 92 + 100 + 330 + 112 + 52;
+        tl.to('#s5cur', { opacity: 1, duration: 0.4 }, C('e1').start - 0.3);
+        tl.to('#s5cur', { x: bx, y: by, duration: 1.5, ease: 'power3.inOut' }, C('e1').start - 0.2);
+        tl.to('#s5btn', { scale: 0.975, duration: 0.12, ease: 'power2.out', yoyo: true, repeat: 1 }, C('e1').start + 1.35);
+        tl.to('#s5cur', { scale: 0.86, duration: 0.12, yoyo: true, repeat: 1 }, C('e1').start + 1.35);
+        tl.fromTo('#s5sheet', { opacity: 0 }, { opacity: 1, duration: 0.45, ease: 'power2.out' }, C('e1').start + 1.55);
+        tl.fromTo('#s5sheetc', { y: 120, scale: 0.94 }, { y: 0, scale: 1, duration: 0.9, ease: 'expo.out' }, C('e1').start + 1.55);
+        tl.to('#s5cur', { x: 250 + 498 + 440, y: 92 + 68 + 330 + 70 + 40, duration: 0.7, ease: 'power3.inOut' }, C('e1').start + 2.0);
+        tl.to('#s5sign', { backgroundColor: '#0ea66b', duration: 0.3 }, C('e1').end - 0.05);
+        tl.call(() => { document.getElementById('s5signt').textContent = 'Signed  ✓'; }, null, C('e1').end - 0.05);
+        tl.call(() => { document.getElementById('s5signt').textContent = 'Sign'; }, null, C('e1').end - 1.5);
+        tl.to('#s5sheet', { opacity: 0, duration: 0.5, ease: 'power2.in' }, C('e2').start - 0.1);
+        // second way to pay: send to address
+        tl.to('#s5cur', { x: 250 + 498 + 690, y: 92 + 100 + 230 + 34, duration: 0.8, ease: 'power3.inOut' }, C('e2').start - 0.05);
+        tl.to('#s5thumb', { x: 442, duration: 0.7, ease: 'expo.out' }, C('e2').start + 0.55);
+        tl.to('#s5wallet', { opacity: 0, y: -20, duration: 0.4 }, C('e2').start + 0.55);
+        tl.fromTo('#s5addr', { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' }, C('e2').start + 0.75);
+        tl.to('#s5cur', { opacity: 0, duration: 0.4 }, C('e2').start + 1.4);
+        const stepsT = [C('e2').end - 0.2, C('e2').end + 0.05];
+        sceneOut('s5', S('s6').start - 0.75);
+      }
+
+      /* ═════════ S6 ═════════ */
+      {
+        const t0 = S('s6').start - 0.8;
+        sceneIn('s6', t0, 'circleB');
+        const names = ['Detected', 'Verified', 'Final', 'Swept', 'In vault'];
+        const xs = [260, 620, 980, 1340, 1700];
+        document.getElementById('s6steps').innerHTML = `<div class="abs" style="left:${xs[0]}px;top:36px;width:${xs[4] - xs[0]}px;height:4px;border-radius:3px;background:rgba(255,255,255,.12)"></div><div id="s6prog" class="abs" style="left:${xs[0]}px;top:36px;width:${xs[4] - xs[0]}px;height:4px;border-radius:3px;background:#34d399;box-shadow:0 0 18px rgba(52,211,153,.6);transform-origin:left;transform:scaleX(0)"></div>` + names.map((nm, i) => `<div class="abs s6s" style="left:${xs[i] - 90}px;top:0;width:180px;text-align:center"><div class="s6c" style="margin:0 auto;width:76px;height:76px;border-radius:50%;border:3px solid rgba(255,255,255,.22);background:var(--lift);display:flex;align-items:center;justify-content:center;color:#04271a"><span style="width:38px;height:38px;display:block;opacity:0">${ck}</span></div><div class="s6n" style="margin-top:20px;font-size:27px;font-weight:500;color:rgba(255,255,255,.5)">${nm}</div></div>`).join('');
+        pop('#s6a', C('f1').start - 0.4, { y: 70, d: 1.2 });
+        pop('#s6v', C('f1').start - 0.25, { y: 70, d: 1.2 });
+        pop('.s6s', C('f1').start + 0.1, { y: 40 });
+        tl.fromTo('#s6line', { opacity: 0 }, { opacity: 1, duration: 0.8 }, C('f1').start + 0.2);
+        gsap.set('#s6dot, #s6net, #s6fee, #s6feeline', { opacity: 0 });
+        // a short chain-log ticker
+        const logs = ['eth_getLogs → Transfer(to: 0x8b2c…e07d)', 'receipt fetched · log decoded', 'token matches · amount matches', 'confirmations ≥ policy · finalized'];
+        const logEl = document.getElementById('s6log');
+        [C('f1').start + 0.15, C('f2').start - 0.15, C('f3').start - 0.15, C('f4').start - 0.15].forEach((tt, i) => {
+          tl.call(() => { logEl.textContent = logs[i]; }, null, tt);
+          tl.fromTo(logEl, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }, tt);
+        });
+        tl.call(() => { logEl.textContent = 'sweep() → deployAndSweep · relayer pays the gas'; }, null, C('f5').start - 0.15);
+        tl.fromTo(logEl, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.45 }, C('f5').start - 0.15);
+        tl.to(logEl, { opacity: 0, duration: 0.5 }, C('f6').start + 1.3);
+        const stepAt = [C('f2').start, C('f3').start, C('f4').start, C('f5').start, C('f6').start + 1.35];
+        const statuses = ['Detected', 'Verified', 'Final', 'Swept'];
+        const circles = document.querySelectorAll('.s6c'), labels = document.querySelectorAll('.s6n');
+        stepAt.forEach((tt, i) => {
+          tl.to(circles[i], { backgroundColor: '#34d399', borderColor: '#34d399', boxShadow: '0 0 0 14px rgba(52,211,153,.16), 0 0 50px rgba(52,211,153,.5)', duration: 0.35, ease: 'power2.out' }, tt - 0.02);
+          tl.to(circles[i], { scale: 1.14, duration: 0.18, yoyo: true, repeat: 1, ease: 'power2.out' }, tt - 0.02);
+          tl.to(circles[i].firstChild, { opacity: 1, duration: 0.2 }, tt + 0.05);
+          tl.to(labels[i], { color: '#ffffff', duration: 0.3 }, tt);
+          tl.to('#s6prog', { scaleX: i / 4, duration: 0.6, ease: 'power3.out' }, tt);
+          if (i < 4) tl.call(() => { const e = document.getElementById('s6st'); e.textContent = statuses[i]; e.style.background = i === 3 ? 'rgba(52,211,153,.18)' : 'rgba(255,255,255,.1)'; e.style.color = i >= 2 ? '#34d399' : '#fff'; }, null, tt);
+        });
+        // the money moves
+        const dx = (tt) => tl.fromTo('#s6dot', { x: 697, y: 382, opacity: 0, scale: 0.6 }, { x: 960, y: 382, opacity: 1, scale: 1, duration: 0.9, ease: 'power2.inOut' }, tt);
+        dx(C('f5').start - 0.05);
+        tl.fromTo('#s6feeline', { opacity: 0 }, { opacity: 1, duration: 0.4 }, C('f5').start + 0.5);
+        tl.fromTo('#s6fee', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out' }, C('f5').start + 0.7);
+        tl.to('#s6dot', { x: 1197, duration: 1.0, ease: 'power2.inOut' }, C('f5').start + 0.9);
+        tl.fromTo('#s6net', { opacity: 0, y: 12, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.7)' }, C('f5').start + 1.0);
+        const land = C('f6').start + 1.35;
+        tl.to('#s6dot', { opacity: 0, scale: 2.2, duration: 0.45 }, land - 0.12);
+        tl.to('#s6net', { opacity: 0, duration: 0.3 }, land - 0.1);
+        counter(document.getElementById('s6bal'), land, 1.5, 0, 24.95, (v) => v.toFixed(2) + ' <span style="font-size:30px;color:rgba(255,255,255,.55)">USDC</span>', 'expo.out');
+        tl.fromTo('#s6ring', { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 1.16, duration: 1.2, ease: 'power2.out' }, land);
+        tl.fromTo('#s6ring', { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 1.3, duration: 1.4, ease: 'power2.out' }, land + 0.25);
+        tl.to('#s6v', { borderColor: 'rgba(52,211,153,.9)', boxShadow: '0 40px 90px -30px rgba(0,0,0,.7), 0 0 90px rgba(52,211,153,.35)', duration: 0.7 }, land);
+        tl.to('#s6st', { opacity: 1 }, land);
+        sceneOut('s6', S('s7').start - 0.6);
+      }
+
+      /* ═════════ S7 ═════════ */
+      {
+        const t0 = S('s7').start - 0.6;
+        tl.fromTo('#s7', { opacity: 0 }, { opacity: 1, duration: 0.9, ease: 'power2.out' }, t0);
+        const a = split(document.getElementById('s7h1')), b = split(document.getElementById('s7h2'));
+        rise(a, C('g1').start - 0.1, { s: 0.1, d: 1.1 });
+        rise(b, C('g1').start + 0.55, { s: 0.1, d: 1.1 });
+        pop('#s7card', C('g1').start + 0.3, { y: 80, d: 1.3 });
+        gsap.set('#s7x, #s7nk', { opacity: 0 });
+        tl.fromTo('#s7rel', { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.9, ease: 'expo.out' }, C('g2').start - 0.1);
+        tl.to('#s7rel', { x: 330, duration: 1.0, ease: 'power3.inOut' }, C('g2').start + 0.55);
+        tl.fromTo('#s7x', { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(2.2)' }, C('g2').start + 1.5);
+        tl.to('#s7rel', { x: 250, duration: 0.18, yoyo: true, repeat: 3, ease: 'sine.inOut' }, C('g2').start + 1.5);
+        tl.fromTo('#s7nk', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.6 }, C('g2').start + 1.7);
+        tl.to('#s7card', { boxShadow: '0 40px 90px -30px rgba(0,0,0,.7), 0 0 80px rgba(52,211,153,.22)', duration: 1.2 }, C('g2').start + 1.4);
+        sceneOut('s7', S('s8').start - 0.75);
+      }
+
+      /* ═════════ S8 ═════════ */
+      {
+        const t0 = S('s8').start - 0.75;
+        sceneIn('s8', t0, 'up');
+        pop('#s8l', C('h1').start - 0.2, { y: 20 });
+        gsap.set('#s8f, #s8cap, #s8capl, #s8z', { opacity: 0 });
+        gsap.set('#s8track', { scaleX: 0, transformOrigin: 'left center' });
+        gsap.set('#s8fill', { scaleX: 0, transformOrigin: 'left center' });
+        counter(document.getElementById('s8n'), C('h1').start + 0.1, 1.7, 0, 0.2, (v) => v.toFixed(2) + '<span style="color:var(--ink4)">%</span>', 'expo.out');
+        tl.to('#s8track', { scaleX: 1, duration: 1.1, ease: 'expo.out' }, C('h1').start + 0.3);
+        tl.to('#s8fill', { scaleX: 1, duration: 1.2, ease: 'expo.out' }, C('h1').start + 0.9);
+        tl.fromTo('#s8f', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' }, C('h1').end - 0.2);
+        tl.fromTo('#s8z', { opacity: 0 }, { opacity: 1, duration: 0.5 }, C('h1').start + 0.9);
+        tl.fromTo('#s8cap', { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.8, ease: 'bounce.out' }, C('h2').start + 0.2);
+        tl.fromTo('#s8capl', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' }, C('h2').start + 0.55);
+        tl.to('#s8n', { y: -10, duration: 3.2, ease: 'sine.inOut' }, C('h2').start);
+        tl.fromTo('#s8', { '--dx': '35%' }, { '--dx': '65%', duration: S('s8').end - S('s8').start, ease: 'none' }, S('s8').start);
+        sceneOut('s8', S('s9').start - 0.75);
+      }
+
+      /* ═════════ S9 ═════════ */
+      {
+        const t0 = S('s9').start - 0.75;
+        sceneIn('s9', t0, 'left');
+        // API card with typed request
+        const code = ['curl -X POST /v1/payment-intents \\', '  -H "Authorization: Bearer sk_test_…" \\', '  -d \'{"amount":"25.00",', '       "order_reference":"1042"}\'', '', '→ checkout_url  ready'];
+        const full = code.join('\n'), codeEl = document.getElementById('s9code'), co = { p: 0 };
+        pop('#s9api', C('i1').start - 0.15, { y: 70, d: 1.1 });
+        tl.fromTo(co, { p: 0 }, { p: 1, duration: 2.0, ease: 'none', onUpdate: () => { codeEl.textContent = full.slice(0, Math.floor(co.p * full.length)); } }, C('i1').start + 0.2);
+        // webhook log
+        document.getElementById('s9hooks').innerHTML = [['payment.confirmed', '1.2s'], ['payment.completed', '4.8s']].map((r) => `<div class="row s9hk" style="height:88px;border-radius:18px;background:var(--wash,#f7f9fb);border:1px solid var(--line);padding:0 24px;margin-bottom:16px"><span class="mono" style="font-size:24px">${r[0]}</span><span class="row" style="gap:12px;color:var(--mintink);font-size:20px;font-weight:500"><span style="width:12px;height:12px;border-radius:50%;background:var(--mint);display:block"></span>delivered</span></div>`).join('');
+        pop('#s9hook', C('i2').start - 0.15, { y: 70, d: 1.1 });
+        tl.fromTo('.s9hk', { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.7, ease: 'expo.out', stagger: 0.5 }, C('i2').start + 0.1);
+        pop('#s9link', C('i3').start - 0.15, { y: 70, d: 1.1 });
+        pop('#s9tg', C('i4').start - 0.15, { y: 70, d: 1.1 });
+        pop('#s9mcp', C('i5').start - 0.25, { y: 90, d: 1.2 });
+        gsap.set('#s9u, #s9a, #s9a2', { opacity: 0 });
+        tl.fromTo('#s9u', { opacity: 0, y: 24, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'expo.out' }, C('i5').start + 0.35);
+        tl.fromTo('#s9a', { opacity: 0, y: 24, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'expo.out' }, C('i6').start + 0.1);
+        tl.fromTo('#s9a2', { opacity: 0, y: 24, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: 'expo.out' }, C('i6').start + 1.7);
+        tl.fromTo('#s9', { '--dx': '30%' }, { '--dx': '70%', duration: S('s9').end - S('s9').start, ease: 'none' }, S('s9').start);
+        sceneOut('s9', S('s10').start - 0.75);
+      }
+
+      /* ═════════ S10 ═════════ */
+      {
+        const t0 = S('s10').start - 0.9;
+        sceneIn('s10', t0, 'circle');
+        tl.fromTo('#s10logo', { scale: 0.78, opacity: 0, y: 40 }, { scale: 1, opacity: 1, y: 0, duration: 1.3, ease: 'expo.out' }, C('j1').start - 0.05);
+        const a = split(document.getElementById('s10t1')), b = split(document.getElementById('s10t2'));
+        rise(a, C('j2').start - 0.05, { s: 0.1, d: 1.1 });
+        rise(b, C('j2').start + 0.45, { s: 0.1, d: 1.1 });
+        pop('#s10arc', C('j3').start - 0.1, { y: 30 });
+        tl.fromTo('#s10url', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9, ease: 'expo.out' }, C('j3').end + 0.1);
+        tl.to('#fade', { opacity: 1, duration: 1.4, ease: 'power2.inOut' }, T.total - 1.5);
+      }
+
+      /* ═════════ captions: the box pops in, each word lights as it is spoken ═════════ */
+      document.querySelectorAll('.cap').forEach((cap) => {
+        const id = cap.dataset.chunk, c = C(id), words = cap.querySelectorAll('.cw');
+        const box = cap.querySelector('.box');
+        tl.fromTo(box, { opacity: 0, y: 18, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.28, ease: 'expo.out' }, c.start - 0.08);
+        tl.to(box, { opacity: 0, y: -8, duration: 0.22, ease: 'power2.in' }, id === 'j3' ? T.total - 1.7 : c.end + 0.2);
+        const weights = [...words].map((w) => w.textContent.length + 2), total = weights.reduce((a, b) => a + b, 0);
+        let acc = 0; const span = c.end - c.start - 0.1;
+        words.forEach((w, i) => { tl.to(w, { opacity: 1, duration: 0.14, ease: 'power1.out' }, c.start + (acc / total) * span); acc += weights[i]; });
+      });
+
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

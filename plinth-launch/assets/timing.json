@@ -1,0 +1,693 @@
+{
+ "total": 175.301,
+ "beats": [
+  {
+   "id": "hero",
+   "scene": "s1",
+   "kind": "footage",
+   "start": 0.0,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 0.0,
+   "dur": 7.823,
+   "seg_len": 4.45,
+   "zoom": [],
+   "segs": [
+    [
+     0.35,
+     4.8,
+     1.0
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "idea",
+   "scene": "s1",
+   "kind": "footage",
+   "start": 7.823,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 7.823,
+   "dur": 6.842,
+   "seg_len": 3.4,
+   "zoom": [],
+   "segs": [
+    [
+     26.8,
+     30.2,
+     1.0
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "signin",
+   "scene": "s2",
+   "kind": "footage",
+   "start": 14.666,
+   "card": true,
+   "lead": 1.2,
+   "body_start": 15.866,
+   "dur": 12.617,
+   "seg_len": 11.417,
+   "zoom": [],
+   "segs": [
+    [
+     44.0,
+     48.0,
+     1.7
+    ],
+    [
+     56.0,
+     74.1,
+     2.8
+    ],
+    [
+     74.6,
+     77.2,
+     1.0
+    ]
+   ],
+   "title": [
+    "Sign in.",
+    "One question to start."
+   ]
+  },
+  {
+   "id": "paths",
+   "scene": "s2",
+   "kind": "footage",
+   "start": 27.283,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 27.283,
+   "dur": 8.074,
+   "seg_len": 7.615,
+   "zoom": [],
+   "segs": [
+    [
+     84.4,
+     90.0,
+     1.3
+    ],
+    [
+     93.2,
+     97.5,
+     1.3
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "vault0",
+   "scene": "s3",
+   "kind": "footage",
+   "start": 35.357,
+   "card": true,
+   "lead": 1.2,
+   "body_start": 36.557,
+   "dur": 9.2,
+   "seg_len": 8.0,
+   "zoom": [
+    [
+     3.9,
+     1.3,
+     760,
+     540
+    ]
+   ],
+   "segs": [
+    [
+     105.0,
+     113.0,
+     1.0
+    ]
+   ],
+   "title": [
+    "Where it lands.",
+    "Before the first payment."
+   ]
+  },
+  {
+   "id": "create",
+   "scene": "s4",
+   "kind": "footage",
+   "start": 44.557,
+   "card": true,
+   "lead": 1.2,
+   "body_start": 45.757,
+   "dur": 10.64,
+   "seg_len": 9.44,
+   "zoom": [],
+   "segs": [
+    [
+     117.5,
+     121.6,
+     1.2
+    ],
+    [
+     124.4,
+     134.6,
+     2.6
+    ],
+    [
+     139.6,
+     141.7,
+     1.0
+    ]
+   ],
+   "title": [
+    "Create a link.",
+    "Name. Amount. Done."
+   ]
+  },
+  {
+   "id": "live",
+   "scene": "s4",
+   "kind": "footage",
+   "start": 55.196,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 55.196,
+   "dur": 5.091,
+   "seg_len": 5.091,
+   "zoom": [],
+   "segs": [
+    [
+     141.8,
+     153.0,
+     2.2
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "cust",
+   "scene": "s5",
+   "kind": "footage",
+   "start": 60.287,
+   "card": true,
+   "lead": 1.2,
+   "body_start": 61.487,
+   "dur": 6.358,
+   "seg_len": 5.158,
+   "zoom": [],
+   "segs": [
+    [
+     158.7,
+     168.5,
+     1.9
+    ]
+   ],
+   "title": [
+    "The customer pays.",
+    "A link, an address, the chain."
+   ]
+  },
+  {
+   "id": "nowallet",
+   "scene": "s5",
+   "kind": "footage",
+   "start": 66.645,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 66.645,
+   "dur": 7.303,
+   "seg_len": 7.303,
+   "zoom": [],
+   "segs": [
+    [
+     175.6,
+     183.5,
+     2.6
+    ],
+    [
+     190.3,
+     204.8,
+     3.4
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "addr",
+   "scene": "s5",
+   "kind": "footage",
+   "start": 73.948,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 73.948,
+   "dur": 5.538,
+   "seg_len": 5.538,
+   "zoom": [
+    [
+     1.8,
+     1.6,
+     930,
+     250
+    ]
+   ],
+   "segs": [
+    [
+     212.3,
+     219.5,
+     1.3
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "send",
+   "scene": "s5",
+   "kind": "footage",
+   "start": 79.487,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 79.487,
+   "dur": 7.877,
+   "seg_len": 6.176,
+   "zoom": [],
+   "segs": [
+    [
+     225.3,
+     235.8,
+     1.7
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "chain",
+   "scene": "s5",
+   "kind": "footage",
+   "start": 87.364,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 87.364,
+   "dur": 17.0,
+   "seg_len": 17.0,
+   "zoom": [],
+   "segs": [
+    [
+     237.0,
+     239.4,
+     1.0
+    ],
+    [
+     239.4,
+     245.8,
+     1.0
+    ],
+    [
+     245.8,
+     249.0,
+     1.0
+    ],
+    [
+     253.2,
+     258.2,
+     1.0
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "over",
+   "scene": "s6",
+   "kind": "footage",
+   "start": 104.364,
+   "card": true,
+   "lead": 1.2,
+   "body_start": 105.564,
+   "dur": 13.499,
+   "seg_len": 9.939,
+   "zoom": [
+    [
+     6.4,
+     1.3,
+     770,
+     300
+    ]
+   ],
+   "segs": [
+    [
+     264.6,
+     267.6,
+     1.3
+    ],
+    [
+     277.0,
+     291.5,
+     1.9
+    ]
+   ],
+   "title": [
+    "The merchant's view.",
+    "Received. Fee. Settled."
+   ]
+  },
+  {
+   "id": "detail",
+   "scene": "s6",
+   "kind": "footage",
+   "start": 117.863,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 117.863,
+   "dur": 11.362,
+   "seg_len": 10.977,
+   "zoom": [
+    [
+     5.0,
+     1.45,
+     742,
+     400
+    ],
+    [
+     8.0,
+     1.0,
+     640,
+     360
+    ]
+   ],
+   "segs": [
+    [
+     292.6,
+     295.0,
+     1.0
+    ],
+    [
+     362.7,
+     369.3,
+     1.3
+    ],
+    [
+     375.4,
+     388.0,
+     3.6
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "settle",
+   "scene": "s6",
+   "kind": "footage",
+   "start": 129.225,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 129.225,
+   "dur": 9.993,
+   "seg_len": 9.329,
+   "zoom": [
+    [
+     0.5,
+     1.35,
+     742,
+     330
+    ],
+    [
+     3.2,
+     1.0,
+     640,
+     360
+    ],
+    [
+     7.7,
+     1.4,
+     640,
+     470
+    ]
+   ],
+   "segs": [
+    [
+     390.9,
+     396.0,
+     1.5
+    ],
+    [
+     403.2,
+     411.5,
+     1.4
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "api",
+   "scene": "s7",
+   "kind": "footage",
+   "start": 139.218,
+   "card": true,
+   "lead": 1.2,
+   "body_start": 140.418,
+   "dur": 7.543,
+   "seg_len": 4.833,
+   "zoom": [],
+   "segs": [
+    [
+     418.0,
+     432.5,
+     3.0
+    ]
+   ],
+   "title": [
+    "Or automate it.",
+    "One API call."
+   ]
+  },
+  {
+   "id": "term",
+   "scene": "s7",
+   "kind": "terminal",
+   "start": 146.761,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 146.761,
+   "dur": 4.5,
+   "seg_len": 0,
+   "zoom": [],
+   "segs": [],
+   "title": null
+  },
+  {
+   "id": "pays",
+   "scene": "s7",
+   "kind": "footage",
+   "start": 151.261,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 151.261,
+   "dur": 4.067,
+   "seg_len": 4.067,
+   "zoom": [],
+   "segs": [
+    [
+     438.9,
+     445.0,
+     1.5
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "hooks",
+   "scene": "s7",
+   "kind": "footage",
+   "start": 155.327,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 155.327,
+   "dur": 9.671,
+   "seg_len": 6.652,
+   "zoom": [],
+   "segs": [
+    [
+     451.2,
+     466.5,
+     2.3
+    ]
+   ],
+   "title": null
+  },
+  {
+   "id": "end",
+   "scene": "s8",
+   "kind": "end",
+   "start": 164.998,
+   "card": false,
+   "lead": 0.0,
+   "body_start": 164.998,
+   "dur": 10.103,
+   "seg_len": 0,
+   "zoom": [],
+   "segs": [],
+   "title": null
+  }
+ ],
+ "chunks": {
+  "a1": {
+   "text": "This is Plinth, a payment gateway for USDC.",
+   "beat": "hero",
+   "start": 0.5,
+   "end": 3.116
+  },
+  "a2": {
+   "text": "Instead of reading about it, let's use it, starting at the front page.",
+   "beat": "hero",
+   "start": 3.416,
+   "end": 7.423
+  },
+  "a3": {
+   "text": "Every invoice gets its own address, and the money lands in a vault only the merchant can open.",
+   "beat": "idea",
+   "start": 8.323,
+   "end": 14.266
+  },
+  "b1": {
+   "text": "I sign in to the merchant dashboard.",
+   "beat": "signin",
+   "start": 16.166,
+   "end": 18.246
+  },
+  "b2": {
+   "text": "It starts with one question: how do you want to get paid? A link, your own website, or a chat with an AI assistant.",
+   "beat": "paths",
+   "start": 27.583,
+   "end": 34.957
+  },
+  "c1": {
+   "text": "First, where will the money land? A vault, balance zero, one owner wallet, and no admin role for the gateway.",
+   "beat": "vault0",
+   "start": 37.057,
+   "end": 43.947
+  },
+  "d1": {
+   "text": "Let's sell something. A payment link: a name, twenty-five USDC, a short description.",
+   "beat": "create",
+   "start": 48.157,
+   "end": 53.588
+  },
+  "d2": {
+   "text": "One click, and it's live.",
+   "beat": "live",
+   "start": 55.596,
+   "end": 57.143
+  },
+  "e1": {
+   "text": "Now I'm the customer. I open the link and review what I'm paying for.",
+   "beat": "cust",
+   "start": 61.787,
+   "end": 66.05
+  },
+  "e2": {
+   "text": "A wallet isn't connected here, so I'll pay the other way: straight to an address.",
+   "beat": "nowallet",
+   "start": 67.045,
+   "end": 71.57
+  },
+  "e3": {
+   "text": "This address and this QR code belong to this one order.",
+   "beat": "addr",
+   "start": 74.348,
+   "end": 78.101
+  },
+  "e4": {
+   "text": "I copy it, and send exactly twenty-five USDC from my wallet. A real transaction, on a local test chain.",
+   "beat": "send",
+   "start": 79.787,
+   "end": 86.964
+  },
+  "e5a": {
+   "text": "The page is watching the chain.",
+   "beat": "chain",
+   "start": 87.564,
+   "end": 89.457
+  },
+  "e5b": {
+   "text": "Detected.",
+   "beat": "chain",
+   "start": 89.964,
+   "end": 90.864
+  },
+  "e5c": {
+   "text": "Verified.",
+   "beat": "chain",
+   "start": 91.114,
+   "end": 92.073
+  },
+  "e5d": {
+   "text": "Final.",
+   "beat": "chain",
+   "start": 92.264,
+   "end": 93.02
+  },
+  "e5e": {
+   "text": "Settling.",
+   "beat": "chain",
+   "start": 93.364,
+   "end": 94.171
+  },
+  "e5f": {
+   "text": "And then: payment complete. The funds are in the merchant's vault.",
+   "beat": "chain",
+   "start": 96.264,
+   "end": 99.985
+  },
+  "f1": {
+   "text": "Back on the merchant side, the overview already knows: twenty-five received, a five cent fee, twenty-four ninety-five delivered.",
+   "beat": "over",
+   "start": 109.164,
+   "end": 117.463
+  },
+  "f2": {
+   "text": "The payment shows as settled. Its page lists every step the backend recorded, from detection to the relayer's sweep.",
+   "beat": "detail",
+   "start": 121.263,
+   "end": 128.825
+  },
+  "f3": {
+   "text": "In settlements, the relayer paid the network fee, and the destination is my vault. And the vault itself: from zero, to twenty-four ninety-five.",
+   "beat": "settle",
+   "start": 129.625,
+   "end": 138.818
+  },
+  "g1": {
+   "text": "If you'd rather automate this, it's one API call. The app even hands you the snippet.",
+   "beat": "api",
+   "start": 140.718,
+   "end": 146.361
+  },
+  "g2a": {
+   "text": "I run it with my test key,",
+   "beat": "term",
+   "start": 147.161,
+   "end": 148.736
+  },
+  "g2b": {
+   "text": "and the order shows up in the dashboard, waiting for payment.",
+   "beat": "pays",
+   "start": 151.561,
+   "end": 154.908
+  },
+  "g3": {
+   "text": "Every step also sends a signed webhook to your server. Detected, confirmed, settled, completed. Each one delivered, and acknowledged.",
+   "beat": "hooks",
+   "start": 155.627,
+   "end": 164.598
+  },
+  "h1": {
+   "text": "A link, an address, proof from the chain, and money in a vault only you control.",
+   "beat": "end",
+   "start": 165.598,
+   "end": 170.433
+  },
+  "h2": {
+   "text": "Plinth. Non-custodial stablecoin payments, built on Arc.",
+   "beat": "end",
+   "start": 170.733,
+   "end": 174.701
+  }
+ }
+}

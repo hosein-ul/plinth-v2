@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Plinth — product walkthrough</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "General Sans"; font-weight: 400; src: url("assets/fonts/GeneralSans-400.woff2") format("woff2"); }
+      @font-face { font-family: "General Sans"; font-weight: 500; src: url("assets/fonts/GeneralSans-500.woff2") format("woff2"); }
+      @font-face { font-family: "General Sans"; font-weight: 600; src: url("assets/fonts/GeneralSans-600.woff2") format("woff2"); }
+      @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("assets/fonts/JetBrainsMono-400.ttf") format("truetype"); }
+      @font-face { font-family: "JetBrains Mono"; font-weight: 500; src: url("assets/fonts/JetBrainsMono-500.ttf") format("truetype"); }
+      :root { --ink: #0c1220; --deep: #080d19; --lift: #121a2c; --rise: #19233a; --mint: #0ea66b; --mint2: #34d399; --ground: #f3f5f8; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--deep); font-family: "General Sans", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--deep); }
+      .abs { position: absolute; }
+      .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+      .fv { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; object-fit: cover; transform-origin: 50% 50%; will-change: transform; }
+      .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.1em 0.06em 0.18em; margin: -0.1em -0.06em -0.18em; }
+      .wi { display: inline-block; will-change: transform; }
+
+      /* chapter cards */
+      .tcard { position: absolute; inset: 0; z-index: 40; background: radial-gradient(70% 80% at 85% 0%, rgba(14, 166, 107, 0.2), transparent 62%), radial-gradient(60% 70% at 8% 100%, rgba(47, 107, 255, 0.1), transparent 65%), linear-gradient(180deg, var(--lift), var(--deep)); color: #fff; overflow: hidden; }
+      .tcard::before { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 80px 80px, linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 80px 80px; -webkit-mask: radial-gradient(75% 70% at 30% 55%, #000, transparent 85%); mask: radial-gradient(75% 70% at 30% 55%, #000, transparent 85%); }
+      .tnum { position: absolute; left: 170px; top: 330px; font-size: 30px; color: var(--mint2); letter-spacing: 0.04em; }
+      .tline { position: absolute; left: 170px; top: 392px; width: 120px; height: 4px; border-radius: 3px; background: var(--mint2); transform-origin: left; box-shadow: 0 0 24px rgba(52, 211, 153, 0.6); }
+      .tt { position: absolute; left: 170px; top: 430px; font-size: 128px; line-height: 1.06; letter-spacing: -0.05em; font-weight: 500; }
+      .tt .l2 { color: rgba(255, 255, 255, 0.46); }
+
+      /* callouts */
+      .co { position: absolute; z-index: 30; display: flex; align-items: center; gap: 14px; height: 64px; padding: 0 28px 0 22px; border-radius: 999px; background: rgba(8, 13, 25, 0.9); color: #fff; font-size: 30px; font-weight: 500; letter-spacing: -0.015em; white-space: nowrap; box-shadow: 0 20px 50px -16px rgba(8, 13, 25, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.1); transform-origin: 0 50%; }
+      .co i { width: 14px; height: 14px; border-radius: 50%; background: var(--mint2); box-shadow: 0 0 0 6px rgba(52, 211, 153, 0.25); display: block; flex: none; }
+      .co.big { height: 84px; font-size: 44px; padding: 0 36px 0 28px; }
+      .ring { position: absolute; z-index: 29; border-radius: 22px; border: 4px solid var(--mint2); box-shadow: 0 0 0 8px rgba(52, 211, 153, 0.18), 0 0 40px rgba(52, 211, 153, 0.35); pointer-events: none; }
+
+      /* captions */
+      .cap { position: absolute; left: 0; right: 0; bottom: 40px; display: flex; justify-content: center; z-index: 90; pointer-events: none; }
+      .cap .box { display: inline-flex; gap: 0.3em; padding: 15px 34px 17px; border-radius: 999px; background: rgba(8, 13, 25, 0.86); box-shadow: 0 18px 50px -18px rgba(8, 13, 25, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.09); font-size: 38px; font-weight: 500; letter-spacing: -0.015em; color: #fff; white-space: nowrap; }
+      .cap .cw { opacity: 0.4; }
+      .cap.top { bottom: auto; top: 44px; }
+      #stepsbar { position: absolute; left: 0; right: 0; top: 40px; display: flex; justify-content: center; gap: 14px; z-index: 35; opacity: 0; }
+      .sp { display: flex; align-items: center; gap: 12px; height: 62px; padding: 0 26px 0 18px; border-radius: 999px; background: rgba(8, 13, 25, 0.9); color: rgba(255,255,255,.55); font-size: 28px; font-weight: 500; box-shadow: 0 18px 44px -16px rgba(8,13,25,.7), inset 0 0 0 1px rgba(255,255,255,.1); }
+      .sp b { width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.3); display: flex; align-items: center; justify-content: center; color: #04271a; }
+      .sp b svg { width: 18px; height: 18px; opacity: 0; }
+      #prog { position: absolute; left: 0; top: 0; height: 5px; width: 1920px; background: linear-gradient(90deg, var(--mint), var(--mint2)); transform-origin: left; z-index: 95; box-shadow: 0 0 18px rgba(52, 211, 153, 0.6); }
+
+      /* terminal */
+      #term { position: absolute; inset: 0; z-index: 10; background: radial-gradient(70% 80% at 85% 0%, rgba(14, 166, 107, 0.16), transparent 62%), linear-gradient(180deg, var(--lift), var(--deep)); }
+      #termwin { position: absolute; left: 230px; top: 120px; width: 1460px; height: 760px; border-radius: 28px; background: #0b1120; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 60px 120px -30px rgba(0, 0, 0, 0.8); overflow: hidden; }
+      #termbar { height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 26px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.5); font-size: 22px; }
+      #termbar i { width: 16px; height: 16px; border-radius: 50%; background: #2a3550; display: block; }
+      #termbody { padding: 34px 44px; font-size: 27px; line-height: 1.62; color: rgba(255, 255, 255, 0.92); white-space: pre; }
+      .dim { color: rgba(255, 255, 255, 0.45); } .g { color: #34d399; } .k { color: #8ab4ff; }
+
+      /* end card */
+      #end { position: absolute; inset: 0; z-index: 10; background: radial-gradient(70% 80% at 85% 0%, rgba(14, 166, 107, 0.22), transparent 62%), radial-gradient(60% 70% at 10% 100%, rgba(47, 107, 255, 0.1), transparent 65%), linear-gradient(180deg, var(--lift), var(--deep)); color: #fff; }
+      #end::before { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 80px 80px, linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px) 0 0 / 80px 80px; -webkit-mask: radial-gradient(75% 70% at 50% 45%, #000, transparent 85%); mask: radial-gradient(75% 70% at 50% 45%, #000, transparent 85%); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="175.301" data-width="1920" data-height="1080">
+      <audio id="snd" src="assets/soundtrack.wav" data-start="0" data-duration="175.301" data-volume="1"></audio>
+
+      <video id="v_hero" class="clip fv" src="assets/shots/hero.mp4" muted playsinline data-start="0.0" data-duration="7.873"></video>
+      <video id="v_idea" class="clip fv" src="assets/shots/idea.mp4" muted playsinline data-start="7.673" data-duration="7.042"></video>
+      <video id="v_signin" class="clip fv" src="assets/shots/signin.mp4" muted playsinline data-start="15.716" data-duration="11.617"></video>
+      <video id="v_paths" class="clip fv" src="assets/shots/paths.mp4" muted playsinline data-start="27.133" data-duration="8.274"></video>
+      <video id="v_vault0" class="clip fv" src="assets/shots/vault0.mp4" muted playsinline data-start="36.407" data-duration="8.2"></video>
+      <video id="v_create" class="clip fv" src="assets/shots/create.mp4" muted playsinline data-start="45.607" data-duration="9.64"></video>
+      <video id="v_live" class="clip fv" src="assets/shots/live.mp4" muted playsinline data-start="55.046" data-duration="5.291"></video>
+      <video id="v_cust" class="clip fv" src="assets/shots/cust.mp4" muted playsinline data-start="61.337" data-duration="5.358"></video>
+      <video id="v_nowallet" class="clip fv" src="assets/shots/nowallet.mp4" muted playsinline data-start="66.495" data-duration="7.503"></video>
+      <video id="v_addr" class="clip fv" src="assets/shots/addr.mp4" muted playsinline data-start="73.798" data-duration="5.738"></video>
+      <video id="v_send" class="clip fv" src="assets/shots/send.mp4" muted playsinline data-start="79.337" data-duration="8.077"></video>
+      <video id="v_chain" class="clip fv" src="assets/shots/chain.mp4" muted playsinline data-start="87.214" data-duration="17.2"></video>
+      <video id="v_over" class="clip fv" src="assets/shots/over.mp4" muted playsinline data-start="105.414" data-duration="12.499"></video>
+      <video id="v_detail" class="clip fv" src="assets/shots/detail.mp4" muted playsinline data-start="117.713" data-duration="11.562"></video>
+      <video id="v_settle" class="clip fv" src="assets/shots/settle.mp4" muted playsinline data-start="129.075" data-duration="10.193"></video>
+      <video id="v_api" class="clip fv" src="assets/shots/api.mp4" muted playsinline data-start="140.268" data-duration="6.543"></video>
+      <video id="v_pays" class="clip fv" src="assets/shots/pays.mp4" muted playsinline data-start="151.111" data-duration="4.267"></video>
+      <video id="v_hooks" class="clip fv" src="assets/shots/hooks.mp4" muted playsinline data-start="155.177" data-duration="9.871"></video>
+
+      <!-- terminal: the real request and the real response -->
+      <div id="term" class="clip" data-start="146.761" data-duration="4.5">
+        <div id="termwin">
+          <div id="termbar"><i></i><i></i><i></i><span style="margin-left:18px">zsh — plinth demo</span></div>
+          <div id="termbody"></div>
+        </div>
+      </div>
+
+      <!-- end card -->
+      <div id="end" class="clip" data-start="164.998" data-duration="10.303">
+        <div class="abs" style="left:0;right:0;top:250px;display:flex;justify-content:center"><img id="e_logo" src="assets/brand/plinth-logo-dark.svg" style="height:190px;display:block" /></div>
+        <div id="e_t" class="abs" style="left:0;right:0;top:490px;text-align:center;font-size:92px;line-height:1.06;letter-spacing:-0.045em;font-weight:500"><div id="e_t1">Non-custodial</div><div id="e_t2" style="color:rgba(255,255,255,.46)">stablecoin payments.</div></div>
+        <div id="e_arc" class="abs" style="left:0;right:0;top:790px;display:flex;justify-content:center;align-items:center;gap:22px"><span style="font-size:32px;color:rgba(255,255,255,.62)">Built on</span><span style="background:#fff;border-radius:16px;padding:12px 26px;display:flex"><img src="assets/brand/arc-logo.svg" style="height:48px;display:block" /></span></div>
+        <div id="e_url" class="abs mono" style="left:0;right:0;top:905px;text-align:center;font-size:28px;color:rgba(255,255,255,.55)">plinth.zerolayer.online</div>
+      </div>
+
+      <div id="tc_s2" class="tcard clip" data-start="14.666" data-duration="1.3499999999999999"><div class="tnum mono">02 / 07</div><div class="tline"></div><div class="tt"><div class="l1">Sign in.</div><div class="l2">One question to start.</div></div></div>
+      <div id="tc_s3" class="tcard clip" data-start="35.357" data-duration="1.3499999999999999"><div class="tnum mono">03 / 07</div><div class="tline"></div><div class="tt"><div class="l1">Where it lands.</div><div class="l2">Before the first payment.</div></div></div>
+      <div id="tc_s4" class="tcard clip" data-start="44.557" data-duration="1.3499999999999999"><div class="tnum mono">04 / 07</div><div class="tline"></div><div class="tt"><div class="l1">Create a link.</div><div class="l2">Name. Amount. Done.</div></div></div>
+      <div id="tc_s5" class="tcard clip" data-start="60.287" data-duration="1.3499999999999999"><div class="tnum mono">05 / 07</div><div class="tline"></div><div class="tt"><div class="l1">The customer pays.</div><div class="l2">A link, an address, the chain.</div></div></div>
+      <div id="tc_s6" class="tcard clip" data-start="104.364" data-duration="1.3499999999999999"><div class="tnum mono">06 / 07</div><div class="tline"></div><div class="tt"><div class="l1">The merchant&#x27;s view.</div><div class="l2">Received. Fee. Settled.</div></div></div>
+      <div id="tc_s7" class="tcard clip" data-start="139.218" data-duration="1.3499999999999999"><div class="tnum mono">07 / 07</div><div class="tline"></div><div class="tt"><div class="l1">Or automate it.</div><div class="l2">One API call.</div></div></div>
+      <div id="stepsbar"><div class="sp"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Detected</div><div class="sp"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Verified</div><div class="sp"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Final</div><div class="sp"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>Swept</div><div class="sp"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></b>In vault</div></div>
+      <div id="callouts"></div>
+      <div id="caps"><div class="cap clip" data-t0="0.500" data-t1="3.116" data-last="1" data-start="0.4" data-duration="3.216"><div class="box"><span class="cw">This</span><span class="cw">is</span><span class="cw">Plinth,</span><span class="cw">a</span><span class="cw">payment</span><span class="cw">gateway</span><span class="cw">for</span><span class="cw">USDC.</span></div></div>
+<div class="cap clip" data-t0="3.416" data-t1="6.552" data-last="0" data-start="3.316" data-duration="3.436"><div class="box"><span class="cw">Instead</span><span class="cw">of</span><span class="cw">reading</span><span class="cw">about</span><span class="cw">it,</span><span class="cw">let&#x27;s</span><span class="cw">use</span><span class="cw">it,</span><span class="cw">starting</span><span class="cw">at</span></div></div>
+<div class="cap clip" data-t0="6.552" data-t1="7.423" data-last="1" data-start="6.452" data-duration="1.471"><div class="box"><span class="cw">the</span><span class="cw">front</span><span class="cw">page.</span></div></div>
+<div class="cap clip" data-t0="8.323" data-t1="11.838" data-last="0" data-start="8.223" data-duration="3.815"><div class="box"><span class="cw">Every</span><span class="cw">invoice</span><span class="cw">gets</span><span class="cw">its</span><span class="cw">own</span><span class="cw">address,</span><span class="cw">and</span><span class="cw">the</span><span class="cw">money</span><span class="cw">lands</span></div></div>
+<div class="cap clip" data-t0="11.838" data-t1="14.266" data-last="1" data-start="11.738" data-duration="3.028"><div class="box"><span class="cw">in</span><span class="cw">a</span><span class="cw">vault</span><span class="cw">only</span><span class="cw">the</span><span class="cw">merchant</span><span class="cw">can</span><span class="cw">open.</span></div></div>
+<div class="cap clip" data-t0="16.166" data-t1="18.246" data-last="1" data-start="16.066" data-duration="2.68"><div class="box"><span class="cw">I</span><span class="cw">sign</span><span class="cw">in</span><span class="cw">to</span><span class="cw">the</span><span class="cw">merchant</span><span class="cw">dashboard.</span></div></div>
+<div class="cap clip" data-t0="27.583" data-t1="30.911" data-last="0" data-start="27.483" data-duration="3.628"><div class="box"><span class="cw">It</span><span class="cw">starts</span><span class="cw">with</span><span class="cw">one</span><span class="cw">question:</span><span class="cw">how</span><span class="cw">do</span><span class="cw">you</span><span class="cw">want</span><span class="cw">to</span><span class="cw">get</span></div></div>
+<div class="cap clip" data-t0="30.911" data-t1="34.304" data-last="0" data-start="30.811" data-duration="3.693"><div class="box"><span class="cw">paid?</span><span class="cw">A</span><span class="cw">link,</span><span class="cw">your</span><span class="cw">own</span><span class="cw">website,</span><span class="cw">or</span><span class="cw">a</span><span class="cw">chat</span><span class="cw">with</span><span class="cw">an</span><span class="cw">AI</span></div></div>
+<div class="cap clip" data-t0="34.304" data-t1="34.957" data-last="1" data-start="34.204" data-duration="1.253"><div class="box"><span class="cw">assistant.</span></div></div>
+<div class="cap clip top" data-t0="37.057" data-t1="39.182" data-last="0" data-start="36.957" data-duration="2.425"><div class="box"><span class="cw">First,</span><span class="cw">where</span><span class="cw">will</span><span class="cw">the</span><span class="cw">money</span><span class="cw">land?</span></div></div>
+<div class="cap clip top" data-t0="39.182" data-t1="42.595" data-last="0" data-start="39.082" data-duration="3.713"><div class="box"><span class="cw">A</span><span class="cw">vault,</span><span class="cw">balance</span><span class="cw">zero,</span><span class="cw">one</span><span class="cw">owner</span><span class="cw">wallet,</span><span class="cw">and</span><span class="cw">no</span><span class="cw">admin</span></div></div>
+<div class="cap clip top" data-t0="42.595" data-t1="43.947" data-last="1" data-start="42.495" data-duration="1.952"><div class="box"><span class="cw">role</span><span class="cw">for</span><span class="cw">the</span><span class="cw">gateway.</span></div></div>
+<div class="cap clip" data-t0="48.157" data-t1="51.102" data-last="0" data-start="48.057" data-duration="3.245"><div class="box"><span class="cw">Let&#x27;s</span><span class="cw">sell</span><span class="cw">something.</span><span class="cw">A</span><span class="cw">payment</span><span class="cw">link:</span><span class="cw">a</span><span class="cw">name,</span></div></div>
+<div class="cap clip" data-t0="51.102" data-t1="53.588" data-last="1" data-start="51.002" data-duration="3.086"><div class="box"><span class="cw">twenty-five</span><span class="cw">USDC,</span><span class="cw">a</span><span class="cw">short</span><span class="cw">description.</span></div></div>
+<div class="cap clip" data-t0="55.596" data-t1="57.143" data-last="1" data-start="55.496" data-duration="2.147"><div class="box"><span class="cw">One</span><span class="cw">click,</span><span class="cw">and</span><span class="cw">it&#x27;s</span><span class="cw">live.</span></div></div>
+<div class="cap clip" data-t0="61.787" data-t1="65.110" data-last="0" data-start="61.687" data-duration="3.623"><div class="box"><span class="cw">Now</span><span class="cw">I&#x27;m</span><span class="cw">the</span><span class="cw">customer.</span><span class="cw">I</span><span class="cw">open</span><span class="cw">the</span><span class="cw">link</span><span class="cw">and</span><span class="cw">review</span><span class="cw">what</span></div></div>
+<div class="cap clip" data-t0="65.110" data-t1="66.050" data-last="1" data-start="65.01" data-duration="1.54"><div class="box"><span class="cw">I&#x27;m</span><span class="cw">paying</span><span class="cw">for.</span></div></div>
+<div class="cap clip" data-t0="67.045" data-t1="69.986" data-last="0" data-start="66.945" data-duration="3.241"><div class="box"><span class="cw">A</span><span class="cw">wallet</span><span class="cw">isn&#x27;t</span><span class="cw">connected</span><span class="cw">here,</span><span class="cw">so</span><span class="cw">I&#x27;ll</span><span class="cw">pay</span><span class="cw">the</span><span class="cw">other</span></div></div>
+<div class="cap clip" data-t0="69.986" data-t1="71.570" data-last="1" data-start="69.886" data-duration="2.184"><div class="box"><span class="cw">way:</span><span class="cw">straight</span><span class="cw">to</span><span class="cw">an</span><span class="cw">address.</span></div></div>
+<div class="cap clip top" data-t0="74.348" data-t1="78.101" data-last="1" data-start="74.248" data-duration="4.353"><div class="box"><span class="cw">This</span><span class="cw">address</span><span class="cw">and</span><span class="cw">this</span><span class="cw">QR</span><span class="cw">code</span><span class="cw">belong</span><span class="cw">to</span><span class="cw">this</span><span class="cw">one</span><span class="cw">order.</span></div></div>
+<div class="cap clip" data-t0="79.787" data-t1="83.446" data-last="0" data-start="79.687" data-duration="3.959"><div class="box"><span class="cw">I</span><span class="cw">copy</span><span class="cw">it,</span><span class="cw">and</span><span class="cw">send</span><span class="cw">exactly</span><span class="cw">twenty-five</span><span class="cw">USDC</span><span class="cw">from</span><span class="cw">my</span></div></div>
+<div class="cap clip" data-t0="83.446" data-t1="86.964" data-last="1" data-start="83.346" data-duration="4.118"><div class="box"><span class="cw">wallet.</span><span class="cw">A</span><span class="cw">real</span><span class="cw">transaction,</span><span class="cw">on</span><span class="cw">a</span><span class="cw">local</span><span class="cw">test</span><span class="cw">chain.</span></div></div>
+<div class="cap clip" data-t0="87.564" data-t1="89.457" data-last="1" data-start="87.464" data-duration="2.493"><div class="box"><span class="cw">The</span><span class="cw">page</span><span class="cw">is</span><span class="cw">watching</span><span class="cw">the</span><span class="cw">chain.</span></div></div>
+<div class="cap clip" data-t0="89.964" data-t1="90.864" data-last="1" data-start="89.864" data-duration="1.5"><div class="box"><span class="cw">Detected.</span></div></div>
+<div class="cap clip" data-t0="91.114" data-t1="92.073" data-last="1" data-start="91.014" data-duration="1.559"><div class="box"><span class="cw">Verified.</span></div></div>
+<div class="cap clip" data-t0="92.264" data-t1="93.020" data-last="1" data-start="92.164" data-duration="1.356"><div class="box"><span class="cw">Final.</span></div></div>
+<div class="cap clip" data-t0="93.364" data-t1="94.171" data-last="1" data-start="93.264" data-duration="1.407"><div class="box"><span class="cw">Settling.</span></div></div>
+<div class="cap clip" data-t0="96.264" data-t1="99.012" data-last="0" data-start="96.164" data-duration="3.048"><div class="box"><span class="cw">And</span><span class="cw">then:</span><span class="cw">payment</span><span class="cw">complete.</span><span class="cw">The</span><span class="cw">funds</span><span class="cw">are</span><span class="cw">in</span><span class="cw">the</span></div></div>
+<div class="cap clip" data-t0="99.012" data-t1="99.985" data-last="1" data-start="98.912" data-duration="1.573"><div class="box"><span class="cw">merchant&#x27;s</span><span class="cw">vault.</span></div></div>
+<div class="cap clip" data-t0="109.164" data-t1="112.721" data-last="0" data-start="109.064" data-duration="3.857"><div class="box"><span class="cw">Back</span><span class="cw">on</span><span class="cw">the</span><span class="cw">merchant</span><span class="cw">side,</span><span class="cw">the</span><span class="cw">overview</span><span class="cw">already</span><span class="cw">knows:</span></div></div>
+<div class="cap clip" data-t0="112.721" data-t1="116.014" data-last="0" data-start="112.621" data-duration="3.593"><div class="box"><span class="cw">twenty-five</span><span class="cw">received,</span><span class="cw">a</span><span class="cw">five</span><span class="cw">cent</span><span class="cw">fee,</span><span class="cw">twenty-four</span></div></div>
+<div class="cap clip" data-t0="116.014" data-t1="117.463" data-last="1" data-start="115.914" data-duration="2.049"><div class="box"><span class="cw">ninety-five</span><span class="cw">delivered.</span></div></div>
+<div class="cap clip" data-t0="121.263" data-t1="123.187" data-last="0" data-start="121.163" data-duration="2.224"><div class="box"><span class="cw">The</span><span class="cw">payment</span><span class="cw">shows</span><span class="cw">as</span><span class="cw">settled.</span></div></div>
+<div class="cap clip" data-t0="123.187" data-t1="126.636" data-last="0" data-start="123.087" data-duration="3.749"><div class="box"><span class="cw">Its</span><span class="cw">page</span><span class="cw">lists</span><span class="cw">every</span><span class="cw">step</span><span class="cw">the</span><span class="cw">backend</span><span class="cw">recorded,</span><span class="cw">from</span></div></div>
+<div class="cap clip" data-t0="126.636" data-t1="128.825" data-last="1" data-start="126.536" data-duration="2.789"><div class="box"><span class="cw">detection</span><span class="cw">to</span><span class="cw">the</span><span class="cw">relayer&#x27;s</span><span class="cw">sweep.</span></div></div>
+<div class="cap clip" data-t0="129.625" data-t1="133.081" data-last="0" data-start="129.525" data-duration="3.756"><div class="box"><span class="cw">In</span><span class="cw">settlements,</span><span class="cw">the</span><span class="cw">relayer</span><span class="cw">paid</span><span class="cw">the</span><span class="cw">network</span><span class="cw">fee,</span><span class="cw">and</span></div></div>
+<div class="cap clip" data-t0="133.081" data-t1="136.666" data-last="0" data-start="132.981" data-duration="3.885"><div class="box"><span class="cw">the</span><span class="cw">destination</span><span class="cw">is</span><span class="cw">my</span><span class="cw">vault.</span><span class="cw">And</span><span class="cw">the</span><span class="cw">vault</span><span class="cw">itself:</span><span class="cw">from</span></div></div>
+<div class="cap clip" data-t0="136.666" data-t1="138.818" data-last="1" data-start="136.566" data-duration="2.752"><div class="box"><span class="cw">zero,</span><span class="cw">to</span><span class="cw">twenty-four</span><span class="cw">ninety-five.</span></div></div>
+<div class="cap clip" data-t0="140.718" data-t1="144.010" data-last="0" data-start="140.618" data-duration="3.592"><div class="box"><span class="cw">If</span><span class="cw">you&#x27;d</span><span class="cw">rather</span><span class="cw">automate</span><span class="cw">this,</span><span class="cw">it&#x27;s</span><span class="cw">one</span><span class="cw">API</span><span class="cw">call.</span></div></div>
+<div class="cap clip" data-t0="144.010" data-t1="146.361" data-last="1" data-start="143.91" data-duration="2.951"><div class="box"><span class="cw">The</span><span class="cw">app</span><span class="cw">even</span><span class="cw">hands</span><span class="cw">you</span><span class="cw">the</span><span class="cw">snippet.</span></div></div>
+<div class="cap clip" data-t0="147.161" data-t1="148.736" data-last="1" data-start="147.061" data-duration="2.175"><div class="box"><span class="cw">I</span><span class="cw">run</span><span class="cw">it</span><span class="cw">with</span><span class="cw">my</span><span class="cw">test</span><span class="cw">key,</span></div></div>
+<div class="cap clip" data-t0="151.561" data-t1="154.462" data-last="0" data-start="151.461" data-duration="3.201"><div class="box"><span class="cw">and</span><span class="cw">the</span><span class="cw">order</span><span class="cw">shows</span><span class="cw">up</span><span class="cw">in</span><span class="cw">the</span><span class="cw">dashboard,</span><span class="cw">waiting</span><span class="cw">for</span></div></div>
+<div class="cap clip" data-t0="154.462" data-t1="154.908" data-last="1" data-start="154.362" data-duration="1.046"><div class="box"><span class="cw">payment.</span></div></div>
+<div class="cap clip" data-t0="155.627" data-t1="159.325" data-last="0" data-start="155.527" data-duration="3.998"><div class="box"><span class="cw">Every</span><span class="cw">step</span><span class="cw">also</span><span class="cw">sends</span><span class="cw">a</span><span class="cw">signed</span><span class="cw">webhook</span><span class="cw">to</span><span class="cw">your</span><span class="cw">server.</span></div></div>
+<div class="cap clip" data-t0="159.325" data-t1="162.064" data-last="0" data-start="159.225" data-duration="3.039"><div class="box"><span class="cw">Detected,</span><span class="cw">confirmed,</span><span class="cw">settled,</span><span class="cw">completed.</span></div></div>
+<div class="cap clip" data-t0="162.064" data-t1="164.598" data-last="1" data-start="161.964" data-duration="3.134"><div class="box"><span class="cw">Each</span><span class="cw">one</span><span class="cw">delivered,</span><span class="cw">and</span><span class="cw">acknowledged.</span></div></div>
+<div class="cap clip" data-t0="165.598" data-t1="169.025" data-last="0" data-start="165.498" data-duration="3.727"><div class="box"><span class="cw">A</span><span class="cw">link,</span><span class="cw">an</span><span class="cw">address,</span><span class="cw">proof</span><span class="cw">from</span><span class="cw">the</span><span class="cw">chain,</span><span class="cw">and</span><span class="cw">money</span><span class="cw">in</span><span class="cw">a</span></div></div>
+<div class="cap clip" data-t0="169.025" data-t1="170.433" data-last="1" data-start="168.925" data-duration="2.008"><div class="box"><span class="cw">vault</span><span class="cw">only</span><span class="cw">you</span><span class="cw">control.</span></div></div>
+<div class="cap clip" data-t0="170.733" data-t1="174.701" data-last="1" data-start="170.633" data-duration="4.568"><div class="box"><span class="cw">Plinth.</span><span class="cw">Non-custodial</span><span class="cw">stablecoin</span><span class="cw">payments,</span><span class="cw">built</span><span class="cw">on</span><span class="cw">Arc.</span></div></div></div>
+      <div id="prog"></div>
+    </div>
+
+    <script>
+      const D = {"total": 175.301, "beats": [{"id": "hero", "scene": "s1", "kind": "footage", "start": 0.0, "card": false, "lead": 0.0, "body_start": 0.0, "dur": 7.823, "seg_len": 4.45, "zoom": [], "segs": [[0.35, 4.8, 1.0]], "title": null}, {"id": "idea", "scene": "s1", "kind": "footage", "start": 7.823, "card": false, "lead": 0.0, "body_start": 7.823, "dur": 6.842, "seg_len": 3.4, "zoom": [], "segs": [[26.8, 30.2, 1.0]], "title": null}, {"id": "signin", "scene": "s2", "kind": "footage", "start": 14.666, "card": true, "lead": 1.2, "body_start": 15.866, "dur": 12.617, "seg_len": 11.417, "zoom": [], "segs": [[44.0, 48.0, 1.7], [56.0, 74.1, 2.8], [74.6, 77.2, 1.0]], "title": ["Sign in.", "One question to start."]}, {"id": "paths", "scene": "s2", "kind": "footage", "start": 27.283, "card": false, "lead": 0.0, "body_start": 27.283, "dur": 8.074, "seg_len": 7.615, "zoom": [], "segs": [[84.4, 90.0, 1.3], [93.2, 97.5, 1.3]], "title": null}, {"id": "vault0", "scene": "s3", "kind": "footage", "start": 35.357, "card": true, "lead": 1.2, "body_start": 36.557, "dur": 9.2, "seg_len": 8.0, "zoom": [[3.9, 1.3, 760, 540]], "segs": [[105.0, 113.0, 1.0]], "title": ["Where it lands.", "Before the first payment."]}, {"id": "create", "scene": "s4", "kind": "footage", "start": 44.557, "card": true, "lead": 1.2, "body_start": 45.757, "dur": 10.64, "seg_len": 9.44, "zoom": [], "segs": [[117.5, 121.6, 1.2], [124.4, 134.6, 2.6], [139.6, 141.7, 1.0]], "title": ["Create a link.", "Name. Amount. Done."]}, {"id": "live", "scene": "s4", "kind": "footage", "start": 55.196, "card": false, "lead": 0.0, "body_start": 55.196, "dur": 5.091, "seg_len": 5.091, "zoom": [], "segs": [[141.8, 153.0, 2.2]], "title": null}, {"id": "cust", "scene": "s5", "kind": "footage", "start": 60.287, "card": true, "lead": 1.2, "body_start": 61.487, "dur": 6.358, "seg_len": 5.158, "zoom": [], "segs": [[158.7, 168.5, 1.9]], "title": ["The customer pays.", "A link, an address, the chain."]}, {"id": "nowallet", "scene": "s5", "kind": "footage", "start": 66.645, "card": false, "lead": 0.0, "body_start": 66.645, "dur": 7.303, "seg_len": 7.303, "zoom": [], "segs": [[175.6, 183.5, 2.6], [190.3, 204.8, 3.4]], "title": null}, {"id": "addr", "scene": "s5", "kind": "footage", "start": 73.948, "card": false, "lead": 0.0, "body_start": 73.948, "dur": 5.538, "seg_len": 5.538, "zoom": [[1.8, 1.6, 930, 250]], "segs": [[212.3, 219.5, 1.3]], "title": null}, {"id": "send", "scene": "s5", "kind": "footage", "start": 79.487, "card": false, "lead": 0.0, "body_start": 79.487, "dur": 7.877, "seg_len": 6.176, "zoom": [], "segs": [[225.3, 235.8, 1.7]], "title": null}, {"id": "chain", "scene": "s5", "kind": "footage", "start": 87.364, "card": false, "lead": 0.0, "body_start": 87.364, "dur": 17.0, "seg_len": 17.0, "zoom": [], "segs": [[237.0, 239.4, 1.0], [239.4, 245.8, 1.0], [245.8, 249.0, 1.0], [253.2, 258.2, 1.0]], "title": null}, {"id": "over", "scene": "s6", "kind": "footage", "start": 104.364, "card": true, "lead": 1.2, "body_start": 105.564, "dur": 13.499, "seg_len": 9.939, "zoom": [[6.4, 1.3, 770, 300]], "segs": [[264.6, 267.6, 1.3], [277.0, 291.5, 1.9]], "title": ["The merchant's view.", "Received. Fee. Settled."]}, {"id": "detail", "scene": "s6", "kind": "footage", "start": 117.863, "card": false, "lead": 0.0, "body_start": 117.863, "dur": 11.362, "seg_len": 10.977, "zoom": [[5.0, 1.45, 742, 400], [8.0, 1.0, 640, 360]], "segs": [[292.6, 295.0, 1.0], [362.7, 369.3, 1.3], [375.4, 388.0, 3.6]], "title": null}, {"id": "settle", "scene": "s6", "kind": "footage", "start": 129.225, "card": false, "lead": 0.0, "body_start": 129.225, "dur": 9.993, "seg_len": 9.329, "zoom": [[0.5, 1.35, 742, 330], [3.2, 1.0, 640, 360], [7.7, 1.4, 640, 470]], "segs": [[390.9, 396.0, 1.5], [403.2, 411.5, 1.4]], "title": null}, {"id": "api", "scene": "s7", "kind": "footage", "start": 139.218, "card": true, "lead": 1.2, "body_start": 140.418, "dur": 7.543, "seg_len": 4.833, "zoom": [], "segs": [[418.0, 432.5, 3.0]], "title": ["Or automate it.", "One API call."]}, {"id": "term", "scene": "s7", "kind": "terminal", "start": 146.761, "card": false, "lead": 0.0, "body_start": 146.761, "dur": 4.5, "seg_len": 0, "zoom": [], "segs": [], "title": null}, {"id": "pays", "scene": "s7", "kind": "footage", "start": 151.261, "card": false, "lead": 0.0, "body_start": 151.261, "dur": 4.067, "seg_len": 4.067, "zoom": [], "segs": [[438.9, 445.0, 1.5]], "title": null}, {"id": "hooks", "scene": "s7", "kind": "footage", "start": 155.327, "card": false, "lead": 0.0, "body_start": 155.327, "dur": 9.671, "seg_len": 6.652, "zoom": [], "segs": [[451.2, 466.5, 2.3]], "title": null}, {"id": "end", "scene": "s8", "kind": "end", "start": 164.998, "card": false, "lead": 0.0, "body_start": 164.998, "dur": 10.103, "seg_len": 0, "zoom": [], "segs": [], "title": null}], "chunks": {"a1": {"text": "This is Plinth, a payment gateway for USDC.", "beat": "hero", "start": 0.5, "end": 3.116}, "a2": {"text": "Instead of reading about it, let's use it, starting at the front page.", "beat": "hero", "start": 3.416, "end": 7.423}, "a3": {"text": "Every invoice gets its own address, and the money lands in a vault only the merchant can open.", "beat": "idea", "start": 8.323, "end": 14.266}, "b1": {"text": "I sign in to the merchant dashboard.", "beat": "signin", "start": 16.166, "end": 18.246}, "b2": {"text": "It starts with one question: how do you want to get paid? A link, your own website, or a chat with an AI assistant.", "beat": "paths", "start": 27.583, "end": 34.957}, "c1": {"text": "First, where will the money land? A vault, balance zero, one owner wallet, and no admin role for the gateway.", "beat": "vault0", "start": 37.057, "end": 43.947}, "d1": {"text": "Let's sell something. A payment link: a name, twenty-five USDC, a short description.", "beat": "create", "start": 48.157, "end": 53.588}, "d2": {"text": "One click, and it's live.", "beat": "live", "start": 55.596, "end": 57.143}, "e1": {"text": "Now I'm the customer. I open the link and review what I'm paying for.", "beat": "cust", "start": 61.787, "end": 66.05}, "e2": {"text": "A wallet isn't connected here, so I'll pay the other way: straight to an address.", "beat": "nowallet", "start": 67.045, "end": 71.57}, "e3": {"text": "This address and this QR code belong to this one order.", "beat": "addr", "start": 74.348, "end": 78.101}, "e4": {"text": "I copy it, and send exactly twenty-five USDC from my wallet. A real transaction, on a local test chain.", "beat": "send", "start": 79.787, "end": 86.964}, "e5a": {"text": "The page is watching the chain.", "beat": "chain", "start": 87.564, "end": 89.457}, "e5b": {"text": "Detected.", "beat": "chain", "start": 89.964, "end": 90.864}, "e5c": {"text": "Verified.", "beat": "chain", "start": 91.114, "end": 92.073}, "e5d": {"text": "Final.", "beat": "chain", "start": 92.264, "end": 93.02}, "e5e": {"text": "Settling.", "beat": "chain", "start": 93.364, "end": 94.171}, "e5f": {"text": "And then: payment complete. The funds are in the merchant's vault.", "beat": "chain", "start": 96.264, "end": 99.985}, "f1": {"text": "Back on the merchant side, the overview already knows: twenty-five received, a five cent fee, twenty-four ninety-five delivered.", "beat": "over", "start": 109.164, "end": 117.463}, "f2": {"text": "The payment shows as settled. Its page lists every step the backend recorded, from detection to the relayer's sweep.", "beat": "detail", "start": 121.263, "end": 128.825}, "f3": {"text": "In settlements, the relayer paid the network fee, and the destination is my vault. And the vault itself: from zero, to twenty-four ninety-five.", "beat": "settle", "start": 129.625, "end": 138.818}, "g1": {"text": "If you'd rather automate this, it's one API call. The app even hands you the snippet.", "beat": "api", "start": 140.718, "end": 146.361}, "g2a": {"text": "I run it with my test key,", "beat": "term", "start": 147.161, "end": 148.736}, "g2b": {"text": "and the order shows up in the dashboard, waiting for payment.", "beat": "pays", "start": 151.561, "end": 154.908}, "g3": {"text": "Every step also sends a signed webhook to your server. Detected, confirmed, settled, completed. Each one delivered, and acknowledged.", "beat": "hooks", "start": 155.627, "end": 164.598}, "h1": {"text": "A link, an address, proof from the chain, and money in a vault only you control.", "beat": "end", "start": 165.598, "end": 170.433}, "h2": {"text": "Plinth. Non-custodial stablecoin payments, built on Arc.", "beat": "end", "start": 170.733, "end": 174.701}}, "title": 1.2, "api": {"id": "pi_f1a60cf46c062537f1ad26a768bcbed5", "status": "AWAITING_PAYMENT", "amount": "40.00", "currency": "USDC", "checkout_url": "http://localhost:3000/pay/pi_f1a60cf46c062537f1ad26a768bcbed5", "deposit": "0xC0d8FFb54bC8FeAC255f0CDc717997BDaFFfeD96"}};
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const B = Object.fromEntries(D.beats.map((b) => [b.id, b]));
+      const C = (id) => D.chunks[id];
+
+      function split(el) {
+        const walk = (node) => [...node.childNodes].forEach((n) => {
+          if (n.nodeType === 3) {
+            const frag = document.createDocumentFragment();
+            n.textContent.split(/(\s+)/).forEach((p) => {
+              if (!p) return;
+              if (/^\s+$/.test(p)) { frag.appendChild(document.createTextNode(' ')); return; }
+              const w = document.createElement('span'); w.className = 'w'; const i = document.createElement('span'); i.className = 'wi'; i.textContent = p; w.appendChild(i); frag.appendChild(w);
+            });
+            n.replaceWith(frag);
+          } else if (n.nodeType === 1) walk(n);
+        });
+        walk(el); return el.querySelectorAll('.wi');
+      }
+      const rise = (els, t, o = {}) => tl.fromTo(els, { yPercent: 118 }, { yPercent: 0, duration: o.d ?? 0.95, ease: 'expo.out', stagger: o.s ?? 0.07 }, t);
+
+      /* ── camera: scale about a point of the recorded page (css px of the 1280x720 viewport) ── */
+      const cam = (cx, cy, s) => {
+        const mx = 960 * (s - 1), my = 540 * (s - 1);
+        return { scale: s, x: Math.max(-mx, Math.min(mx, -(1.5 * cx - 960) * s)), y: Math.max(-my, Math.min(my, -(1.5 * cy - 540) * s)) };
+      };
+      const toScreen = (px, py, z) => { const s = z ? z[0] : 1, cx = z ? z[1] : 640, cy = z ? z[2] : 360; const c = cam(cx, cy, s); return [960 + (1.5 * px - 960) * s + c.x, 540 + (1.5 * py - 540) * s + c.y]; };
+
+      /* ── footage beats: dissolve in, camera moves ── */
+      D.beats.filter((b) => b.kind === 'footage').forEach((b, i) => {
+        const v = '#v_' + b.id;
+        gsap.set(v, { zIndex: 1 + i, transformOrigin: '50% 50%' });
+        tl.fromTo(v, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: 'power1.out' }, b.body_start - 0.15);
+        (b.zoom || []).forEach(([t, s, cx, cy]) => {
+          const c = cam(cx, cy, s);
+          tl.to(v, { scale: c.scale, x: c.x, y: c.y, duration: s === 1 ? 0.9 : 1.1, ease: 'power3.inOut' }, b.body_start + t);
+        });
+      });
+
+      /* ── chapter cards ── */
+      D.beats.filter((b) => b.card).forEach((b, i) => {
+        const el = '#tc_' + b.scene, t0 = b.start;
+        const words = split(document.querySelector(el + ' .l1')), words2 = split(document.querySelector(el + ' .l2'));
+        tl.fromTo(el, { clipPath: 'inset(100% 0% 0% 0% round 160px 160px 0px 0px)' }, { clipPath: 'inset(0% 0% 0% 0% round 0px)', duration: 0.5, ease: 'power4.inOut' }, t0);
+        tl.fromTo(el + ' .tnum', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, ease: 'expo.out' }, t0 + 0.22);
+        tl.fromTo(el + ' .tline', { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: 'expo.out' }, t0 + 0.25);
+        rise(words, t0 + 0.28, { s: 0.07, d: 0.8 }); rise(words2, t0 + 0.45, { s: 0.07, d: 0.8 });
+        tl.to(el, { clipPath: 'inset(0% 0% 100% 0% round 0px 0px 160px 160px)', duration: 0.5, ease: 'power4.inOut' }, t0 + D.title - 0.45);
+      });
+
+      /* ── callouts: a ring around a part of the page and a label, placed in page coordinates ── */
+      const callouts = [
+        /* filled in below */
+      ];
+      // callouts: rings are placed in page css px (1280x720 viewport) under the camera state z; chips in screen px
+const Z = { vault: [1.3, 760, 540], over: [1.3, 770, 300], det: [1.45, 742, 400], set1: [1.35, 742, 330], set2: [1.4, 640, 470], addr: [1.6, 930, 250] };
+callouts.push(
+  { beat: 'vault0', t: 4.6, dur: 1.6, z: Z.vault, ring: [312, 436, 130, 52], text: 'Vault balance: 0.00', sx: 360, sy: 536 },
+  { beat: 'vault0', t: 5.75, dur: 1.5, z: Z.vault, ring: [910, 464, 305, 28], text: 'One owner wallet', sx: 820, sy: 640 },
+  { beat: 'vault0', t: 6.9, dur: 2.0, z: Z.vault, ring: [915, 660, 300, 26], text: 'No admin role for the gateway', sx: 760, sy: 880 },
+  { beat: 'addr', t: 2.4, dur: 2.2, z: Z.addr, ring: [713, 305, 430, 150], text: 'Unique to this one order', sx: 150, sy: 760 },
+  { beat: 'over', t: 7.5, dur: 1.9, z: Z.over, ring: [1128, 152, 90, 28], text: 'Received: 25.00', sx: 1330, sy: 150 },
+  { beat: 'over', t: 9.2, dur: 1.5, z: Z.over, ring: [1140, 314, 76, 28], text: 'Platform fee: 0.05', sx: 1280, sy: 556 },
+  { beat: 'over', t: 10.6, dur: 3.0, z: Z.over, ring: [326, 204, 190, 56], text: '24.95 delivered to your vault', sx: 100, sy: 500, big: true },
+  { beat: 'detail', t: 6.0, dur: 2.0, z: Z.det, ring: [322, 366, 845, 76], text: 'Detected, Verified, Final, Swept, In vault', sx: 520, sy: 385 },
+  { beat: 'settle', t: 1.9, dur: 1.5, z: Z.set1, ring: [868, 318, 92, 22], text: 'Network fee paid by the relayer', sx: 700, sy: 600 },
+  { beat: 'settle', t: 3.3, dur: 1.5, z: Z.set1, ring: [985, 320, 60, 20], text: 'Paid to: your vault', sx: 1150, sy: 600 },
+  { beat: 'settle', t: 8.7, dur: 2.4, z: Z.set2, ring: [318, 445, 118, 35], text: '24.95 USDC in the vault', sx: 580, sy: 505, big: true },
+  { beat: 'pays', t: 1.4, dur: 2.2, ring: [305, 268, 935, 50], text: 'Created by the API, waiting for payment', sx: 560, sy: 620 },
+);
+
+      const host = document.getElementById('callouts');
+      callouts.forEach((c, i) => {
+        const b = B[c.beat], t = b.body_start + c.t, z = c.z || null; c.dur = Math.min(c.dur, b.start + b.dur - t - 0.05);
+        if (c.ring) {
+          const [x0, y0] = toScreen(c.ring[0], c.ring[1], z), [x1, y1] = toScreen(c.ring[0] + c.ring[2], c.ring[1] + c.ring[3], z);
+          const r = document.createElement('div'); r.className = 'ring'; r.id = 'ring' + i; r.style.cssText = `left:${x0 - 10}px;top:${y0 - 8}px;width:${x1 - x0 + 20}px;height:${y1 - y0 + 16}px;opacity:0`; host.appendChild(r);
+          tl.fromTo(r, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'expo.out' }, t);
+          tl.to(r, { opacity: 0, duration: 0.35 }, t + c.dur - 0.35);
+        }
+        if (c.text) {
+          const el = document.createElement('div'); el.className = 'co' + (c.big ? ' big' : ''); el.id = 'co' + i; el.innerHTML = '<i></i>' + c.text;
+          el.style.cssText = `left:${c.sx}px;top:${c.sy}px;opacity:0`; host.appendChild(el);
+          tl.fromTo(el, { opacity: 0, x: -24, scale: 0.92 }, { opacity: 1, x: 0, scale: 1, duration: 0.6, ease: 'expo.out' }, t + 0.12);
+          tl.to(el, { opacity: 0, y: -10, duration: 0.3, ease: 'power2.in' }, t + c.dur - 0.3);
+        }
+      });
+
+      /* ── the five settlement steps light up as the narration names them (they mirror the app's own states) ── */
+      {
+        const b = B.chain, ids = ['e5b', 'e5c', 'e5d', 'e5e', 'e5f'], at = ids.map((id, i) => C(id).start + (i === 4 ? 0.35 : -0.02));
+        tl.fromTo('#stepsbar', { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' }, b.body_start + 0.6);
+        document.querySelectorAll('.sp').forEach((el, i) => {
+          tl.to(el, { backgroundColor: '#34d399', color: '#04271a', duration: 0.3, ease: 'power2.out' }, at[i]);
+          tl.to(el.querySelector('b'), { borderColor: '#0b3d2a', duration: 0.2 }, at[i]);
+          tl.to(el.querySelector('svg'), { opacity: 1, duration: 0.2 }, at[i] + 0.05);
+          tl.fromTo(el, { scale: 1 }, { scale: 1.07, duration: 0.18, yoyo: true, repeat: 1, ease: 'power2.out' }, at[i]);
+        });
+        tl.to('#stepsbar', { opacity: 0, y: -16, duration: 0.4 }, b.start + b.dur - 0.5);
+      }
+
+      /* ── terminal ── */
+      {
+        const b = B.term, api = D.api, el = document.getElementById('termbody');
+        const lines = [
+          { s: '<span class="g">$</span> curl -X POST http://localhost:4000/v1/payment-intents \\', n: 1 },
+          { s: '    -H "Authorization: Bearer sk_test_…" \\', n: 1 },
+          { s: '    -H "Idempotency-Key: ORDER-2041" \\', n: 1 },
+          { s: '    -d \'{"amount":"40.00","order_reference":"ORDER-2041"}\'', n: 1 },
+          { s: '', n: 0 },
+          { s: '<span class="dim">{</span>', n: 0 },
+          { s: '  <span class="k">"id"</span>: <span class="g">"' + api.id + '"</span>,', n: 0 },
+          { s: '  <span class="k">"status"</span>: <span class="g">"' + api.status + '"</span>,', n: 0 },
+          { s: '  <span class="k">"amount"</span>: <span class="g">"' + api.amount + '"</span>, <span class="k">"currency"</span>: <span class="g">"' + api.currency + '"</span>,', n: 0 },
+          { s: '  <span class="k">"checkout_url"</span>: <span class="g">"' + api.checkout_url + '"</span>,', n: 0 },
+          { s: '  <span class="k">"deposit_address"</span>: <span class="g">"' + api.deposit + '"</span>', n: 0 },
+          { s: '<span class="dim">}</span>', n: 0 },
+        ];
+        const html = lines.map((l, i) => `<div class="tl" id="tl${i}" style="opacity:0">${l.s}</div>`).join('');
+        el.innerHTML = html;
+        const t0 = b.start;
+        tl.fromTo('#termwin', { opacity: 0, y: 70, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: 'expo.out' }, t0 + 0.05);
+        lines.forEach((l, i) => {
+          if (l.n) { // command lines are typed
+            const plain = l.s; const o = { p: 0 }, node = document.getElementById('tl' + i);
+            tl.set(node, { opacity: 1 }, t0 + 0.7 + i * 0.55);
+            tl.fromTo(o, { p: 0 }, { p: 1, duration: 0.5, ease: 'none', onUpdate: () => { const vis = Math.floor(o.p * plain.replace(/<[^>]+>/g, '').length); let k = 0, out = '', inTag = false; for (const ch of plain) { if (ch === '<') inTag = true; if (inTag) { out += ch; if (ch === '>') inTag = false; continue; } if (k < vis) { out += ch; k++; } } node.innerHTML = out; } }, t0 + 0.7 + i * 0.55);
+          } else tl.fromTo('#tl' + i, { opacity: 0, x: 18 }, { opacity: 1, x: 0, duration: 0.45, ease: 'expo.out' }, t0 + 3.0 + (i - 5) * 0.13);
+        });
+        tl.fromTo('#termwin', { boxShadow: '0 60px 120px -30px rgba(0,0,0,.8)' }, { boxShadow: '0 60px 120px -30px rgba(0,0,0,.8), 0 0 90px rgba(52,211,153,.25)', duration: 1.2 }, t0 + 3.2);
+        tl.to('#termwin', { opacity: 0, y: -30, duration: 0.35, ease: 'power2.in' }, t0 + b.dur - 0.4);
+      }
+
+      /* ── end card ── */
+      {
+        const b = B.end, t0 = b.start;
+        tl.fromTo('#end', { opacity: 0 }, { opacity: 1, duration: 0.6, ease: 'power2.out' }, t0);
+        tl.fromTo('#e_logo', { scale: 0.78, opacity: 0, y: 40 }, { scale: 1, opacity: 1, y: 0, duration: 1.2, ease: 'expo.out' }, t0 + 0.25);
+        const a = split(document.getElementById('e_t1')), c = split(document.getElementById('e_t2'));
+        rise(a, C('h2').start - 0.4, { s: 0.09, d: 1.0 }); rise(c, C('h2').start - 0.0, { s: 0.09, d: 1.0 });
+        tl.fromTo('#e_arc', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.9, ease: 'expo.out' }, C('h2').start + 0.9);
+        tl.fromTo('#e_url', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.9, ease: 'expo.out' }, C('h2').end - 0.3);
+        tl.to('#root', { backgroundColor: '#080d19', duration: 0.01 }, 0);
+      }
+
+      /* ── captions: each word lights as it is spoken ── */
+      document.querySelectorAll('.cap').forEach((cap) => {
+        const t0 = +cap.dataset.t0, t1 = +cap.dataset.t1, last = cap.dataset.last === '1', words = cap.querySelectorAll('.cw'), box = cap.querySelector('.box');
+        tl.fromTo(box, { opacity: 0, y: 16, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.26, ease: 'expo.out' }, t0 - 0.08);
+        tl.to(box, { opacity: 0, y: -8, duration: 0.2, ease: 'power2.in' }, t1 + (last ? 0.22 : 0.04));
+        const wts = [...words].map((w) => w.textContent.length + 2), tot = wts.reduce((a, b) => a + b, 0); let acc = 0; const span = t1 - t0 - 0.08;
+        words.forEach((w, i) => { tl.to(w, { opacity: 1, duration: 0.12, ease: 'power1.out' }, t0 + (acc / tot) * span); acc += wts[i]; });
+      });
+
+      gsap.set('#prog', { scaleX: 0 });
+      tl.to('#prog', { scaleX: 1, duration: D.total, ease: 'none' }, 0);
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
