@@ -96,6 +96,10 @@ export interface NetworkConfig {
   finality: FinalityPolicy;
   circle: {
     cctpDomain: number | null;
+    cctpContracts?: {
+      tokenMessengerV2: Address;
+      messageTransmitterV2: Address;
+    };
     /** Product support is independent of USDC support. null = not verified, do not rely on it. */
     gatewayNanopayments: boolean | null;
     gasStation: boolean | null;
@@ -123,6 +127,16 @@ export function tokenOf(net: NetworkConfig, symbol: string): TokenConfig | undef
 }
 
 const GWEI = 1_000_000_000n;
+
+export const CCTP_V2_MAINNET = {
+  tokenMessengerV2: "0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d" as Address,
+  messageTransmitterV2: "0x81D40F21F12A8F0E3252Bccb954D722d4c464B64" as Address,
+};
+
+export const CCTP_V2_TESTNET = {
+  tokenMessengerV2: "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA" as Address,
+  messageTransmitterV2: "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275" as Address,
+};
 
 export const NETWORKS: Record<NetworkId, NetworkConfig> = {
   "arc-testnet": {
@@ -152,7 +166,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
       confirmations: 1,
       note: "Arc provides deterministic finality; inclusion in a block is final. Re-verify before mainnet.",
     },
-    circle: { cctpDomain: 26, gatewayNanopayments: null, gasStation: null },
+    circle: { cctpDomain: 26, cctpContracts: CCTP_V2_TESTNET, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 2000,
     nativeTransferEmitter: "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
     memoContract: "0x5294E9927c3306DcBaDb03fe70b92e01cCede505",
@@ -190,7 +204,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     },
     gas: { model: "eth" },
     finality: { strategy: "confirmations", confirmations: 12, note: "L2 soft confirmations; reorgs are rare but possible." },
-    circle: { cctpDomain: 6, gatewayNanopayments: null, gasStation: null },
+    circle: { cctpDomain: 6, cctpContracts: CCTP_V2_TESTNET, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 5000,
   },
   "arc-mainnet": {
@@ -220,7 +234,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
       confirmations: 1,
       note: "Deterministic finality per Arc documentation; confirm parameters against mainnet before enabling.",
     },
-    circle: { cctpDomain: 26, gatewayNanopayments: null, gasStation: null },
+    circle: { cctpDomain: 26, cctpContracts: CCTP_V2_MAINNET, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 2000,
     nativeTransferEmitter: "0xffffFFFfFFffffffffffffffFfFFFfffFFFfFFfE",
     memoContract: "0x5294E9927c3306DcBaDb03fe70b92e01cCede505",
@@ -258,7 +272,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     },
     gas: { model: "eth" },
     finality: { strategy: "confirmations", confirmations: 20, note: "Conservative L2 depth; tune per risk appetite." },
-    circle: { cctpDomain: 6, gatewayNanopayments: null, gasStation: null },
+    circle: { cctpDomain: 6, cctpContracts: CCTP_V2_MAINNET, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 5000,
   },
   "arbitrum-mainnet": {
@@ -284,7 +298,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     },
     gas: { model: "eth" },
     finality: { strategy: "confirmations", confirmations: 20, note: "Conservative L2 depth; tune per risk appetite." },
-    circle: { cctpDomain: 3, gatewayNanopayments: null, gasStation: null },
+    circle: { cctpDomain: 3, cctpContracts: CCTP_V2_MAINNET, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 10000,
   },
   "optimism-mainnet": {
@@ -310,7 +324,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     },
     gas: { model: "eth" },
     finality: { strategy: "confirmations", confirmations: 20, note: "Conservative L2 depth; tune per risk appetite." },
-    circle: { cctpDomain: 2, gatewayNanopayments: null, gasStation: null },
+    circle: { cctpDomain: 2, cctpContracts: CCTP_V2_MAINNET, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 5000,
   },
   "polygon-mainnet": {
@@ -337,7 +351,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     },
     gas: { model: "eth" },
     finality: { strategy: "confirmations", confirmations: 128, note: "Polygon PoS reorg depth; verify before use." },
-    circle: { cctpDomain: 7, gatewayNanopayments: null, gasStation: null },
+    circle: { cctpDomain: 7, cctpContracts: CCTP_V2_MAINNET, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 3000,
   },
   "ethereum-mainnet": {
@@ -363,7 +377,7 @@ export const NETWORKS: Record<NetworkId, NetworkConfig> = {
     },
     gas: { model: "eth" },
     finality: { strategy: "finalized-tag", confirmations: 0, note: "Wait for the finalized block (~13 min)." },
-    circle: { cctpDomain: 0, gatewayNanopayments: null, gasStation: null },
+    circle: { cctpDomain: 0, cctpContracts: CCTP_V2_MAINNET, gatewayNanopayments: null, gasStation: null },
     maxLogRange: 5000,
   },
   "avalanche-mainnet": {
