@@ -7,3 +7,4 @@ export * from "./memo";
 export * from "./adapter";
 export * from "./deployments";
 export * from "./artifacts";
+export * from "./cctp";

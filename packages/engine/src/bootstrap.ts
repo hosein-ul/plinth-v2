@@ -8,6 +8,7 @@ import { checkChain, refreshOperational } from "./deployment-check";
 import { createEmailSender, type EmailSender } from "./email";
 import type { AlertSink, ChainRuntime, Engine, EngineConfig, Logger, TokenRuntime } from "./context";
 import { parseSecretKey } from "./crypto";
+import { circleDeveloperSignerProvider, hasCircleDeveloperSignerEnv } from "./circle-signer";
 import { policyNeedsOperator, resolvePolicyDetails } from "./policy";
 
 export const consoleLogger: Logger = {
@@ -65,14 +66,15 @@ export async function createEngine(opts: CreateEngineOptions): Promise<Engine> {
   const now = opts.now ?? (() => new Date());
   const enabled = (env.ENABLED_NETWORKS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
   const allowMainnet = env.ALLOW_MAINNET === "true";
-  const signers = opts.signers ?? envSignerProvider(env);
+  const useCircleSigner = !opts.signers && hasCircleDeveloperSignerEnv(env);
+  const signers = opts.signers ?? (useCircleSigner ? circleDeveloperSignerProvider(env) : envSignerProvider(env));
 
   const production = env.NODE_ENV === "production";
-  if (production && !opts.signers && (env.RELAYER_PRIVATE_KEY || Object.keys(env).some((k) => k.startsWith("RELAYER_PRIVATE_KEY_"))) && env.ALLOW_ENV_SIGNER_IN_PRODUCTION !== "true") {
+  if (production && !opts.signers && !useCircleSigner && (env.RELAYER_PRIVATE_KEY || Object.keys(env).some((k) => k.startsWith("RELAYER_PRIVATE_KEY_"))) && env.ALLOW_ENV_SIGNER_IN_PRODUCTION !== "true") {
     throw new Error("Refusing to load a relayer private key from the environment in production. Provide a KMS-backed SignerProvider, or set ALLOW_ENV_SIGNER_IN_PRODUCTION=true to accept the risk explicitly.");
   }
 
-  if (production && !opts.signers && (env.CUSTODY_PRIVATE_KEY || Object.keys(env).some((k) => k.startsWith("CUSTODY_PRIVATE_KEY_"))) && env.ALLOW_ENV_SIGNER_IN_PRODUCTION !== "true") {
+  if (production && !opts.signers && !useCircleSigner && (env.CUSTODY_PRIVATE_KEY || Object.keys(env).some((k) => k.startsWith("CUSTODY_PRIVATE_KEY_"))) && env.ALLOW_ENV_SIGNER_IN_PRODUCTION !== "true") {
     throw new Error("Refusing to load a custody private key from the environment in production. Provide a KMS-backed SignerProvider with getCustodySigner, or set ALLOW_ENV_SIGNER_IN_PRODUCTION=true to accept the risk explicitly.");
   }
 
