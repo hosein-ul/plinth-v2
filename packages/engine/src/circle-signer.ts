@@ -1,5 +1,5 @@
 import { constants, publicEncrypt, randomUUID } from "node:crypto";
-import { getAddress, hashMessage, hashTypedData, toHex, type Address, type Hex, type LocalAccount } from "viem";
+import { getAddress, toHex, type Address, type Hex, type LocalAccount } from "viem";
 import { toAccount } from "viem/accounts";
 import type { SignerProvider } from "./bootstrap";
 
@@ -186,8 +186,6 @@ export class CircleDeveloperSignerClient {
           data: tx.data,
         }),
       signTypedData: (typedData) => this.signTypedData(wallet.walletId, typedData),
-      // Kept for type completeness; viem uses signTransaction / signMessage / signTypedData directly.
-      ...(false ? { hashMessage, hashTypedData } : {}),
     });
   }
 }
